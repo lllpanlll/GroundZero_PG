@@ -117,7 +117,6 @@ namespace T2
 
             controller.Move(-transform.up * Time.deltaTime * 20.0f);
 
-
             Transform camTr = Camera.main.transform;
             //화면의 중앙 벡터
             Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 0.0f));

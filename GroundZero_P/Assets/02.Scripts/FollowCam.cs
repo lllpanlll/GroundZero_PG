@@ -39,7 +39,7 @@ public class FollowCam : MonoBehaviour {
         fDampTrace = DAMP_TRACE;
         trTarget = GameObject.FindGameObjectWithTag(Tags.CameraTarget).GetComponent<Transform>();
         trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
-        lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
+        lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponentInChildren<LookAtIK>();
         moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
 
         vTarget = trTarget.position + (trTarget.forward * 30.0f);
@@ -83,7 +83,7 @@ public class FollowCam : MonoBehaviour {
         //카메라가 캐릭터 후방에 있다면, 타겟 위치를 에임방향으로.
         //카메라가 캐릭터 전방에 있다면, 타겟 위치를 카메라위치로.        
         float fLookAngle = Vector3.Angle(trPlayerModel.forward, transform.forward);
-        if (fLookAngle > 90.0f && moveCtrl.GetMoveState() == T2.MoveCtrl.MoveState.Stop)
+        if (fLookAngle > 100.0f && moveCtrl.GetMoveState() == T2.MoveCtrl.MoveState.Stop)
             vTarget = transform.position;
         else
             vTarget = trTarget.position + (trTarget.forward * 30.0f);

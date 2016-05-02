@@ -29,7 +29,7 @@ namespace T2.Skill
         #endregion
         
         //스킬의 필수 기본 변수들, 나중에 public으로 변환.
-        public int iDecEP = 10;
+        public int iDecPoint = 10;
         public float beforeDelayTime = 0.0f;
         public float afterDelayTime = 0.0f;
         public float coolTime = 0.0f;
@@ -54,7 +54,7 @@ namespace T2.Skill
             //기본 변수 초기화.
             base.Enter(skillCtrl);
             base.skillCtrl = skillCtrl;
-            base.skillCtrl.mgr.DecreaseSkillPoint(Manager.SkillType.EP, iDecEP);
+            base.skillCtrl.mgr.DecreaseSkillPoint(Manager.SkillType.EP, iDecPoint);
             base.bUsing = true;                
             base.CoolTimeCoroutine = CoolTimer(coolTime);
 
@@ -97,16 +97,12 @@ namespace T2.Skill
             moveDir = base.skillCtrl.trPlayerModel.forward;
             base.skillCtrl.moveCtrl.SetMoveState(T2.MoveCtrl.MoveState.Stop);
 
-            base.skillCtrl.animator.SetBool("bEvasion", true);
+            base.skillCtrl.animator.SetTrigger("tEvasion");
 
             //blinkTime동안 매 프레임마다 반복.
             float timeConut = 0;            
             while (time > timeConut)
             {
-                if(timeConut > time * 0.8f)
-                {
-                    base.skillCtrl.animator.SetBool("bEvasion", false);
-                }
                 base.skillCtrl.controller.Move(moveDir.normalized * Time.deltaTime * blinkSpeed);
                 yield return new WaitForEndOfFrame();
                 timeConut += Time.deltaTime;
@@ -117,8 +113,7 @@ namespace T2.Skill
             oBlinkEffect.SetActive(false);
             
 
-            //후딜레이가 끝나면 State를 idle상태로 체인지한다.
-            base.skillCtrl.mgr.ChangeState(T2.Manager.State.idle);            
+         
 
             //base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trCamPivot.eulerAngles.y, 0.0f);
             StartCoroutine(AfterDelayTimer(afterDelayTime));
@@ -126,8 +121,8 @@ namespace T2.Skill
         public IEnumerator AfterDelayTimer(float time)
         {
             yield return new WaitForSeconds(time);
-
-            
+            //후딜레이가 끝나면 State를 idle상태로 체인지한다.
+            base.skillCtrl.mgr.ChangeState(T2.Manager.State.idle);
 
             //후딜이 끝나면 bUsing을 정상적으로 false시키고 Exit()한다.
             base.bUsing = false;

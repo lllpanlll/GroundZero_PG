@@ -42,7 +42,6 @@ namespace T2
         //private bool bOppositRotation = false;  //반대방향 회전 여부.
         #endregion
 
-
         private float fOrizinFOV;
         public float fSprintFOV = 80.0f;
         public float fFOV_ZoomSpeed = 3.0f;
@@ -67,7 +66,6 @@ namespace T2
             moveState = MoveState.Stop;
 
             oSprintEffect.SetActive(true);
-            //oSprintEffect.GetComponentInChildren<ParticleSystem>().playOnAwake = false;
         }
 
         void OnEnable()
@@ -191,6 +189,17 @@ namespace T2
 
             #endregion
 
+            //카메라 줌 인,아웃
+            if (moveState == MoveState.Sprint)
+            {
+                if (fMoveSpeed > 12.0f)
+                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, fSprintFOV, Time.deltaTime * fFOV_ZoomSpeed);
+            }
+            else
+            {
+                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, fOrizinFOV, Time.deltaTime * fFOV_ZoomSpeed);
+            }
+
             if (mgr.GetCtrlPossible().Run == true)
             {
                 //이동 처리
@@ -248,18 +257,6 @@ namespace T2
                     fSprintRot = Mathf.LerpAngle(fSprintRot, fTargetRot, Time.deltaTime * fCharRotSpeed + (fCharRotSpeed * 0.01f));
                     trPlayerModel.rotation = Quaternion.Euler(0.0f, fSprintRot, 0.0f);
                     //}
-
-                    //카메라 줌 인,아웃
-                    if (moveState == MoveState.Sprint)
-                    {
-                        if (fMoveSpeed > 12.0f)
-                            mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, fSprintFOV, Time.deltaTime * fFOV_ZoomSpeed);
-                    }
-                    else
-                    {
-                        mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, fOrizinFOV, Time.deltaTime * fFOV_ZoomSpeed);
-                    }
-
 
                     float fAngle = Vector3.Angle(transform.forward, trPlayerModel.forward);
                     if (fAngle > 180.0f)

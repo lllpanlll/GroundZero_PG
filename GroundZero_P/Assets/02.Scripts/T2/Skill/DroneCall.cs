@@ -13,7 +13,7 @@ namespace T2.Skill
 
         //    //private bool bAction;
 
-        //    private int iDecEP = 10;
+        //    private int iDecPoint = 10;
 
         //    //드론 지속 시간
         //    //private bool bLife = false;
@@ -51,7 +51,7 @@ namespace T2.Skill
         //        if (!base.IsCoolTime())
         //        {
         //            if (Input.GetKeyDown(KeyCode.Alpha2) && !base.IsRunning())
-        //                InputCommand(T2.Manager.SkillType.EP, iDecEP);
+        //                InputCommand(T2.Manager.SkillType.EP, iDecPoint);
         //            if (base.IsBeforeDelay())
         //                BeforeActionDelay(beforeDelayTime);
         //            if (base.IsExecute())

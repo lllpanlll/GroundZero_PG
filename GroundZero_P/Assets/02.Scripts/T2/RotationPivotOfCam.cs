@@ -13,7 +13,7 @@ namespace T2
         private Manager mgr;
 
         private float fStartY;
-        private float fClamp = 30.0f;
+        private float fClamp = 40.0f;
 
         private Quaternion rotation = Quaternion.identity;
 
@@ -39,8 +39,7 @@ namespace T2
         }
 
         void Update()
-        {
-            
+        {            
 
             if (mgr.GetCtrlPossible().MouseRot == true)
             {

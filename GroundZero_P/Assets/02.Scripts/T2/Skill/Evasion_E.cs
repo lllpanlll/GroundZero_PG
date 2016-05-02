@@ -29,7 +29,7 @@ namespace T2.Skill
         #endregion
 
         //스킬의 필수 기본 변수들, 나중에 public으로 변환.
-        public int iDecEP = 10;
+        public int iDecPoint = 10;
         public float beforeDelayTime = 0.0f;
         public float afterDelayTime = 0.0f;
         public float coolTime = 0.0f;
@@ -54,7 +54,7 @@ namespace T2.Skill
             //기본 변수 초기화.
             base.Enter(skillCtrl);
             base.skillCtrl = skillCtrl;
-            base.skillCtrl.mgr.DecreaseSkillPoint(Manager.SkillType.EP, iDecEP);
+            base.skillCtrl.mgr.DecreaseSkillPoint(Manager.SkillType.EP, iDecPoint);
             base.bUsing = true;
             base.CoolTimeCoroutine = CoolTimer(coolTime);
 
@@ -101,7 +101,7 @@ namespace T2.Skill
 
 
 
-            base.skillCtrl.animator.SetBool("bEvasion_E", true);
+            base.skillCtrl.animator.SetTrigger("tEvasion_E");
 
             //blinkTime동안 매 프레임마다 반복.
             float timeConut = 0;
@@ -125,7 +125,6 @@ namespace T2.Skill
 
             //후딜레이가 끝나면 State를 idle상태로 체인지한다.
             base.skillCtrl.mgr.ChangeState(T2.Manager.State.idle);
-            base.skillCtrl.animator.SetBool("bEvasion_E", false);
 
             //후딜이 끝나면 bUsing을 정상적으로 false시키고 Exit()한다.
             base.bUsing = false;

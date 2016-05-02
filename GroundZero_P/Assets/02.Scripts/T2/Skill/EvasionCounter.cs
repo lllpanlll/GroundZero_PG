@@ -12,7 +12,7 @@ namespace T2.Skill
 
         //private GameObject oPlayerModel;  //플레이어의 모습을 사라지게 하기 위함
 
-        //private int iDecEP = 10;
+        //private int iDecPoint = 10;
 
         //private float beforeDelayTime = 0.0f;
         //private float afterDelayTime = 0.2f;
@@ -47,7 +47,7 @@ namespace T2.Skill
         //    if (!base.IsCoolTime())
         //    {
         //        if (Input.GetKeyDown(KeyCode.Alpha1) && !base.IsRunning())
-        //            InputCommand(T2.Manager.SkillType.EP, iDecEP);
+        //            InputCommand(T2.Manager.SkillType.EP, iDecPoint);
         //        if (base.IsBeforeDelay())
         //            BeforeActionDelay(beforeDelayTime);
         //        if (base.IsExecute())

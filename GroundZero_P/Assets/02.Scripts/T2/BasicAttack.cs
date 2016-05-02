@@ -14,9 +14,9 @@ namespace T2
         private GameObject oFlare;
         private ObjectPool flarePool = new ObjectPool();
 
-        public MeshRenderer muzzleFlash;
+        public MeshRenderer[] muzzleFlash;
 
-        public Transform trFire;
+        public Transform[] trFire;
 
         private T2.MoveCtrl moveCtrl;  //이동상태 변경을 위함.
         private T2.Manager mgr;
@@ -35,17 +35,15 @@ namespace T2
         private float fRpmTime;
         private float fRpmTimer = 0.0f;
 
-        //RapidMode 타이머
-        private bool bRapidMode = false;
-        private float fRapidTime = 2.0f;
-        private float fRapidTimer = 0.0f;
-
         //카메라 줌인
         private Camera cam;
         private FollowCam followCam;
         private float fCamDist = 0.0f;
+        private float fCamFOV;
         private float fOrizinDist;
         public float fTargetDist = 1.0f;
+        private float fOrizinFOV;
+        public float fTargetFOV = 70.0f;
         public float fZoomSpeed = 20.0f;
 
         private int iMaxMagazine;
@@ -59,38 +57,34 @@ namespace T2
 
             moveCtrl = GetComponent<T2.MoveCtrl>();
             mgr = GetComponent<T2.Manager>();
-            trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
-            cam = Camera.main;
+            trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;            
             animator = GetComponentInChildren<Animator>();
-            followCam = cam.GetComponent<FollowCam>();
+
+            cam = Camera.main;
+            followCam = cam.GetComponent<FollowCam>();            
             fOrizinDist = followCam.GetDist();
+            fOrizinFOV = cam.fieldOfView;
             fCamDist = followCam.GetDist();
 
             bulletPool.CreatePool(oBulletPref, iMaxMagazine);
             flarePool.CreatePool(oFlarePref, iMaxMagazine * 2);
 
-            muzzleFlash.enabled = false;
+            muzzleFlash[0].enabled = false;
+            muzzleFlash[1].enabled = false;
 
         }
 
         void Update()
         {
-            //if (mgr.GetState() != Manager.State.attack)
-            //{
-            //    fCamDist = Mathf.Lerp(fCamDist, fOrizinDist, Time.deltaTime * fZoomSpeed);
-            //    followCam.SetDist(fCamDist);
-            //}
-
-
             if (mgr.GetCtrlPossible().Attack == false)
             {
                 bFire = false;
                 attackTimer = 0.0f;
                 return;
             }
-            else if (Input.GetMouseButton(0))
-            {
 
+            if (Input.GetMouseButton(0))
+            {
 
 
                 //첫 공격시에는 바로 공격 가능하고, 그 다음부터 연사 속도 적용.
@@ -117,7 +111,6 @@ namespace T2
             if (Input.GetMouseButtonUp(0))
             {
                 fRpmTime = 0.0f;
-                //bFire = false;
                 bFirstShot = true;
                 attackTimer = 0.0f;
             }
@@ -126,16 +119,15 @@ namespace T2
             if (bFire)
             {
                 mgr.ChangeState(T2.Manager.State.attack);
+
+
                 if (attackTimer > attackTime)
                 {
+                    //어택타임이 지난 공격종료 시점.
                     bFire = false;
                     animator.SetBool("bAttack", false);
                     attackTimer = 0.0f;
-
-                    //어택타임이 지난 공격종료 시점.
-                    bRapidMode = false;
-                    fRapidTimer = 0.0f;
-
+                    
                     fRpmTimer = 0.0f;
                     fRpmTime = fRpmSpeed;
 
@@ -146,53 +138,27 @@ namespace T2
                     attackTimer += Time.deltaTime;
                 }
 
+                //플레이어가 정지상태일 때,
                 if (moveCtrl.GetMoveState() == MoveCtrl.MoveState.Stop)
                 {
-                    //플레이어를 정면을 바라보게 한다.
-                    float CamRot = Camera.main.transform.eulerAngles.y;
-                    transform.rotation = Quaternion.Euler(0.0f, CamRot, 0.0f);
-                    trPlayerModel.rotation = transform.rotation;
+                    //플레이어 모델을 정면을 바라보게 한다.
+                    trPlayerModel.rotation = Quaternion.Euler(0.0f, Camera.main.transform.eulerAngles.y, 0.0f);
                 }
 
                 //카메라 줌인
                 fCamDist = Mathf.Lerp(fCamDist, fTargetDist, Time.deltaTime * fZoomSpeed);
-                followCam.SetDist(fCamDist);                
+                followCam.SetDist(fCamDist);
+                fCamFOV = Mathf.Lerp(fCamFOV, fTargetFOV, Time.deltaTime * fZoomSpeed);
+                cam.fieldOfView = fCamFOV;                
             }
             else
             {
                 //카메라 줌아웃
                 fCamDist = Mathf.Lerp(fCamDist, fOrizinDist, Time.deltaTime * fZoomSpeed * 0.2f);
                 followCam.SetDist(fCamDist);
+                fCamFOV = Mathf.Lerp(fCamFOV, fOrizinFOV, Time.deltaTime * fZoomSpeed * 0.2f);
+                cam.fieldOfView = fCamFOV;
             }
-
-
-
-            #region<RapidMode>
-            ////캐릭터가 멈춰있고, 기본사격중일 경우.
-            //if (moveCtrl.GetMoveState() == T2.MoveCtrl.MoveState.Stop && bFire)
-            //{
-            //    if (fRapidTimer > fRapidTime)
-            //    {
-            //        print("rapid");
-            //        bRapidMode = true;
-            //        fRapidTimer = 0.0f;
-            //    }
-            //    else
-            //    {
-            //        fRapidTimer += Time.deltaTime;
-            //    }
-            //}
-            ////캐릭터가 stop상태가 아니게 되면 다시 일반 모드로 돌아가도록.
-            //else
-            //    bRapidMode = false;
-
-            //if (bRapidMode)
-            //{
-            //    fRpmSpeed = 0.05f;
-            //}
-            //else
-            //    fRpmSpeed = 0.4f;
-            #endregion
         }
 
 
@@ -228,7 +194,8 @@ namespace T2
                                       Random.Range(fTarget.z - fAccuracy, fTarget.z + fAccuracy));
 
                 //레이에 부딪힌 오브젝트가 있으면 부딪힌 위치를 바라보도록 방향 조정.
-                trFire.LookAt(fTarget);
+                trFire[0].LookAt(fTarget);
+                trFire[1].LookAt(fTarget);
 
 
                 //aimRayHit.point가 사정거리 이내에 위치할 경우.
@@ -246,31 +213,34 @@ namespace T2
                 fTarget = new Vector3(fTarget.x,
                                       Random.Range(fTarget.y - fAccuracy, fTarget.y + fAccuracy),
                                       Random.Range(fTarget.z - fAccuracy, fTarget.z + fAccuracy));
-                //trFire.GetComponent<TargetLookAt>().TargetLookat(fTarget);
-                trFire.LookAt(fTarget);
+                trFire[0].LookAt(fTarget);
+                trFire[1].LookAt(fTarget);
             }
 
             //투사체 오브젝트 풀 생성.    
             oBullet = bulletPool.UseObject();
-            oBullet.transform.position = trFire.position;
-            oBullet.transform.rotation = trFire.rotation;
+            oBullet.transform.position = trFire[0].position;
+            oBullet.transform.rotation = trFire[0].rotation;
 
             //머즐플래시
-            this.StartCoroutine(ShowMuzzleFlash());
+            this.StartCoroutine(ShowMuzzleFlash(0));
+
+            //왼손 사격
+            StartCoroutine(LeftGunShot());
 
         }
 
         public void TargetFire(Quaternion rot)
         {
-            trFire.rotation = rot;
+            trFire[0].rotation = rot;
 
             //투사체 오브젝트 풀 생성.    
             oBullet = bulletPool.UseObject();
-            oBullet.transform.position = trFire.position;
-            oBullet.transform.rotation = trFire.rotation;
+            oBullet.transform.position = trFire[0].position;
+            oBullet.transform.rotation = trFire[0].rotation;
 
             //머즐플래시
-            this.StartCoroutine(ShowMuzzleFlash());
+            this.StartCoroutine(ShowMuzzleFlash(0));
         }
 
         public bool isFire() { return bFire; }
@@ -281,19 +251,34 @@ namespace T2
             oFlare.transform.position = pos;
         }
 
-        IEnumerator ShowMuzzleFlash()
+        IEnumerator LeftGunShot()
         {
+            yield return new WaitForSeconds(0.05f);
+
+            //투사체 오브젝트 풀 생성.    
+            oBullet = bulletPool.UseObject();
+            oBullet.transform.position = trFire[1].position;
+            oBullet.transform.rotation = trFire[1].rotation;
+
+            //머즐플래시
+            this.StartCoroutine(ShowMuzzleFlash(1));
+        }
+
+        IEnumerator ShowMuzzleFlash(int i)
+        {
+            //i == 0 이면 오른손,
+            //i == 1 이면 왼손.
             float scale = Random.Range(1.0f, 1.5f);
-            muzzleFlash.transform.localScale = Vector3.one * scale;
+            muzzleFlash[i].transform.localScale = Vector3.one * scale;
 
             Quaternion rot = Quaternion.Euler(0, 0, Random.Range(0, 360));
-            muzzleFlash.transform.localRotation = rot;
+            muzzleFlash[i].transform.localRotation = rot;
 
-            muzzleFlash.enabled = true;
+            muzzleFlash[i].enabled = true;
 
             yield return new WaitForSeconds(Random.Range(0.05f, 0.008f));
 
-            muzzleFlash.enabled = false;
+            muzzleFlash[i].enabled = false;
         }
     }
 }

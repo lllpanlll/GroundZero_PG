@@ -59,7 +59,7 @@ namespace T2.Skill
                     if (moveFlag.forward || moveFlag.backward || moveFlag.right || moveFlag.left)
                     {
                         //일반회피
-                        if (mgr.GetEP() > T2.Skill.Evasion.GetInstance().iDecEP)
+                        if (mgr.GetEP() > T2.Skill.Evasion.GetInstance().iDecPoint)
                             ChangeSkill(T2.Skill.Evasion.GetInstance());
                     }
                     else
@@ -67,9 +67,9 @@ namespace T2.Skill
                         //긴급회피
                         //방향키 입력x
                         //캔슬이 가능한 스킬은 현재 사용중인 스킬이 본인의 스킬인지 체크해야 한다.
-                        if (mgr.PointCheck(Manager.SkillType.EP, T2.Skill.Evasion_E.GetInstance().iDecEP))
+                        if (mgr.PointCheck(Manager.SkillType.EP, T2.Skill.Evasion_E.GetInstance().iDecPoint))
                         {
-                            if (mgr.GetEP() > T2.Skill.Evasion_E.GetInstance().iDecEP)
+                            if (mgr.GetEP() > T2.Skill.Evasion_E.GetInstance().iDecPoint)
                                 ChangeSkill(T2.Skill.Evasion_E.GetInstance());
                         }
                     }
@@ -80,7 +80,7 @@ namespace T2.Skill
                 //SeventhFlow_v1
                 if (Input.GetKeyDown(KeyCode.Q))
                 {
-                    if(mgr.PointCheck(Manager.SkillType.EP, T2.Skill.SeventhFlow.GetInstance().iDecEP))
+                    if(mgr.PointCheck(Manager.SkillType.PP, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
                         ChangeSkill(T2.Skill.SeventhFlow.GetInstance());
                 }
             }
