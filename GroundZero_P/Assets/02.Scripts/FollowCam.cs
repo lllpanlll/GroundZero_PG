@@ -22,6 +22,10 @@ public class FollowCam : MonoBehaviour {
 
     private float fAimOutLerpSpeed = 2.0f;
 
+    float fCamDist;
+    Vector3 vCamPos;
+    float fMouseClamp;
+
     //초기화 변수
     public float fMouseRotSpeed = 200.0f;
 
@@ -44,38 +48,59 @@ public class FollowCam : MonoBehaviour {
 
         vTarget = trTarget.position + (trTarget.forward * 30.0f);
 
+        fCamDist = 0.1f;
     }
 
     void LateUpdate () {
         #region<바닥충돌처리>
         // 카메라 바닥 안뚫,
-        Vector3 vTargetToCamDir = (transform.position - trTarget.transform.position);
-        Ray rTargetToTargetBackward = new Ray(trTarget.position, -trTarget.forward * fDist);
-        //Debug.DrawRay(rTargetToTargetBackward.origin, (vTargetToCamDir.normalized) * fDist, Color.blue);
-        RaycastHit hit;
-        if (Physics.Raycast(rTargetToTargetBackward, out hit) && hit.collider.CompareTag(Tags.Floor))
+        RaycastHit hit = new RaycastHit();
+        Ray rTargetToTargetBackward = new Ray(trTarget.position, -trTarget.forward);
+        //vCamPos = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT);
+        vCamPos = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp);
+        fMouseClamp = vCamPos.y;
+        if (Physics.Linecast(trTarget.position, vCamPos, out hit, 1 << 14))
         {
-                if (hit.distance < fDist)
-                {
-                    if (zoomOutDist > ZOOM_DIST)
-                        zoomOutDist = Mathf.Lerp(zoomOutDist, zoomOutDist * 0.8f, Time.deltaTime * fAimOutLerpSpeed);
-                    else
-                        zoomOutDist = DIST;
-                }
+            print("아아 카메라 튀는거 놀라지 마세요.");
+            Debug.DrawRay(hit.point, hit.normal, Color.magenta);
+            //norm = hit.point + hit.normal;
+            fMouseClamp -= Input.GetAxis("Mouse Y") * fCamDist;
+            fMouseClamp = Mathf.Clamp(fMouseClamp, 0f, 3.4f);
+
+            // 벡터기반 - 벽에 사용
+            //fCamDist = Vector3.Distance(transform.position, hit.point);
+            //fCamDist = Mathf.Clamp(fCamDist, 0.1f, 5f);
+            //transform.position = Vector3.Lerp(transform.position, (hit.point + (hit.normal * fCamDist)), Time.deltaTime * 20f);
+            //print(hit.distance + " || " + fCamDist);
+            vCamPos = new Vector3(hit.point.x + hit.normal.x * fCamDist,
+                fMouseClamp,
+                hit.point.z + hit.normal.z * fCamDist);
+
+
+            // 거리기반 - 땅에 사용 : 자주 충돌되는 부분이라 레이어로 처리하는게 좋아보임.
+            //if (hit.transform.CompareTag("FLOOR"))
+            //{
+            //    zoomOutDist = hit.distance;
+            //    zoomOutDist = Mathf.Clamp(zoomOutDist, ZOOM_DIST, hit.distance * 0.8f);
+            //}
         }
         else
         {
-            zoomOutDist = DIST;
+            //fCamDist = 0;
+            zoomOutDist = fDist;
+            //transform.position = Vector3.Lerp(transform.position, trTarget.position - (trTarget.forward * fDist) + (transform.right * RIGHT), Time.deltaTime * 20);
         }
+        //DIST = Mathf.Lerp(DIST, zoomOutDist, Time.deltaTime * fAimOutLerpSpeed); //check
         #endregion
 
-		oPlayerLight.transform.LookAt (trTarget);
+        oPlayerLight.transform.LookAt (trTarget);
 
         //transform.position = Vector3.Lerp(transform.position, trTarget.position - (trTarget.forward * fDist) + (trTarget.right * RIGHT),
         //    Time.deltaTime * DAMP_TRACE);
 
-
-        transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp);
+        //transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp);
+        //transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 20); // 러프 버전 O
+        transform.position = vCamPos; // 러프 버전 X
         transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
 
 
