@@ -1,8 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
+using RootMotion.FinalIK;
 
 public class FollowCam : MonoBehaviour {
     private Transform trTarget;
+    private LookAtIK lookAt;
+    private Transform trPlayerModel;
+    private T2.MoveCtrl moveCtrl;
 
     public float DIST = 3.5f;
     public float ZOOM_DIST = 1.0f;    
@@ -23,12 +27,23 @@ public class FollowCam : MonoBehaviour {
 
 	public GameObject	oPlayerLight;
 
+    private Vector3 vTarget = Vector3.zero;
+    private float fTargetRotSpeed = 10.0f;
+    private bool bForwardTarget = true;
+
+
     void Start () {
         fDist = DIST;
         zoomOutDist = DIST;
         fRight = RIGHT;
         fDampTrace = DAMP_TRACE;
         trTarget = GameObject.FindGameObjectWithTag(Tags.CameraTarget).GetComponent<Transform>();
+        trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
+        lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
+        moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
+
+        vTarget = trTarget.position + (trTarget.forward * 30.0f);
+
     }
 
     void LateUpdate () {
@@ -59,10 +74,29 @@ public class FollowCam : MonoBehaviour {
         //transform.position = Vector3.Lerp(transform.position, trTarget.position - (trTarget.forward * fDist) + (trTarget.right * RIGHT),
         //    Time.deltaTime * DAMP_TRACE);
 
+
         transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp);
         transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
 
 
+        //LookIK
+        //카메라가 캐릭터 후방에 있다면, 타겟 위치를 에임방향으로.
+        //카메라가 캐릭터 전방에 있다면, 타겟 위치를 카메라위치로.        
+        float fLookAngle = Vector3.Angle(trPlayerModel.forward, transform.forward);
+        if (fLookAngle > 90.0f && moveCtrl.GetMoveState() == T2.MoveCtrl.MoveState.Stop)
+            vTarget = transform.position;
+        else
+            vTarget = trTarget.position + (trTarget.forward * 30.0f);
+
+        if (moveCtrl.GetMoveFlag().backward)
+        {
+            lookAt.enabled = false;
+        }
+        else
+        {
+            lookAt.enabled = true;
+            lookAt.solver.IKPosition = Vector3.Lerp(lookAt.solver.IKPosition, vTarget, Time.deltaTime * fTargetRotSpeed);
+        }
     }
 
     public void SetDampTrace(float f) { fDampTrace = f; }

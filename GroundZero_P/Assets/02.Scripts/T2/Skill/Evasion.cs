@@ -30,15 +30,15 @@ namespace T2.Skill
         
         //스킬의 필수 기본 변수들, 나중에 public으로 변환.
         public int iDecEP = 10;
-        private float beforeDelayTime = 0.0f;
-        private float afterDelayTime = 0.2f;
-        private float coolTime = 0.5f;
+        public float beforeDelayTime = 0.0f;
+        public float afterDelayTime = 0.0f;
+        public float coolTime = 0.0f;
         //blinkTime이 이 스킬의 actionTime.
-        private float blinkTime = 0.8f;
+        public float blinkTime = 0.8f;
 
         //각 스킬의 고유 변수들
-        public GameObject oBlinkEffect;
-        private float blinkDist = 8.0f;
+        public float blinkDist = 8.0f;
+        public GameObject oBlinkEffect;        
         private float blinkSpeed;
         Vector3 moveDir = Vector3.zero;
 

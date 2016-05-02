@@ -8,10 +8,12 @@ namespace T2
         private float fAngleX, fAngleY;
         private float fRotSpeed;
         private MoveCtrl moveCtrl;
+        private BasicAttack basicAttack;
+        private Animator animator;
         private Manager mgr;
 
         private float fStartY;
-        private float fClamp = 40.0f;
+        private float fClamp = 30.0f;
 
         private Quaternion rotation = Quaternion.identity;
 
@@ -20,6 +22,8 @@ namespace T2
             moveCtrl = GetComponentInParent<MoveCtrl>();
             mgr = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<Manager>();
             fRotSpeed = Camera.main.GetComponent<FollowCam>().fMouseRotSpeed;
+            basicAttack = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent< BasicAttack>();
+            animator = GameObject.FindGameObjectWithTag(Tags.Player).GetComponentInChildren< Animator>();
             fAngleY = transform.eulerAngles.x;
             fAngleX = transform.eulerAngles.y;
 
@@ -36,6 +40,7 @@ namespace T2
 
         void Update()
         {
+            
 
             if (mgr.GetCtrlPossible().MouseRot == true)
             {
@@ -60,6 +65,7 @@ namespace T2
 
             }
 
+            animator.SetFloat("fAimAngle", fAngleY);
             Debug.DrawRay(transform.position, transform.forward);
         }
     }

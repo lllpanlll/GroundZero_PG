@@ -21,15 +21,16 @@ namespace T2.Skill
         #endregion
         //스킬의 필수 기본 변수들, 나중에 public으로 변환.
         public int iDecEP = 10;
-        private float beforeDelayTime = 0.0f;
-        private float afterDelayTime = 0.0f;
-        private float coolTime = 0.0f;
+        public float beforeDelayTime = 0.0f;
+        public float afterDelayTime = 0.0f;
+        public float coolTime = 0.0f;
         //blinkTime이 이 스킬의 actionTime.
-        private float blinkTime = 0.15f;
+        public float blinkTime = 0.15f;
         //============================================
         //각 스킬의 고유 변수들        
-        private float blinkDist = 12.0f;
-        private float fPuseTime = 0.07f;
+        public float blinkDist = 12.0f;
+        public float fPuseTime = 0.07f;
+        //사격거리
         private float fReach = 100.0f;
         private float blinkSpeed;   
         public Transform trFire;
@@ -47,7 +48,7 @@ namespace T2.Skill
         private GameObject oAfterModel;
         private ObjectPool afterModelPool = new ObjectPool();
         //한번 이동 당 잔상 출력 갯수
-        private int afterImageMax = 5;
+        public int afterImageMax = 5;
         private int afterImageCount = 0;
 
         private Vector3 vFireTargetPos = Vector3.zero;

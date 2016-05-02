@@ -70,6 +70,7 @@ namespace T2
             flarePool.CreatePool(oFlarePref, iMaxMagazine * 2);
 
             muzzleFlash.enabled = false;
+
         }
 
         void Update()
@@ -79,6 +80,7 @@ namespace T2
             //    fCamDist = Mathf.Lerp(fCamDist, fOrizinDist, Time.deltaTime * fZoomSpeed);
             //    followCam.SetDist(fCamDist);
             //}
+
 
             if (mgr.GetCtrlPossible().Attack == false)
             {
@@ -144,14 +146,17 @@ namespace T2
                     attackTimer += Time.deltaTime;
                 }
 
-                //플레이어를 정면을 바라보게 한다.
-                float CamRot = Camera.main.transform.eulerAngles.y;
-                transform.rotation = Quaternion.Euler(0.0f, CamRot, 0.0f);
-                trPlayerModel.rotation = transform.rotation;
+                if (moveCtrl.GetMoveState() == MoveCtrl.MoveState.Stop)
+                {
+                    //플레이어를 정면을 바라보게 한다.
+                    float CamRot = Camera.main.transform.eulerAngles.y;
+                    transform.rotation = Quaternion.Euler(0.0f, CamRot, 0.0f);
+                    trPlayerModel.rotation = transform.rotation;
+                }
 
                 //카메라 줌인
                 fCamDist = Mathf.Lerp(fCamDist, fTargetDist, Time.deltaTime * fZoomSpeed);
-                followCam.SetDist(fCamDist);
+                followCam.SetDist(fCamDist);                
             }
             else
             {

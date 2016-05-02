@@ -14,6 +14,7 @@ namespace T2
         private T2.Manager mgr;
         private Transform trPlayerModel;
         private CharacterController controller;
+        private Animator animator;
 
         //실제 사용 변수
         private float fMoveSpeed;
@@ -59,6 +60,7 @@ namespace T2
             mgr = GetComponent<T2.Manager>();
             trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<Transform>();
             controller = GetComponent<CharacterController>();
+            animator = GetComponentInChildren<Animator>();
             mainCamera = Camera.main;
             fOrizinFOV = mainCamera.fieldOfView;
 
@@ -258,6 +260,12 @@ namespace T2
                         mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, fOrizinFOV, Time.deltaTime * fFOV_ZoomSpeed);
                     }
 
+
+                    float fAngle = Vector3.Angle(transform.forward, trPlayerModel.forward);
+                    if (fAngle > 180.0f)
+                        fAngle -= 180.0f;
+                    animator.SetFloat("fAngle", fAngle);
+
                     fMoveSpeed = Mathf.Lerp(fMoveSpeed, fMaxMoveSpeed, Time.deltaTime * fMoveSpeedDamp);
 
                     moveDir = transform.TransformDirection(moveDir);
@@ -266,6 +274,7 @@ namespace T2
                 //정지 처리
                 else
                 {
+                    animator.SetFloat("fAngle", 0.0f);
                     //GetAxis의 수치가 떨어지는 시간이 존재하기 때문에 캐릭터를 곧바로 정지시키기 위해 Vector3.zero로 초기화한다.                
                     moveState = MoveState.Stop;
                 }
