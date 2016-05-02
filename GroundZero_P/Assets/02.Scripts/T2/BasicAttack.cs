@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using RootMotion.FinalIK;
 
 namespace T2
 {
@@ -120,7 +121,6 @@ namespace T2
             {
                 mgr.ChangeState(T2.Manager.State.attack);
 
-
                 if (attackTimer > attackTime)
                 {
                     //어택타임이 지난 공격종료 시점.
@@ -149,7 +149,7 @@ namespace T2
                 fCamDist = Mathf.Lerp(fCamDist, fTargetDist, Time.deltaTime * fZoomSpeed);
                 followCam.SetDist(fCamDist);
                 fCamFOV = Mathf.Lerp(fCamFOV, fTargetFOV, Time.deltaTime * fZoomSpeed);
-                cam.fieldOfView = fCamFOV;                
+                cam.fieldOfView = fCamFOV;          
             }
             else
             {
@@ -230,9 +230,9 @@ namespace T2
 
         }
 
-        public void TargetFire(Quaternion rot)
+        public void TargetFire(Vector3 vTarget)
         {
-            trFire[0].rotation = rot;
+            trFire[0].LookAt(vTarget);
 
             //투사체 오브젝트 풀 생성.    
             oBullet = bulletPool.UseObject();

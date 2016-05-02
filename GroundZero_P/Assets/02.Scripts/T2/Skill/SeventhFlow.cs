@@ -20,6 +20,7 @@ namespace T2.Skill
         }
         #endregion
         //스킬의 필수 기본 변수들, 나중에 public으로 변환.
+        public Manager.SkillType PointType;
         public int iDecPoint = 10;
         public float beforeDelayTime = 0.0f;
         public float afterDelayTime = 0.0f;
@@ -33,7 +34,6 @@ namespace T2.Skill
         //사격거리
         private float fReach = 100.0f;
         private float blinkSpeed;   
-        public Transform trFire;
         Vector3 moveDir = Vector3.zero;
         
         private float[] moveFlow;
@@ -59,7 +59,7 @@ namespace T2.Skill
         {
             blinkSpeed = blinkDist / blinkTime;
             
-            afterModelPool.CreatePool(oAfterModelPref, 20);
+            afterModelPool.CreatePool(oAfterModelPref, 50);
 
             moveFlow = new float[6];
             moveFlow[0] = 195.0f;
@@ -76,7 +76,7 @@ namespace T2.Skill
             //기본 변수 초기화.
             base.Enter(skillCtrl);
             base.skillCtrl = skillCtrl;
-            base.skillCtrl.mgr.DecreaseSkillPoint(Manager.SkillType.PP, iDecPoint);
+            base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
             base.bUsing = true;
             base.CoolTimeCoroutine = CoolTimer(coolTime);           
             fOrizinFOV = base.skillCtrl.cam.fieldOfView;           
@@ -227,10 +227,7 @@ namespace T2.Skill
                 {
                     base.skillCtrl.cam.fieldOfView =
                         Mathf.Lerp(base.skillCtrl.cam.fieldOfView, fOrizinFOV, Time.deltaTime * fZoomSpeed * 0.3f);
-
-                }
-
-                
+                }                
 
                 yield return new WaitForEndOfFrame();
 
@@ -243,8 +240,7 @@ namespace T2.Skill
         IEnumerator puseTime(float time)
         {
             //모델과 카메라 방향을 타겟 위치로 회전시킨다.
-            base.skillCtrl.trPlayerModel.LookAt(vFireTargetPos);            
-            trFire.LookAt(vFireTargetPos);
+            base.skillCtrl.trPlayerModel.LookAt(vFireTargetPos);
 
             
             base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trPlayerModel.eulerAngles.y, 0.0f);
@@ -256,7 +252,7 @@ namespace T2.Skill
             base.skillCtrl.animator.Play(iSprintHash);
 
             //총알을 발사하고, 다음 이동방향 각도를 위해 iFlow를 증가시킨다.
-            base.skillCtrl.basicAttack.TargetFire(trFire.rotation);
+            base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
             iFlow++;
 
             yield return new WaitForSeconds(time);

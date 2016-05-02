@@ -50,7 +50,7 @@ namespace T2
         //그로기 상태 변수
         bool bGroggy;
         float groggyTimer = 0.0f, groggyTime = 2.0f;
-
+        
         void Awake()
         {
             fMoveSpeed = T2.Stat.MAX_RUN_MOVE;
@@ -259,9 +259,20 @@ namespace T2
                     //}
 
                     float fAngle = Vector3.Angle(transform.forward, trPlayerModel.forward);
-                    if (fAngle > 180.0f)
-                        fAngle -= 180.0f;
-                    animator.SetFloat("fAngle", fAngle);
+
+                    //if (Vector3.Cross(transform.forward, trPlayerModel.forward).y < -0.1f)
+                    //    fAngle -= 180.0f;
+                    //print(fAngle);
+
+                    float test = transform.eulerAngles.y - trPlayerModel.eulerAngles.y;
+                    if (test < 0.0f)
+                        test += 360.0f;
+                    print(test);
+
+
+                    animator.SetFloat("fAngle", test);
+
+
 
                     fMoveSpeed = Mathf.Lerp(fMoveSpeed, fMaxMoveSpeed, Time.deltaTime * fMoveSpeedDamp);
 
