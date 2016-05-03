@@ -12,17 +12,17 @@ public class M_EnergyEmission : M_Skill
 
     #endregion
 
-    public GameObject energyEmission;                                           //바디 프레스 장판 콜리더
+    public GameObject energyEmission;                                               //바디 프레스 장판 콜리더
 
-    public Vector3 energyEmissionMinScale = new Vector3(12.0f, 1.0f, 12.0f);       //바디 프레스 장판 콜리더 크기
-    public Vector3 energyEmissionMaxScale = new Vector3(40.0f, 7.0f, 40.0f);       //바디 프레스 장판 콜리더 크기
+    public Vector3 energyEmissionMinScale = new Vector3(12.0f, 1.0f, 12.0f);        //바디 프레스 장판 콜리더 크기
+    public Vector3 energyEmissionMaxScale = new Vector3(40.0f, 7.0f, 40.0f);        //바디 프레스 장판 콜리더 크기
 
 
 
     //최초 스킬 초기화
     public override void InitSkill()
     {
-        skillStatus.SkillCode = M_SkillCoad.BodyPress;
+        skillStatus.SkillCode = M_SkillCoad.EnergyEmission;
         
         energyEmission.SetActive(false);
     }
@@ -38,7 +38,7 @@ public class M_EnergyEmission : M_Skill
         
         m_Core.IsDoingOther = true;                                             //행동 시작
 
-        Debug.Log("EnergyEmission Start");
+        //Debug.Log("EnergyEmission Start");
 
         m_Core.Animator.SetTrigger("BodyPress");                                //애니메이션 실행
 
@@ -46,7 +46,7 @@ public class M_EnergyEmission : M_Skill
 
         energyEmission.SetActive(true);                                      //에너지 활성화
         
-        Debug.Log("EnergyEmission Active Start");
+        //Debug.Log("EnergyEmission Active Start");
 
         //스킬 프로퍼티스 설정
         energyEmission.GetComponentInChildren<M_AttackCtrl>().SetAttackProperty(skillStatus.damage, false);
@@ -60,13 +60,13 @@ public class M_EnergyEmission : M_Skill
         }
         yield return new WaitForSeconds(0.08f);
 
-        Debug.Log("EnergyEmission Active End");
+        //.Log("EnergyEmission Active End");
 
         energyEmission.SetActive(false);                                     //에너지 비활성화
 
         yield return new WaitForSeconds(skillStatus.AfterDelayTime);
 
-        Debug.Log("EnergyEmission Delay End");
+        //Debug.Log("EnergyEmission Delay End");
 
         m_Core.IsDoingOther = false;                                            //행동 종료 
     }

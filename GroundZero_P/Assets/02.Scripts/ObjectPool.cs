@@ -6,6 +6,7 @@ public class ObjectPool : MonoBehaviour{
 
     GameObject[] objectPool;
     int objectNum;
+    public int ObjectNum { get{ return objectNum; } }
 
     public void CreatePool(GameObject original, int num)
     {
@@ -57,6 +58,18 @@ public class ObjectPool : MonoBehaviour{
             }
         }
     }
+
+    public GameObject DetectiveAllObject(int Index)
+    {
+        if (Index > objectNum && Index < 0)
+            return null;
+
+        if (objectPool[Index].activeSelf == false)
+            return null;
+
+        return objectPool[Index];
+    }
+
 
     public void AllDeActiveObject()
     {

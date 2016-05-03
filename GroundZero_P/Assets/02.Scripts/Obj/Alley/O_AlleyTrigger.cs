@@ -36,8 +36,6 @@ public class O_AlleyTrigger : MonoBehaviour
     //골목 진입
     void OnTriggerEnter(Collider coll)
     {
-        //Debug.Log("Trigger Enter " + coll.gameObject.tag);
-
         if (coll.gameObject.tag.Equals(Tags.Player))                //트리거에 플레이어 진입 시
         {
             if (m_Core.monState.Equals(M_TopState.Attack))          //몬스터가 공격 상태라면 (플레이어를 인식하고 있다면)
@@ -65,8 +63,6 @@ public class O_AlleyTrigger : MonoBehaviour
     //골목 이탈
     void OnTriggerExit(Collider coll)
     {
-        //Debug.Log("Trigger Exit " + coll.gameObject.tag);
-
         if (coll.gameObject.tag.Equals(Tags.Player))                //트리거에 플레이어 이탈 시
         {
             if (m_Core.monState.Equals(M_TopState.Alley))           //몬스터가 골목 상태라면

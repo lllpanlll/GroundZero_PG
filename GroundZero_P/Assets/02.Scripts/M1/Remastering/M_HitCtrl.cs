@@ -47,7 +47,7 @@ public class M_HitCtrl : MonoBehaviour
         
         if (pRigid && (!m_Core.IsRigid))                        //현재 공격이 경직이고 몬스터가 이미 경직상태인 것이 아니라면
         {
-            m_Core.RigidMon();                                  //경직 적용
+            m_Core.RigidMon();                                  //경직 적용  
         }
 
 

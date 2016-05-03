@@ -10,8 +10,8 @@ using System.Collections;
 
 
 
-public class M_FSMState : MonoBehaviour{
-
+public class M_FSMState : MonoBehaviour
+{
     protected M_AICore m_Core;
 
     protected M_TopState topState;
@@ -85,7 +85,11 @@ public class M_FSMState : MonoBehaviour{
     {
         m_Core.IsDoingOther = true;
 
+        //Debug.Log("Delay Start Rigid");
+
         yield return new WaitForSeconds(rigidTime);
+
+        //Debug.Log("Delay End Rigid");
 
         m_Core.IsDoingOther = false;
         m_Core.IsRigid = false;

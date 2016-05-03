@@ -16,10 +16,12 @@ public enum M_SkillCoad
     Breath,
     Magic_1,
     Magic_2,
+    Magic_3,
     JumpAttack,
     AlleyForeFootPress,
     AlleyBreath_1,
-    AlleyBreath_2
+    AlleyBreath_2,
+    EnergyEmission
 }
 
 
