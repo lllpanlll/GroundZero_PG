@@ -87,7 +87,6 @@ public class UI_Stat : MonoBehaviour
         if (skillSeventhFlow.bUsing)
         {
             coolTimerSeventhFlow = sliderSkill[1].maxValue;
-            timerSkill[1] = 0;
         }
         SkillCooltimeComplite(imageSkill2, 1);
     }
@@ -99,11 +98,11 @@ public class UI_Stat : MonoBehaviour
         if (sliderSkill[_num].value.Equals(0))
         {
             timerSkill[_num] += Time.deltaTime;
-            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.01f)
+            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f)
             {
                 _imageSkill[2].color = Color.white;
             }
-            else if (timerSkill[_num] < 0.01f)
+            else if (timerSkill[_num] < 0.1f)
             {
                 fAlphaSkill[_num] = 1;
             }
@@ -114,7 +113,8 @@ public class UI_Stat : MonoBehaviour
         }
         else if(sliderSkill[_num].value > sliderSkill[_num].maxValue - 1)
         {
-            timerSkill[_num] = 10;
+            timerSkill[_num] = 0;
+            _imageSkill[2].color = Color.clear;
         }
         _imageSkill[3].color = new Color(1, 1, 1, FadeInOut(ref fAlphaSkill[_num], -10));
     }
