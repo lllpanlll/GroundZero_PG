@@ -35,6 +35,14 @@ public class FollowCam : MonoBehaviour {
     private float fTargetRotSpeed = 50.0f;
     private bool bForwardTarget = true;
 
+    //Dist, FOV 변경
+    private Camera cam;
+    private bool bFOV, bDist;
+    private float fTargetFOV, fOrizinFOV;
+    private float fDampTraceFOV;
+    private float fTargetDist, fOrizinDist;
+    private float fDampTraceDist;
+
 
     void Start () {
         fDist = DIST;
@@ -47,7 +55,9 @@ public class FollowCam : MonoBehaviour {
         lookAt.enabled = false;
 
         moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
-        
+        cam = Camera.main;
+        fOrizinFOV = cam.fieldOfView;
+        fOrizinDist = DIST;
         vTarget = trTarget.position + (trTarget.forward * 30.0f);
 
         fCamDist = 0.1f;
@@ -128,6 +138,26 @@ public class FollowCam : MonoBehaviour {
         //    //lookAt.solver.IKPosition = Vector3.Lerp(lookAt.solver.IKPosition, vTarget, Time.deltaTime * fTargetRotSpeed);           
         //}
         //lookAt.solver.IKPosition = vTarget;
+
+        if(bFOV)
+        {
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, fTargetFOV, Time.deltaTime * fDampTraceFOV);
+
+            if(cam.fieldOfView <= fTargetFOV + 0.01f && cam.fieldOfView >= fTargetFOV - 0.01f)
+            {
+                bFOV = false;
+            }
+        }
+
+        if(bDist)
+        {
+            DIST = Mathf.Lerp(DIST, fTargetDist, Time.deltaTime * fDampTraceDist);
+            if (DIST <= fTargetDist + 0.01f && DIST >= fTargetDist - 0.01f)
+            {
+                bDist = false;
+            }
+        }
+
     }
 
     public void SetDampTrace(float f) { fDampTrace = f; }
@@ -138,4 +168,19 @@ public class FollowCam : MonoBehaviour {
     public float GetRight() { return RIGHT; }
     public void SetUp(float f) { fUp = f; }
     public float GetUp() { return fUp; }
+
+    public void ChangeFOV(float targetFOV, float Damp)
+    {
+        bFOV = true;
+        this.fTargetFOV = targetFOV;
+        this.fDampTraceFOV = Damp;
+    }
+
+    public void ChangeDist(float targetDist, float Damp)
+    {
+        bDist = true;
+        this.fTargetDist = targetDist;
+        this.fDampTraceDist = Damp;
+    }
+
 }

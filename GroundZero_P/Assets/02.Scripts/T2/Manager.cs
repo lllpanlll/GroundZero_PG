@@ -89,10 +89,11 @@ namespace T2
         void OnGUI()
         {
             GUI.Label(new Rect(20, 20, 200, 25), "State : " + skillCtrl);
+            GUI.Label(new Rect(20, 70, 200, 25), "ap : " + ap + " / " + T2.Stat.MAX_AP);
             GUI.Label(new Rect(20, 90, 200, 25), "ep : " + ep + " / " + T2.Stat.MAX_EP);
             GUI.Label(new Rect(20, 110, 200, 25), "hp : " + hp + " / " + T2.Stat.MAX_HP);
             GUI.Label(new Rect(20, 130, 200, 25), "dp : " + dp + " / " + T2.Stat.MAX_DP);
-            GUI.Label(new Rect(20, 150, 200, 25), "pp : " + pp + " / " + T2.Stat.MAX_PP);
+            GUI.Label(new Rect(20, 150, 200, 25), "pp : " + pp + " / " + T2.Stat.MAX_PP);            
         }
         void Update()
         {

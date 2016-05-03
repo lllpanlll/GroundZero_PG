@@ -11,10 +11,12 @@ namespace T2.Pref
         public float lifeTime = 3.0f;
         
         private T2.BasicAttack basicAttack;
+        private T2.Manager mgr;
 
         void Awake()
         {
             basicAttack = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.BasicAttack>();
+            mgr = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.Manager>();
         }
 
         void OnEnable()
@@ -29,6 +31,8 @@ namespace T2.Pref
                 if (col.collider.gameObject.layer == LayerMask.NameToLayer(Layers.MonsterHitCollider))
                 {
                     col.collider.gameObject.GetComponent<M_HitCtrl> ().OnHitMonster(10, false);
+                    if(mgr.GetPP() < Stat.MAX_PP)
+                        mgr.SetPP(mgr.GetPP() + 1);
                 }
 
             }

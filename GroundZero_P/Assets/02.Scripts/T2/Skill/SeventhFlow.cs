@@ -139,7 +139,9 @@ namespace T2.Skill
                 iFlow = 0;
                 base.skillCtrl.animator.speed = 1.0f;
                 base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, true);
-                //카메라 FOV원위치 시키는 코드 추가.
+
+                //카메라 줌인
+                base.skillCtrl.followCam.ChangeFOV(fOrizinFOV, fZoomSpeed * 0.3f);
             }
 
             base.Exit(skillCtrl);
@@ -148,6 +150,8 @@ namespace T2.Skill
         public IEnumerator BeforeDelayTimer(float time)
         {
             base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, false);
+            //카메라 줌아웃
+            base.skillCtrl.followCam.ChangeFOV(fTargetFOV, fZoomSpeed);
             yield return new WaitForSeconds(time);
             StartAction();
         }
@@ -215,19 +219,7 @@ namespace T2.Skill
                 {
                     bAfterImageOn = true;
                     this.StartCoroutine(AfterImagesDraw());
-                }
-
-                //카메라 줌 인,아웃
-                if (iFlow == 0)
-                {
-                    base.skillCtrl.cam.fieldOfView =
-                        Mathf.Lerp(base.skillCtrl.cam.fieldOfView, fTargetFOV, Time.deltaTime * fZoomSpeed);
-                }
-                else if (iFlow == moveFlow.Length)
-                {
-                    base.skillCtrl.cam.fieldOfView =
-                        Mathf.Lerp(base.skillCtrl.cam.fieldOfView, fOrizinFOV, Time.deltaTime * fZoomSpeed * 0.3f);
-                }                
+                }             
 
                 yield return new WaitForEndOfFrame();
 
@@ -268,6 +260,8 @@ namespace T2.Skill
                 base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, true);
                 //후딜레이 시작.
                 StartCoroutine(AfterDelayTimer(afterDelayTime));
+                //카메라 줌인
+                base.skillCtrl.followCam.ChangeFOV(fOrizinFOV, fZoomSpeed * 0.3f);
             }
         }
 
