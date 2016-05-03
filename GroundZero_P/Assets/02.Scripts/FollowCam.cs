@@ -63,17 +63,19 @@ public class FollowCam : MonoBehaviour {
         fMouseClamp = vCamPos.y;
         if (Physics.Linecast(trTarget.position, vCamPos, out hit, 1 << 14))
         {
-            print("아아 카메라 튀는거 놀라지 마세요.");
-            Debug.DrawRay(hit.point, hit.normal, Color.magenta);
+            //Debug.DrawRay(hit.point, hit.normal, Color.magenta);
             //norm = hit.point + hit.normal;
             fMouseClamp -= Input.GetAxis("Mouse Y") * fCamDist;
-            fMouseClamp = Mathf.Clamp(fMouseClamp, 0f, 3.4f);
+            fMouseClamp = Mathf.Clamp(fMouseClamp, -0.5f, 3.4f);
+
+            float _fDist = Vector3.Distance(trTarget.position, vCamPos);
 
             // 벡터기반 - 벽에 사용
             //fCamDist = Vector3.Distance(transform.position, hit.point);
             //fCamDist = Mathf.Clamp(fCamDist, 0.1f, 5f);
             //transform.position = Vector3.Lerp(transform.position, (hit.point + (hit.normal * fCamDist)), Time.deltaTime * 20f);
             //print(hit.distance + " || " + fCamDist);
+            //if(_fDist +)
             vCamPos = new Vector3(hit.point.x + hit.normal.x * fCamDist,
                 fMouseClamp,
                 hit.point.z + hit.normal.z * fCamDist);
@@ -100,11 +102,12 @@ public class FollowCam : MonoBehaviour {
         //transform.position = Vector3.Lerp(transform.position, trTarget.position - (trTarget.forward * fDist) + (trTarget.right * RIGHT),
         //    Time.deltaTime * DAMP_TRACE);
 
-        //transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp);
-        //transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 20); // 러프 버전 O
-        transform.position = vCamPos; // 러프 버전 X
-        transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
-
+        //transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp); // 기존, 계산은 바닥충돌처리에서 한꺼번에 함으로 주석처리
+        transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 20); // 러프 버전 O
+        //print(DIST + " || " + Vector3.Distance(transform.position, trTarget.position)); // 텍텍
+        //transform.position = vCamPos; // 러프 버전 X
+        //transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
+        transform.rotation = Quaternion.Slerp(transform.rotation, trTarget.rotation, Time.deltaTime * 20);
 
         //LookIK
         //카메라가 캐릭터 후방에 있다면, 타겟 위치를 에임방향으로.
