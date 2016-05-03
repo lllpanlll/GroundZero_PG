@@ -248,6 +248,7 @@ namespace T2
         {
             print("beShot");
             ChangeState(State.be_Shot);
+            //피격 애니메이션 시작.
 
             yield return new WaitForSeconds(time);
             ChangeState(State.idle);

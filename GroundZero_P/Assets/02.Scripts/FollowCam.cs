@@ -32,7 +32,7 @@ public class FollowCam : MonoBehaviour {
 	public GameObject	oPlayerLight;
 
     private Vector3 vTarget = Vector3.zero;
-    private float fTargetRotSpeed = 10.0f;
+    private float fTargetRotSpeed = 50.0f;
     private bool bForwardTarget = true;
 
 
@@ -43,9 +43,11 @@ public class FollowCam : MonoBehaviour {
         fDampTrace = DAMP_TRACE;
         trTarget = GameObject.FindGameObjectWithTag(Tags.CameraTarget).GetComponent<Transform>();
         trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
-        lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponentInChildren<LookAtIK>();
-        moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
+        lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
+        lookAt.enabled = false;
 
+        moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
+        
         vTarget = trTarget.position + (trTarget.forward * 30.0f);
 
         fCamDist = 0.1f;
@@ -107,21 +109,22 @@ public class FollowCam : MonoBehaviour {
         //LookIK
         //카메라가 캐릭터 후방에 있다면, 타겟 위치를 에임방향으로.
         //카메라가 캐릭터 전방에 있다면, 타겟 위치를 카메라위치로.        
-        float fLookAngle = Vector3.Angle(trPlayerModel.forward, transform.forward);
-        if (fLookAngle > 100.0f && moveCtrl.GetMoveState() == T2.MoveCtrl.MoveState.Stop)
-            vTarget = transform.position;
-        else
-            vTarget = trTarget.position + (trTarget.forward * 30.0f);
+        //float fLookAngle = Vector3.Angle(trPlayerModel.forward, transform.forward);
+        //if (fLookAngle > 100.0f && moveCtrl.GetMoveState() == T2.MoveCtrl.MoveState.Stop)
+        //    vTarget = transform.position;
+        //else
+        //    vTarget = trTarget.position + (trTarget.forward * 100.0f);
 
-        if (moveCtrl.GetMoveFlag().backward)
-        {
-            lookAt.enabled = false;
-        }
-        else
-        {
-            lookAt.enabled = true;
-            lookAt.solver.IKPosition = Vector3.Lerp(lookAt.solver.IKPosition, vTarget, Time.deltaTime * fTargetRotSpeed);
-        }
+        //if (moveCtrl.GetMoveFlag().backward)
+        //{
+        //    lookAt.enabled = false;
+        //}
+        //else
+        //{
+        //    lookAt.enabled = true;
+        //    //lookAt.solver.IKPosition = Vector3.Lerp(lookAt.solver.IKPosition, vTarget, Time.deltaTime * fTargetRotSpeed);           
+        //}
+        //lookAt.solver.IKPosition = vTarget;
     }
 
     public void SetDampTrace(float f) { fDampTrace = f; }
@@ -132,5 +135,4 @@ public class FollowCam : MonoBehaviour {
     public float GetRight() { return RIGHT; }
     public void SetUp(float f) { fUp = f; }
     public float GetUp() { return fUp; }
-
 }

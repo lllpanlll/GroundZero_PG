@@ -80,7 +80,7 @@ namespace T2.Skill
                 //SeventhFlow_v1
                 if (Input.GetKeyDown(KeyCode.Q))
                 {
-                    if(mgr.PointCheck(Manager.SkillType.PP, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
+                    if(mgr.PointCheck(SeventhFlow.GetInstance().PointType, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
                         ChangeSkill(T2.Skill.SeventhFlow.GetInstance());
                 }
             }

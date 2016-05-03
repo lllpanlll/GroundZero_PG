@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 78f0380771e81f94bb3c8bfeddf97b13
-timeCreated: 1462098412
+guid: 20e56385a695be343afbe8aae0464694
+timeCreated: 1462202698
 licenseType: Free
 ModelImporter:
   serializedVersion: 18
@@ -300,7 +300,7 @@ ModelImporter:
     4300000: Object017
     4300002: Object018
     4300004: Object019
-    7400000: BackWardAttack
+    7400000: LeftAttack
     9500000: //RootNode
     13700000: Object017
     13700002: Object018
@@ -326,7 +326,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     clipAnimations:
     - serializedVersion: 16
-      name: BackWardAttack
+      name: LeftAttack
       takeName: Take 001
       firstFrame: 0
       lastFrame: 24
@@ -335,8 +335,8 @@ ModelImporter:
       level: 0
       cycleOffset: 0
       loop: 0
-      loopTime: 0
-      loopBlend: 0
+      loopTime: 1
+      loopBlend: 1
       loopBlendOrientation: 0
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
