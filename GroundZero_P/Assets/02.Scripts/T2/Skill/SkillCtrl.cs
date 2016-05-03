@@ -27,6 +27,8 @@ namespace T2.Skill
         public Animator animator;
         [HideInInspector]
         public Camera cam;
+        [HideInInspector]
+        public FollowCam followCam;
 
         private T2.MoveCtrl.MoveFlag moveFlag;
         void Awake()
@@ -42,6 +44,7 @@ namespace T2.Skill
             basicAttack = GetComponent<T2.BasicAttack>();
             animator = GetComponentInChildren<Animator>();
             cam = Camera.main;
+            followCam = cam.GetComponent<FollowCam>();
             trCamPivot = GameObject.FindGameObjectWithTag(Tags.CameraTarget).transform;
         }
 
@@ -69,8 +72,9 @@ namespace T2.Skill
                         //캔슬이 가능한 스킬은 현재 사용중인 스킬이 본인의 스킬인지 체크해야 한다.
                         if (mgr.PointCheck(Manager.SkillType.EP, T2.Skill.Evasion_E.GetInstance().iDecPoint))
                         {
-                            if (mgr.GetEP() > T2.Skill.Evasion_E.GetInstance().iDecPoint)
-                                ChangeSkill(T2.Skill.Evasion_E.GetInstance());
+                            if(curSkill != T2.Skill.Evasion_E.GetInstance())
+                                if (mgr.GetEP() > T2.Skill.Evasion_E.GetInstance().iDecPoint)
+                                    ChangeSkill(T2.Skill.Evasion_E.GetInstance());
                         }
                     }
                 }

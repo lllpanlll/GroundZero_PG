@@ -45,7 +45,8 @@ namespace T2
         private float fOrizinFOV;
         public float fSprintFOV = 80.0f;
         public float fFOV_ZoomSpeed = 3.0f;
-        private Camera mainCamera;
+        private Camera cam;
+        private FollowCam followCam;
 
         //그로기 상태 변수
         bool bGroggy;
@@ -60,8 +61,9 @@ namespace T2
             trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<Transform>();
             controller = GetComponent<CharacterController>();
             animator = GetComponentInChildren<Animator>();
-            mainCamera = Camera.main;
-            fOrizinFOV = mainCamera.fieldOfView;
+            cam = Camera.main;
+            followCam = cam.GetComponent<FollowCam>();
+            fOrizinFOV = cam.fieldOfView;
 
             moveState = MoveState.Stop;
 
@@ -77,7 +79,7 @@ namespace T2
         void OnGUI()
         {
             GUI.Box(new Rect(0, 0, 220, 200), "STAT");
-            GUI.Label(new Rect(20, 70, 200, 25), "MoveState : " + moveState.ToString());
+            GUI.Label(new Rect(20, 30, 200, 25), "MoveState : " + moveState.ToString());
             GUI.Label(new Rect(20, 170, 200, 25), "MoveSpeed : " + fMoveSpeed.ToString());
         }
 
@@ -85,6 +87,7 @@ namespace T2
         {
             h = Input.GetAxis("Horizontal");
             v = Input.GetAxis("Vertical");
+
 
             Vector3 moveDir = (Vector3.forward * v) + (Vector3.right * h);
 
@@ -189,15 +192,20 @@ namespace T2
 
             #endregion
 
+            animator.SetFloat("fHorizontal", h);
+            animator.SetFloat("fVertical", v);
+
+
             //카메라 줌 인,아웃
             if (moveState == MoveState.Sprint)
             {
-                if (fMoveSpeed > 12.0f)
-                    mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, fSprintFOV, Time.deltaTime * fFOV_ZoomSpeed);
+                if (cam.fieldOfView <= fOrizinFOV + 1.0f)
+                    followCam.ChangeFOV(fSprintFOV, fFOV_ZoomSpeed);
             }
             else
             {
-                mainCamera.fieldOfView = Mathf.Lerp(mainCamera.fieldOfView, fOrizinFOV, Time.deltaTime * fFOV_ZoomSpeed);
+                if(cam.fieldOfView > fOrizinFOV && mgr.GetState() != Manager.State.Skill)
+                    followCam.ChangeFOV(fOrizinFOV, fFOV_ZoomSpeed);
             }
 
             if (mgr.GetCtrlPossible().Run == true)
@@ -258,19 +266,19 @@ namespace T2
                     trPlayerModel.rotation = Quaternion.Euler(0.0f, fSprintRot, 0.0f);
                     //}
 
-                    float fAngle = Vector3.Angle(transform.forward, trPlayerModel.forward);
+                    //float fAngle = Vector3.Angle(transform.forward, trPlayerModel.forward);
 
-                    //if (Vector3.Cross(transform.forward, trPlayerModel.forward).y < -0.1f)
-                    //    fAngle -= 180.0f;
-                    //print(fAngle);
+                    ////if (Vector3.Cross(transform.forward, trPlayerModel.forward).y < -0.1f)
+                    ////    fAngle -= 180.0f;
+                    ////print(fAngle);
 
-                    float test = transform.eulerAngles.y - trPlayerModel.eulerAngles.y;
-                    if (test < 0.0f)
-                        test += 360.0f;
-                    print(test);
+                    //float test = transform.eulerAngles.y - trPlayerModel.eulerAngles.y;
+                    //if (test < 0.0f)
+                    //    test += 360.0f;
+                    //print(test);
 
 
-                    animator.SetFloat("fAngle", test);
+                    //animator.SetFloat("fAngle", test);
 
 
 
@@ -282,7 +290,8 @@ namespace T2
                 //정지 처리
                 else
                 {
-                    animator.SetFloat("fAngle", 0.0f);
+                    //animator.SetFloat("fAngle", 0.0f);
+
                     //GetAxis의 수치가 떨어지는 시간이 존재하기 때문에 캐릭터를 곧바로 정지시키기 위해 Vector3.zero로 초기화한다.                
                     moveState = MoveState.Stop;
                 }

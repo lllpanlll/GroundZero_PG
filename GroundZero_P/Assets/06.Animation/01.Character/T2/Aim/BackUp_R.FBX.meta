@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 1d3d3760c744fbf4982f470d7c661a0d
-timeCreated: 1462110088
+guid: 6952b23d7c2a33742ac033d9f9316411
+timeCreated: 1462110089
 licenseType: Free
 ModelImporter:
   serializedVersion: 18
@@ -300,7 +300,7 @@ ModelImporter:
     4300000: Object017
     4300002: Object018
     4300004: Object019
-    7400000: Back_Aim_Down
+    7400000: Back_Aim_Up_R
     9500000: //RootNode
     13700000: Object017
     13700002: Object018
@@ -326,7 +326,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     clipAnimations:
     - serializedVersion: 16
-      name: Back_Aim_Down
+      name: Back_Aim_Up_R
       takeName: Take 001
       firstFrame: 0
       lastFrame: 24

@@ -27,7 +27,7 @@ namespace T2
         //타이머 변수
         private bool bFire = false;
         private float attackTimer = 0.0f;
-        private float attackTime = 0.3f;
+        private float attackTime = 0.5f;
 
         private float fReach = 1000.0f;
 
@@ -84,23 +84,23 @@ namespace T2
                 return;
             }
 
-            if (Input.GetMouseButton(0))
+            if (Input.GetMouseButton(0) &&  mgr.GetAP() > 0)
             {
-
-
                 //첫 공격시에는 바로 공격 가능하고, 그 다음부터 연사 속도 적용.
-                //if (!bFire)
-                if (bFirstShot || !bFire)
+                if (!bFire)
+                //if (bFirstShot || !bFire)
                     fRpmTime = 0.0f;
                 else
                     fRpmTime = fRpmSpeed;
 
-                bFirstShot = false;
+                //bFirstShot = false;
 
                 //연사속도 조절.
                 if (fRpmTimer > fRpmTime)
                 {
-                    Fire();
+                    StartCoroutine(Fire());
+                    //ap소모
+                    mgr.SetAP(mgr.GetAP() - 1);
                     bFire = true;
                     animator.SetBool("bAttack", true);
                     fRpmTimer = 0.0f;
@@ -109,12 +109,12 @@ namespace T2
                     fRpmTimer += Time.deltaTime;
             }
 
-            if (Input.GetMouseButtonUp(0))
-            {
-                fRpmTime = 0.0f;
-                bFirstShot = true;
-                attackTimer = 0.0f;
-            }
+            //if (Input.GetMouseButtonUp(0))
+            //{
+            //    fRpmTime = 0.0f;
+            //    bFirstShot = true;
+            //    attackTimer = 0.0f;
+            //}
 
             //공격하면 플레이어 이동상태를 일정 시간 동안 변경.
             if (bFire)
@@ -146,24 +146,25 @@ namespace T2
                 }
 
                 //카메라 줌인
-                fCamDist = Mathf.Lerp(fCamDist, fTargetDist, Time.deltaTime * fZoomSpeed);
-                followCam.SetDist(fCamDist);
-                fCamFOV = Mathf.Lerp(fCamFOV, fTargetFOV, Time.deltaTime * fZoomSpeed);
-                cam.fieldOfView = fCamFOV;          
+                if (followCam.GetDist() <= fOrizinDist + 1.0f)
+                    followCam.ChangeDist(fTargetDist, fZoomSpeed);
+                if (cam.fieldOfView <= fOrizinFOV + 1.0f)
+                    followCam.ChangeFOV(fTargetFOV, fZoomSpeed);
             }
             else
             {
                 //카메라 줌아웃
-                fCamDist = Mathf.Lerp(fCamDist, fOrizinDist, Time.deltaTime * fZoomSpeed * 0.2f);
-                followCam.SetDist(fCamDist);
-                fCamFOV = Mathf.Lerp(fCamFOV, fOrizinFOV, Time.deltaTime * fZoomSpeed * 0.2f);
-                cam.fieldOfView = fCamFOV;
+                if (followCam.GetDist() < fOrizinDist)
+                    followCam.ChangeDist(fOrizinDist, fZoomSpeed * 0.2f);
+                //FOV를 원래값으로 돌리는 것은 MoveCtrl에서 자동으로 처리된다.
             }
         }
 
 
-        void Fire()
+        //void Fire()
+        IEnumerator Fire()
         {
+            yield return new WaitForSeconds(0.01f);
             //bFire = true;
             attackTimer = 0.0f;
 
@@ -188,15 +189,14 @@ namespace T2
 
                 //거리에 따라 명중률 조정.
                 fAccuracy = 0.1f + (fRangeCheck * 0.02f);
-                Vector3 fTarget = aimRayHit.point;
-                fTarget = new Vector3(fTarget.x,
-                                      Random.Range(fTarget.y - fAccuracy, fTarget.y + fAccuracy),
-                                      Random.Range(fTarget.z - fAccuracy, fTarget.z + fAccuracy));
+                Vector3 vTarget = aimRayHit.point;
+                vTarget = new Vector3(vTarget.x,
+                                      Random.Range(vTarget.y - fAccuracy, vTarget.y + fAccuracy),
+                                      Random.Range(vTarget.z - fAccuracy, vTarget.z + fAccuracy));
 
                 //레이에 부딪힌 오브젝트가 있으면 부딪힌 위치를 바라보도록 방향 조정.
-                trFire[0].LookAt(fTarget);
-                trFire[1].LookAt(fTarget);
-
+                trFire[0].LookAt(vTarget);
+                trFire[1].LookAt(vTarget);
 
                 //aimRayHit.point가 사정거리 이내에 위치할 경우.
                 if (fRangeCheck < fReach)
@@ -253,12 +253,13 @@ namespace T2
 
         IEnumerator LeftGunShot()
         {
+            Transform target = trFire[1];
             yield return new WaitForSeconds(0.05f);
 
             //투사체 오브젝트 풀 생성.    
             oBullet = bulletPool.UseObject();
-            oBullet.transform.position = trFire[1].position;
-            oBullet.transform.rotation = trFire[1].rotation;
+            oBullet.transform.position = target.position;
+            oBullet.transform.rotation = target.rotation;
 
             //머즐플래시
             this.StartCoroutine(ShowMuzzleFlash(1));

@@ -101,7 +101,7 @@ namespace T2.Skill
 
 
 
-            base.skillCtrl.animator.SetTrigger("tEvasion_E");
+            base.skillCtrl.animator.SetTrigger("tEvastion_E");
 
             //blinkTime동안 매 프레임마다 반복.
             float timeConut = 0;

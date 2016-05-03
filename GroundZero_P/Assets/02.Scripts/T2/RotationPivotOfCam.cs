@@ -38,7 +38,7 @@ namespace T2
             fStartY = fAngleY;
         }
 
-        void Update()
+        void LateUpdate()
         {            
 
             if (mgr.GetCtrlPossible().MouseRot == true)
