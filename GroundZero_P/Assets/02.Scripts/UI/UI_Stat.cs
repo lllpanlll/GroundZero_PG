@@ -2,35 +2,45 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class UI_Stat : MonoBehaviour {
-    // NOTE : EP에 핸들, 텍스트 추가
-    // PP에 핸들 추가
-
+public class UI_Stat : MonoBehaviour
+{
     T2.Manager t_mgr;
-    public GameObject oPlayer, oAim, oDpPp, oEmptyAP;
+    public GameObject oPlayer, oAimPanel, oDpPp, oEmptyAP, oSkill;
     public Slider sliderEP;
     Slider sliderAP, sliderDP, sliderPP;
 
     Image[] imageEP;
+    float fScaleEpHandle = 1;
     Text textEp, textAp;
 
-    Image imageHP, imageHighlight, imageEmptyAP;
-    RectTransform trHighlight, trPpHandle;
+    Image imageHP, imageHighlight, imageEmptyAP, imageAim1, imageAim2;
+    RectTransform trHighlight, trPpHandle, trAim1, trAim2;
     int iPrePp;
     float fRotHighlight;
     float timerEp, timerAp;
     bool bHighlight;
 
-    float fAlphaEp = 1f, fAlphaPp = 0f, fAlphaAp = 1f;
-    float fFadeoutSpeed = 0.5f; // 페이드아웃 속력
+    float fAlphaEp = 1f, fAlphaPp = 0f, fAlphaAp = 1f, fAlphaSkill = 0f;
+    float fFadeoutSpeed = 0.5f; // 전체 페이드아웃 속력
 
-    // Use this for initialization
-    void Start ()
+    Quaternion qAimRot;
+
+    T2.Skill.SeventhFlow skillSeventhFlow;
+    float coolTimerSeventhFlow;
+    Slider[] sliderSkill;
+    Image[] imageSkill1, imageSkill2, imageSkill3, imageSkill4;
+    float[] timerSkill = new float[4];
+
+    void Awake()
     {
         t_mgr = oPlayer.GetComponent<T2.Manager>();
-        sliderAP = oAim.GetComponentInChildren<Slider>();
+        sliderAP = oAimPanel.GetComponentInChildren<Slider>();
         imageEmptyAP = oEmptyAP.GetComponent<Image>();
         textAp = oEmptyAP.transform.FindChild("Text").GetComponent<Text>();
+        trAim1 = oAimPanel.transform.FindChild("Aim1").GetComponent<RectTransform>();
+        trAim2 = oAimPanel.transform.FindChild("Aim2").GetComponent<RectTransform>();
+        imageAim1 = trAim1.GetComponent<Image>();
+        imageAim2 = trAim2.GetComponent<Image>();
         imageEP = sliderEP.GetComponentsInChildren<Image>();
         textEp = sliderEP.GetComponentInChildren<Text>();
         sliderDP = oDpPp.transform.FindChild("DP").GetComponent<Slider>();
@@ -39,12 +49,23 @@ public class UI_Stat : MonoBehaviour {
         trHighlight = oDpPp.transform.FindChild("PpHighlight").GetComponent<RectTransform>();
         imageHighlight = trHighlight.GetComponent<Image>();
         trPpHandle = sliderPP.transform.FindChild("PpHandle").GetComponent<RectTransform>();
-        imageHighlight.color = Color.clear;
-        iPrePp = 100;
+        sliderSkill = oSkill.GetComponentsInChildren<Slider>();
+        imageSkill1 = sliderSkill[0].GetComponentsInChildren<Image>();
+        skillSeventhFlow = oPlayer.GetComponent<T2.Skill.SeventhFlow>();
+        imageSkill2 = sliderSkill[1].GetComponentsInChildren<Image>();
+        imageSkill3 = sliderSkill[2].GetComponentsInChildren<Image>();
+        imageSkill4 = sliderSkill[3].GetComponentsInChildren<Image>();
     }
-	
-	// Update is called once per frame
-	void Update ()
+    void Start()
+    {
+        sliderSkill[1].maxValue = skillSeventhFlow.coolTime;
+        iPrePp = 100;
+        for (int i = 0; i < 4; i++)
+            timerSkill[i] = 5;
+    }
+
+    // Update is called once per frame
+    void Update()
     {
         sliderAP.value = t_mgr.GetAP();
         sliderEP.value = t_mgr.GetEP();
@@ -54,10 +75,73 @@ public class UI_Stat : MonoBehaviour {
         Ep();
         Hp();
         Pp();
+        Skill();
+    }
+
+    void Skill()
+    {
+        if (skillSeventhFlow.bUsing)
+        {
+            coolTimerSeventhFlow = sliderSkill[1].maxValue;
+            timerSkill[1] = 0;
+        }
+        SkillCooltimeComplite(imageSkill2, 1);
+    }
+
+    void SkillCooltimeComplite(Image[] _imageSkill, int _i)
+    {
+        sliderSkill[_i].value = SkillCooltime(ref coolTimerSeventhFlow);
+
+        if (sliderSkill[_i].value.Equals(0))
+        {
+            timerSkill[_i] += Time.deltaTime;
+            if (timerSkill[_i] <= 1 && timerSkill[_i] >= 0.1f)
+            {
+                _imageSkill[2].color = Color.white;
+            }
+            else if (timerSkill[_i] < 0.1f)
+            {
+                fAlphaSkill = 1;
+            }
+            else
+            {
+                _imageSkill[2].color = Color.clear;
+            }
+        }
+        _imageSkill[3].color = new Color(1, 1, 1, FadeInOut(ref fAlphaSkill, -10));
+    }
+
+    float SkillCooltime(ref float _time)
+    {
+        _time -= Time.deltaTime;
+        return _time;
     }
 
     void Ap()
     {
+        // 에임이 몬스터를 체크했을 때
+        if (t_mgr.GetCheckAimForMonster())
+        {
+            imageAim1.color = Color.red;
+            imageAim2.color = Color.red;
+            qAimRot = Quaternion.Euler(oAimPanel.transform.eulerAngles.x, oAimPanel.transform.eulerAngles.y, oAimPanel.transform.eulerAngles.z + 45);
+            trAim2.transform.rotation = Quaternion.Slerp(trAim2.transform.rotation, qAimRot, Time.deltaTime * 20);
+            trAim2.transform.localScale = new Vector3(0.8f, 0.8f, 1);
+            trAim1.transform.localScale = new Vector3(0.7f, 0.7f, 1);
+        }
+        else
+        {
+            imageAim1.color = Color.white;
+            imageAim2.color = Color.white;
+            //trAim2.transform.rotation = Quaternion.Euler(oAimPanel.transform.eulerAngles.x, oAimPanel.transform.eulerAngles.y, oAimPanel.transform.eulerAngles.z);
+            trAim2.transform.rotation = Quaternion.Slerp(
+                trAim2.transform.rotation,
+                Quaternion.Euler(oAimPanel.transform.eulerAngles.x, oAimPanel.transform.eulerAngles.y, oAimPanel.transform.eulerAngles.z),
+                Time.deltaTime * 20);
+            trAim2.transform.localScale = new Vector3(1, 1, 1);
+            trAim1.transform.localScale = new Vector3(1, 1, 1);
+        }
+
         if (((int)sliderAP.value).Equals(0))
         {
             oEmptyAP.SetActive(true);
@@ -92,9 +176,10 @@ public class UI_Stat : MonoBehaviour {
             {
                 for (int i = 0; i < imageEP.Length; i++)
                 {
-                    imageEP[i].color = new Color(1, 1, 1, FadeInOut(ref fAlphaEp, - 1));
+                    imageEP[i].color = new Color(1, 1, 1, FadeInOut(ref fAlphaEp, -1));
                 }
-                textEp.color = new Color(1, 1, 1, FadeInOut(ref fAlphaEp, - 1));
+                imageEP[2].rectTransform.localScale = new Vector3(1, 1, 1);
+                textEp.color = new Color(1, 1, 1, FadeInOut(ref fAlphaEp, -1));
             }
         }
         else if (sliderEP.value < sliderEP.maxValue)
@@ -103,10 +188,20 @@ public class UI_Stat : MonoBehaviour {
             {
                 imageEP[i].color = Color.white;
             }
+            imageEP[2].rectTransform.localScale = new Vector3(TransmuteImageScale(ref fScaleEpHandle), TransmuteImageScale(ref fScaleEpHandle), 1);
             textEp.color = Color.white;
             timerEp = 0;
             fAlphaEp = 1;
         }
+    }
+
+    float TransmuteImageScale(ref float _f)
+    {
+        _f -= Time.deltaTime;
+        _f = Mathf.Clamp(_f, 0.5f, 1f);
+        if (_f < 0.6) _f = 1;
+
+        return _f;
     }
 
     float FadeInOut(ref float _fKindOfStat, float _iDir)
@@ -175,10 +270,10 @@ public class UI_Stat : MonoBehaviour {
                 fAlphaPp = 1;
             }
         }
-        imageHighlight.color = new Color(1, 1, 1, FadeInOut(ref fAlphaPp, - 1.5f));
+        imageHighlight.color = new Color(1, 1, 1, FadeInOut(ref fAlphaPp, -1.5f));
 
         iPrePp = (int)sliderPP.value;
-        
+
         float fPi = 185 - (1.8f * sliderPP.value); // 185인 이유는 핸들이 제대로 못 덮기 때문이다
         trPpHandle.transform.rotation = Quaternion.Euler(
                 oDpPp.transform.eulerAngles.x,

@@ -6,6 +6,8 @@ namespace T2
 {
     public class Manager : MonoBehaviour
     {
+        bool bAimForMonster; // tj
+
         private int hp;
         private int dp;
         private int pp;
@@ -127,6 +129,23 @@ namespace T2
             Ray pivotRay = new Ray(GameObject.FindGameObjectWithTag(Tags.CameraTarget).transform.position,
                 GameObject.FindGameObjectWithTag(Tags.CameraTarget).transform.forward);
 
+            /*=======================================================
+             * 보스에 룩 온 하면 에임이 변하도록 만들겠다 
+             * 최적화는 신경 쓰지 않을테니 잘 수정하시오 -tj-
+             ========================================================*/
+            RaycastHit aimRayhit;
+             if(Physics.Raycast(aimRay,out aimRayhit))
+            {
+                if (aimRayhit.transform.CompareTag(Tags.Monster))
+                {
+                    bAimForMonster = true;
+                }
+                else
+                    bAimForMonster = false;
+            }
+
+
+
             Debug.DrawLine(aimRay.origin, aimRay.GetPoint(100.0f), Color.red);
             Debug.DrawLine(pivotRay.origin, pivotRay.GetPoint(100.0f), Color.blue);
 
@@ -180,6 +199,7 @@ namespace T2
         public void SetDP(int i) { dp = i; }
         public int GetPP() { return pp; }
         public void SetPP(int i) { pp = i; }
+        public bool GetCheckAimForMonster() { return bAimForMonster; }
 
         public LayerState GetLayerState() { return curLayerState; }
         public void SetLayerState(LayerState s)

@@ -103,7 +103,7 @@ public class FollowCam : MonoBehaviour {
         //    Time.deltaTime * DAMP_TRACE);
 
         //transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp); // 기존, 계산은 바닥충돌처리에서 한꺼번에 함으로 주석처리
-        transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 20); // 러프 버전 O
+        transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 30); // 러프 버전 O
         //print(DIST + " || " + Vector3.Distance(transform.position, trTarget.position)); // 텍텍
         //transform.position = vCamPos; // 러프 버전 X
         //transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
