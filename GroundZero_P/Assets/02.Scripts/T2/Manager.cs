@@ -378,7 +378,7 @@ namespace T2
         {
             if (type == T2.Manager.SkillType.AP)
             {
-                if (ap <= 0 || ap < decPoint)
+                if (ap < 0 || ap < decPoint)
                 {
                     print("ap가 부족합니다.");
                     return false;
@@ -386,7 +386,7 @@ namespace T2
             }
             else if (type == T2.Manager.SkillType.EP)
             {
-                if (ep <= 0 || ep < decPoint)
+                if (ep < 0 || ep < decPoint)
                 {
                     print("ep가 부족합니다.");
                     return false;
@@ -395,7 +395,7 @@ namespace T2
             }
             else if (type == T2.Manager.SkillType.PP)
             {
-                if (pp <= 0 || pp < decPoint)
+                if (pp < 0 || pp < decPoint)
                 {
                     print("pp가 부족합니다.");
                     return false;
@@ -408,7 +408,7 @@ namespace T2
         {
             if (type == T2.Manager.SkillType.AP)
             {
-                if (ap > decPoint)
+                if (ap >= decPoint)
                 {
                     ap -= decPoint;
                     return;
@@ -416,7 +416,7 @@ namespace T2
             }
             else if (type == T2.Manager.SkillType.EP)
             {
-                if (ep > decPoint)
+                if (ep >= decPoint)
                 {
                     //가속으로 인해 바뀐 수치들 초기화
                     fIncEP = 0;
@@ -428,7 +428,7 @@ namespace T2
             }
             else if (type == T2.Manager.SkillType.PP)
             {
-                if (pp > decPoint)
+                if (pp >= decPoint)
                 {
                     pp -= decPoint;
                     return;

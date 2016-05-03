@@ -80,6 +80,7 @@ namespace T2
             if (mgr.GetCtrlPossible().Attack == false)
             {
                 bFire = false;
+                animator.SetBool("bAttack", false);
                 attackTimer = 0.0f;
                 return;
             }
