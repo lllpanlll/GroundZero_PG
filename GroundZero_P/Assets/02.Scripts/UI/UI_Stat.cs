@@ -20,7 +20,7 @@ public class UI_Stat : MonoBehaviour
     float timerEp, timerAp;
     bool bHighlight;
 
-    float fAlphaEp = 1f, fAlphaPp = 0f, fAlphaAp = 1f, fAlphaSkill = 0f;
+    float fAlphaEp = 1f, fAlphaPp = 0f, fAlphaAp = 1f;
     float fFadeoutSpeed = 0.5f; // 전체 페이드아웃 속력
 
     Quaternion qAimRot;
@@ -30,6 +30,7 @@ public class UI_Stat : MonoBehaviour
     Slider[] sliderSkill;
     Image[] imageSkill1, imageSkill2, imageSkill3, imageSkill4;
     float[] timerSkill = new float[4];
+    float[] fAlphaSkill = new float[4];
 
     void Awake()
     {
@@ -61,7 +62,10 @@ public class UI_Stat : MonoBehaviour
         sliderSkill[1].maxValue = skillSeventhFlow.coolTime;
         iPrePp = 100;
         for (int i = 0; i < 4; i++)
+        {
             timerSkill[i] = 5;
+            fAlphaSkill[i] = 0f;
+        }
     }
 
     // Update is called once per frame
@@ -88,27 +92,31 @@ public class UI_Stat : MonoBehaviour
         SkillCooltimeComplite(imageSkill2, 1);
     }
 
-    void SkillCooltimeComplite(Image[] _imageSkill, int _i)
+    void SkillCooltimeComplite(Image[] _imageSkill, int _num)
     {
-        sliderSkill[_i].value = SkillCooltime(ref coolTimerSeventhFlow);
+        sliderSkill[_num].value = SkillCooltime(ref coolTimerSeventhFlow);
 
-        if (sliderSkill[_i].value.Equals(0))
+        if (sliderSkill[_num].value.Equals(0))
         {
-            timerSkill[_i] += Time.deltaTime;
-            if (timerSkill[_i] <= 1 && timerSkill[_i] >= 0.1f)
+            timerSkill[_num] += Time.deltaTime;
+            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.01f)
             {
                 _imageSkill[2].color = Color.white;
             }
-            else if (timerSkill[_i] < 0.1f)
+            else if (timerSkill[_num] < 0.01f)
             {
-                fAlphaSkill = 1;
+                fAlphaSkill[_num] = 1;
             }
             else
             {
                 _imageSkill[2].color = Color.clear;
             }
         }
-        _imageSkill[3].color = new Color(1, 1, 1, FadeInOut(ref fAlphaSkill, -10));
+        else if(sliderSkill[_num].value > sliderSkill[_num].maxValue - 1)
+        {
+            timerSkill[_num] = 10;
+        }
+        _imageSkill[3].color = new Color(1, 1, 1, FadeInOut(ref fAlphaSkill[_num], -10));
     }
 
     float SkillCooltime(ref float _time)
