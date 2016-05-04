@@ -3,6 +3,14 @@ using System.Collections;
 
 namespace T2
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 캐릭터의 기본이동
+    /// 달리기, 전력질주 상태가 있다.
+    /// 두 상태 모두 캐릭터를 회전시켜 앞으로 이동한다.(현재 로직으로는 h,v값으로 moveDir을 만들어 이동)
+    /// 전력질주시 카메라 FOV수치를 높여 효과를 준다.
+    /// 전력질주로 EP를 모두 소모시 일정시간동안 전력질주를 못하게 한다.(groggy)
+    /// </summary>
     public class MoveCtrl : MonoBehaviour
     {
         public enum MoveState { Run, Sprint, Stop }

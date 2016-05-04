@@ -3,6 +3,14 @@ using System.Collections;
 
 namespace T2.Skill
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 드론을 소환하는 스킬이다.
+    /// (구)스킬매니저를 상속받아 구현하였었다.
+    /// 정해진 갯수의 드론을 소환한다.
+    /// 드론은 일정시간동안 플레이어를 따라다닌다.
+    /// 드론은 플레이어가 기본공격시 플레이어의 에임 방향으로 탄환을 발사한다.
+    /// </summary>
     public class DroneCall : T2.Skill.Skill
     {
         //    public Transform[] trSetPos = new Transform[6];

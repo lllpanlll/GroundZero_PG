@@ -110,8 +110,8 @@ Material:
         first:
           name: _Emitex
         second:
-          m_Texture: {fileID: 2800000, guid: 9c33ec08db690554dba4809f6d0c5dd3, type: 3}
-          m_Scale: {x: 3, y: 3}
+          m_Texture: {fileID: 2800000, guid: 323dab650ef141645bef47e11845c885, type: 3}
+          m_Scale: {x: 1, y: 1}
           m_Offset: {x: 0, y: 0}
     m_Floats:
       data:
@@ -173,11 +173,11 @@ Material:
       data:
         first:
           name: _EmiPower
-        second: 1
+        second: 2
       data:
         first:
           name: _node_7045
-        second: .123999998
+        second: .589999974
       data:
         first:
           name: _node_7045_copy
@@ -198,7 +198,7 @@ Material:
       data:
         first:
           name: _EmiColor
-        second: {r: 1, g: .859432042, b: .272058845, a: 1}
+        second: {r: 1, g: .765517235, b: 0, a: 1}
       data:
         first:
           name: _node_653

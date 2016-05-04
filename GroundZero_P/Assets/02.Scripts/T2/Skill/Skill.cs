@@ -3,7 +3,12 @@ using System.Collections;
 
 namespace T2.Skill
 {
-    //모든 스킬들이 상속받게 되는 슈퍼클래스
+    /// <summary>
+    /// 2016-05-04
+    /// 모든 스킬들이 상속받게 되는 슈퍼클래스
+    /// 스킬 구현에 필요한 공통 변수들을 정의한다.
+    /// 모든 스킬들은 Skill클래스와 ISkillTimer인터페이스를 상속받는다.
+    /// </summary>
     public class Skill : MonoBehaviour
     {
         protected bool bBeforeDelay;

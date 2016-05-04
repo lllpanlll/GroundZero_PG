@@ -1,10 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
-using RootMotion.FinalIK;
+//using RootMotion.FinalIK;
 
+/// <summary>
+/// 2016-05-04
+/// 캐릭터의 CameraTarget오브젝트를 바라보며 따라다니는 카메라 클래스
+/// 캐릭터의 DIST만큼 뒤, RIGHT만큼 오른쪽에 위치하며 캐릭터의 RIGHT만큼 오른쪽을 바라본다.
+/// 타 클래스에서 카메라의 FOV, DIST를 러프하게 이동시키기 위한 기능을 구현.
+/// 
+/// FinalIK에셋의 LookIK기능을 사용하려 했으나 기본애니메이션과 연결이 매끄럽지 않아 보류.
+/// </summary>
 public class FollowCam : MonoBehaviour {
     private Transform trTarget;
-    private LookAtIK lookAt;
+    //private LookAtIK lookAt;
     private Transform trPlayerModel;
     private T2.MoveCtrl moveCtrl;
 
@@ -29,8 +37,6 @@ public class FollowCam : MonoBehaviour {
     //초기화 변수
     public float fMouseRotSpeed = 200.0f;
 
-	public GameObject	oPlayerLight;
-
     private Vector3 vTarget = Vector3.zero;
     private float fTargetRotSpeed = 50.0f;
     private bool bForwardTarget = true;
@@ -51,8 +57,8 @@ public class FollowCam : MonoBehaviour {
         fDampTrace = DAMP_TRACE;
         trTarget = GameObject.FindGameObjectWithTag(Tags.CameraTarget).GetComponent<Transform>();
         trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
-        lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
-        lookAt.enabled = false;
+        //lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
+        //lookAt.enabled = false;
 
         moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
         cam = Camera.main;
@@ -107,17 +113,15 @@ public class FollowCam : MonoBehaviour {
         //DIST = Mathf.Lerp(DIST, zoomOutDist, Time.deltaTime * fAimOutLerpSpeed); //check
         #endregion
 
-        oPlayerLight.transform.LookAt (trTarget);
-
         //transform.position = Vector3.Lerp(transform.position, trTarget.position - (trTarget.forward * fDist) + (trTarget.right * RIGHT),
         //    Time.deltaTime * DAMP_TRACE);
 
         //transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp); // 기존, 계산은 바닥충돌처리에서 한꺼번에 함으로 주석처리
-        transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 30); // 러프 버전 O
+        //transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 30); // 러프 버전 O
         //print(DIST + " || " + Vector3.Distance(transform.position, trTarget.position)); // 텍텍
-        //transform.position = vCamPos; // 러프 버전 X
-        //transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
-        transform.rotation = Quaternion.Slerp(transform.rotation, trTarget.rotation, Time.deltaTime * 20);
+        transform.position = vCamPos; // 러프 버전 X
+        transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
+        //transform.rotation = Quaternion.Slerp(transform.rotation, trTarget.rotation, Time.deltaTime * 20);
 
         //LookIK
         //카메라가 캐릭터 후방에 있다면, 타겟 위치를 에임방향으로.

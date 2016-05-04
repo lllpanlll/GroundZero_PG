@@ -4,6 +4,14 @@ using System.Collections;
 
 namespace T2
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 캐릭터의 기본 스탯 정보를 갖고있다.
+    /// 무적, 피격 판정을 한다.
+    /// 스킬 포인트 감소 처리, EP 증감처리를 한다.
+    /// 기본 스테이트를 관리한다.(idle, attack, skill, be_shot)
+    /// 기본 스테이트에 따라 플레이어의 컨트롤을 제한한다.(달리기, 전력질주, 기본공격, 마우스회전, 스킬)
+    /// </summary>
     public class Manager : MonoBehaviour
     {
         bool bAimForMonster; // tj
@@ -13,8 +21,6 @@ namespace T2
         private int pp;
         private int ap;
         private float ep;
-        
-        public Scrollbar fillGaugeBar;
         
         public enum LayerState { invincibility, normal }
         private LayerState curLayerState;
@@ -50,6 +56,7 @@ namespace T2
 
         private T2.MoveCtrl moveCtrl;
         private CharacterController controller;
+        private Animator animator;
 
         #region <달리기 상태에 따른 ep증감>
         private float fDecEP = 0.4f, fIncEP = 0.6f;
@@ -74,6 +81,7 @@ namespace T2
             moveCtrl = GetComponent<T2.MoveCtrl>();
             controller = GetComponent<CharacterController>();
             line = GetComponent<LineRenderer>();
+            animator = GetComponentInChildren<Animator>();
 
             //마우스 커서 숨기기
             //Cursor.visible = false;
@@ -97,9 +105,6 @@ namespace T2
         }
         void Update()
         {
-            //임시 지구력 UI.
-            fillGaugeBar.size = ep * 0.01f;
-
             #region<Sprint로 인한 EP증감>
             if (skillCtrl == State.idle || skillCtrl == State.attack)
             {
@@ -135,20 +140,17 @@ namespace T2
              * 최적화는 신경 쓰지 않을테니 잘 수정하시오 -tj-
              ========================================================*/
             RaycastHit aimRayhit;
-             if(Physics.Raycast(aimRay,out aimRayhit))
+             if(Physics.Raycast(aimRay,out aimRayhit, Mathf.Infinity, 1<<11))
             {
-                if (aimRayhit.transform.CompareTag(Tags.Monster))
-                {
                     bAimForMonster = true;
-                }
-                else
-                    bAimForMonster = false;
             }
+            else
+                bAimForMonster = false;
 
 
 
             Debug.DrawLine(aimRay.origin, aimRay.GetPoint(100.0f), Color.red);
-            Debug.DrawLine(pivotRay.origin, pivotRay.GetPoint(100.0f), Color.blue);
+           // Debug.DrawLine(pivotRay.origin, pivotRay.GetPoint(100.0f), Color.blue);
 
             Ray fireRay = new Ray(trFire.position, trFire.forward);
             Debug.DrawLine(fireRay.origin, fireRay.GetPoint(100.0f), Color.yellow);
@@ -163,12 +165,13 @@ namespace T2
                 int iDamage = coll.gameObject.GetComponent<M_AttackCtrl>().GetDamage();
 
                 if (iDamage != 0 && dp > 0)
+                //if (iDamage != 0)
                 {
                     if (dp > iDamage)
                     {
                         dp -= iDamage;
                         //피격 지속시간은 나중에 피격상태에 따라 달라지도록 구현헤야 할 듯,
-                        StartCoroutine(BeShotTimer(0.2f));
+                        StartCoroutine(BeShotTimer(0.5f));
                     }
                     else
                     {
@@ -269,6 +272,7 @@ namespace T2
         {
             print("beShot");
             ChangeState(State.be_Shot);
+            animator.SetTrigger("tBeShot");
             //피격 애니메이션 시작.
 
             yield return new WaitForSeconds(time);

@@ -4,6 +4,12 @@ using System.Collections.Generic;
 
 namespace T2.Pref
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 캐릭터의 DroneCall스킬로 소환되는 오브젝트
+    /// 생존시간은 DroneCall스킬에서 관리한다.
+    /// 캐릭터의 기본공격과 같은 커맨드 입력시 에임방향으로 총알을 발사한다.
+    /// </summary>
     public class Drone : MonoBehaviour
     {
         private Vector3 vTargetPos;

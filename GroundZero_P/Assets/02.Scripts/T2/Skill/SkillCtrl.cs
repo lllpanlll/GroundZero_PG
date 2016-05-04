@@ -3,6 +3,13 @@ using System.Collections;
 
 namespace T2.Skill
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 스킬 FSM구조를 컨트롤하는 클래스이다.
+    /// curSkill을 변경하는 방식으로 스킬을 사용한다.
+    /// 스킬에서 필요한 각종 스크립트들이 정의되어있다.
+    /// Update()의 스킬 커맨드 입력부분에 새로 생긴 스킬을 계속 추가하면 되는 구조이다.
+    /// </summary>
     public class SkillCtrl : MonoBehaviour
     {
         //스킬 상태 변경

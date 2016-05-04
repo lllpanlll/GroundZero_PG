@@ -3,6 +3,11 @@ using System.Collections;
 
 namespace T2
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 캐릭터의 기본 스탯 정보
+    /// 초기에 정해지는 상수값들이다.
+    /// </summary>
     public class Stat
     {
         public const int MAX_HP = 1;
@@ -14,7 +19,7 @@ namespace T2
         public const int OVER_DP = 10;
 
         //public const int AP = 100;
-        public const int MAX_AP = 1000;
+        public const int MAX_AP = 200;
         public const int MAX_MAGAZINE = 60;
 
         public const float MAX_EP = 100;

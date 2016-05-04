@@ -3,6 +3,14 @@ using System.Collections;
 
 namespace T2.Pref
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 캐릭터의 기본공격시 발사되는 오브젝트
+    /// 몬스터의 특정 레이어에 닿으면 데미지를 준다.
+    /// 몬스터의 특정 레이어에 닿으면 PP가 회복된다.
+    /// 
+    /// 몬스터 경직 : x
+    /// </summary>
     public class BulletCtrl : T2.Pref.PrefLifeTimer
     {
 

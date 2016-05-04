@@ -5,6 +5,15 @@ using RootMotion.FinalIK;
 
 namespace T2
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 캐릭터의 기본공격
+    /// 공격시 줌인, 아웃이 있기 때문에 attackTime을 만들어 일정시간동안은 공격상태를 유지하도록 만듬.
+    /// 마우스를 누르고 있으면 자동으로 rpmTime마다 연사가 되도록 함.
+    /// 한번 발사마다 왼쪽 총에서도 총알이 나가도록 함.
+    /// 
+    /// 현재 보스 경직 테스트를 위해 우클릭시 특정 투사체를 발사한다.
+    /// </summary>
     public class BasicAttack : MonoBehaviour
     {
         public GameObject oBulletPref;
@@ -14,6 +23,9 @@ namespace T2
         public GameObject oFlarePref;
         private GameObject oFlare;
         private ObjectPool flarePool = new ObjectPool();
+
+        //경직 테스트용
+        public GameObject oBallPref;
 
         public MeshRenderer[] muzzleFlash;
 
@@ -108,6 +120,13 @@ namespace T2
                 }
                 else
                     fRpmTimer += Time.deltaTime;
+            }
+
+            //경직용 테스트 투사체 발사.
+            if(Input.GetMouseButtonDown(1))
+            {
+                transform.rotation = Quaternion.Euler(0.0f, Camera.main.transform.eulerAngles.y, 0.0f);
+                StartCoroutine(TestBallFire());
             }
 
             //if (Input.GetMouseButtonUp(0))
@@ -242,6 +261,17 @@ namespace T2
 
             //머즐플래시
             this.StartCoroutine(ShowMuzzleFlash(0));
+        }
+
+
+        IEnumerator TestBallFire()
+        {
+            yield return new WaitForSeconds(0.02f);
+
+            GameObject ball = GameObject.Instantiate(oBallPref);
+            ball.transform.position = transform.position + transform.forward * 1.5f + transform.up * 1.5f;
+            Ray ray = new Ray(transform.position, cam.transform.forward);
+            ball.transform.LookAt(ray.GetPoint(100.0f));
         }
 
         public bool isFire() { return bFire; }

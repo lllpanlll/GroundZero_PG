@@ -4,6 +4,12 @@ using System;
 
 namespace T2.Skill
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 시점을 1인칭 시점으로 바꾼뒤 공격하는 저격스킬이다.
+    /// (구)스킬매니저를 상속받아 구현하였었다.
+    /// 1인칭 시점으로 변경시 FOV를 조절하여 줌인이 되도록 함.
+    /// </summary>
     public class Snipe : T2.Skill.Skill
     {
 

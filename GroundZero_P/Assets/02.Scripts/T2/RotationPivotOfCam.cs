@@ -3,6 +3,14 @@ using System.Collections;
 
 namespace T2
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 플레이어의 머리부분의 오브젝트에 붙는 스크립트
+    /// 이 오브젝트를 회전시키고, 카메라가 이 오브젝트를 LookAt하도록 해서 카메라가 회전하도록 한다.
+    /// 마우스의 Axis값을 받아와 회전시킨다.
+    /// fClamp값 만큼만 위,아래 회전이 가능하다.
+    /// 마우스 회전 컨트롤이 불가능한 경우를 구현함.
+    /// </summary>
     public class RotationPivotOfCam : MonoBehaviour
     {
         private float fAngleX, fAngleY;
@@ -24,6 +32,9 @@ namespace T2
             fRotSpeed = Camera.main.GetComponent<FollowCam>().fMouseRotSpeed;
             basicAttack = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent< BasicAttack>();
             animator = GameObject.FindGameObjectWithTag(Tags.Player).GetComponentInChildren< Animator>();
+
+            transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+
             fAngleY = transform.eulerAngles.x;
             fAngleX = transform.eulerAngles.y;
 
@@ -32,6 +43,8 @@ namespace T2
 
         void OnEnable()
         {
+            transform.rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+
             fAngleY = transform.eulerAngles.x;
             fAngleX = transform.eulerAngles.y;
 

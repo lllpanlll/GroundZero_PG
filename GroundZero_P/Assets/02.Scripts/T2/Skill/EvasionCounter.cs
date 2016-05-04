@@ -3,6 +3,12 @@ using System.Collections;
 
 namespace T2.Skill
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 현재 위치에 폭발물을 설치한 뒤 에임방향의 뒤로 이동하는 스킬이다.
+    /// 폭발물 설치를 제외하면 기본 구조는 Evasion_E스킬과 비슷하다.
+    /// 폭발물은 플레이어의 탄환이나 보스의 콜리더에 닿으면 폭발한다.
+    /// </summary>
     public class EvasionCounter : T2.Skill.Skill
     {
         //private T2.MoveCtrl moveCtrl;  //이동상태 변경을 위함

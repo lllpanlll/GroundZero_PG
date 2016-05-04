@@ -4,6 +4,12 @@ using System;
 
 namespace T2.Skill
 {
+    /// <summary>
+    /// 2016-05-04
+    /// 6번을 이동하며 이동 사이에 잠깐씩 멈추어서 처음 스킬을 사용할 때 조준한 방향으로 공격을 하는 스킬.
+    /// 이동중에는 잔상 효과가 나온다.
+    /// 카메라의 FOV수치를 조절하여 줌인,아웃 효과를 준다.
+    /// </summary>
     class SeventhFlow : T2.Skill.Skill, T2.Skill.ISkillTimer
     {
         #region<싱글톤>
