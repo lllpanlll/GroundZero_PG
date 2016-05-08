@@ -28,13 +28,9 @@ namespace T2.Pref
         {
             if (col.collider.gameObject.layer == LayerMask.NameToLayer(Layers.MonsterHitCollider))
             {
-                if (col.collider.gameObject.layer == LayerMask.NameToLayer(Layers.MonsterHitCollider))
-                {
-                    col.collider.gameObject.GetComponent<M_HitCtrl> ().OnHitMonster(10, false);
-                    if(mgr.GetPP() < Stat.MAX_PP)
-                        mgr.SetPP(mgr.GetPP() + 1);
-                }
-
+                col.collider.gameObject.GetComponent<M_HitCtrl> ().OnHitMonster(10, false);
+                if(mgr.GetPP() < Stat.MAX_PP)
+                    mgr.SetPP(mgr.GetPP() + 1);
             }
 
             basicAttack.SetFlareEffect(col.contacts[0].point);

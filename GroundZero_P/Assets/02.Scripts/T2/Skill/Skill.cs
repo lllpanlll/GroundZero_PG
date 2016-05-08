@@ -28,6 +28,9 @@ namespace T2.Skill
             bAction = false;
             bAfterDelay = false;
             this.skillCtrl = skillCtrl;
+            skillCtrl = skillCtrl;
+            bUsing = true;
+
             //this.skillCtrl.mgr.
         }
         public virtual void Execute(T2.Skill.SkillCtrl skillCtrl) { }
