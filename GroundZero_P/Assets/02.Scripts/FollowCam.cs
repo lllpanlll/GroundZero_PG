@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
-using RootMotion.FinalIK;
+//using RootMotion.FinalIK;
 
 public class FollowCam : MonoBehaviour {
     private Transform trTarget;
-    private LookAtIK lookAt;
+    //private LookAtIK lookAt;
     private Transform trPlayerModel;
     private T2.MoveCtrl moveCtrl;
 
@@ -51,8 +51,8 @@ public class FollowCam : MonoBehaviour {
         fDampTrace = DAMP_TRACE;
         trTarget = GameObject.FindGameObjectWithTag(Tags.CameraTarget).GetComponent<Transform>();
         trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
-        lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
-        lookAt.enabled = false;
+        //lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
+        //lookAt.enabled = false;
 
         moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
         cam = Camera.main;
