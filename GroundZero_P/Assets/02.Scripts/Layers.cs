@@ -14,5 +14,6 @@ public class Layers : MonoBehaviour {
     //오브젝트
     public const string NormalObj = "NORMAL_OBJ";
     public const string Bullet = "BULLET";
+    public const string Floor = "FLOOR";
     public const string AlleyTrigger = "ALLEY_TRIGGER";
 }

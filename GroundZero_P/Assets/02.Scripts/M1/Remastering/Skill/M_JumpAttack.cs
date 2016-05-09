@@ -14,7 +14,7 @@ public class M_JumpAttack : M_Skill
 
 
     //JumpAttack 
-    public GameObject jumpAttack;                                               //바디 프레스 콜리더
+    public GameObject jumpAttack;                                               //바디 콜리더
 
 
     //최초 스킬 초기화

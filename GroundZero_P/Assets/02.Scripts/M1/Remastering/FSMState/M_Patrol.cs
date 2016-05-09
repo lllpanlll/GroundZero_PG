@@ -8,7 +8,6 @@ using System.Collections;
 /// *코멘트
 ///     <<추가완료>>  인식했을 때 플레이어가 골목인지 아닌지 판단 후 골목/공격 상태 변환 결정
 ///     <<추가완료>>  경직 적용      
-/// Time.deltaTime 이녀석 한프레임에 넘 짜근 숫자가 올라가....
 /// </summary>
 
 
@@ -37,6 +36,7 @@ public class M_Patrol : M_FSMState
     public float patrolTimeLimit = 70.0f;                       //순찰 최대 제한시간
     public float patrolTimeCounter = 0.0f;                      //순찰 시간 카운트
 
+    public float waitTimeToArrive = 1.0f;                       //순찰 지점 도착 시 대기시간
 
     private bool isPlayerInAlley = false;                       //현재 플레이어가 골목에 있는지
     public bool IsPlayerInAlley { set { isPlayerInAlley = value; } }
@@ -94,43 +94,45 @@ public class M_Patrol : M_FSMState
     //랜덤 위치로 이동
     void RandomPatrol()
     {
-        //<<추가>>  아니 Time.deltaTime왤케 느리조...?
-        //patrolTimeCounter += Time.deltaTime;                        //시간 계속 카운트
-        patrolTimeCounter += (Time.deltaTime * 20);                 //시간 계속 카운트
+        patrolTimeCounter += (Time.deltaTime + m_Core.delayTime);     //시간 계속 카운트
 
-        if (patrolTimeCounter > patrolTimeLimit)                    //순찰 시간 제한을 넘기면
-            patrolState = M_PatrolState.GoToPlayerPatrol;           //플레이어 쪽으로 이동
+        //순찰 시간 제한을 넘기면 플레이어 쪽으로 이동
+        if (patrolTimeCounter > patrolTimeLimit)                    
+            patrolState = M_PatrolState.GoToPlayerPatrol;
 
 
-            //현재 선택된 순찰 지점에 도착하면
+        //현재 선택된 순찰 지점에 도착하면
         if (Vector3.Distance(m_Core.Tr.position, patrolWayPoints[nowPatrolWayPointIndex].position) < 1.0f)
         {
-            m_Core.delayTime = 0.8f;                                //다음 움직임까지 좀 기다려!
+            m_Core.delayTime = waitTimeToArrive;                                        //다음 움직임까지 일정 시간 대기
 
-            //다음에 갈 순찰 인덱스 선정
-            int tempPrevIndex = nowPatrolWayPointIndex;              //이전 인덱스 저장 
+            int tempPrevIndex = nowPatrolWayPointIndex;                                 //이전 인덱스 저장 
 
+            //다음에 갈 인덱스를 랜덤으로 선정 (이전 인덱스와 겹치지 않도록 한다)
             while (true)
             {
-                nowPatrolWayPointIndex = Random.Range(0, patrolWayPoints.Length - 1);  //인덱스 랜덤 선택
+                Random.seed = (int)System.DateTime.Now.Ticks;                           //랜덤값의 시드를 무작위로 만든다
+                nowPatrolWayPointIndex = Random.Range(0, patrolWayPoints.Length - 1);   
 
-                if (!nowPatrolWayPointIndex.Equals(tempPrevIndex))  //현재 선택된 인덱스가 이전 인덱스와 겹치지 않는다면
-                    break;                                          //진행
+                if (!nowPatrolWayPointIndex.Equals(tempPrevIndex))                      
+                    break;                                                                                                                      
             }
         }
 
-        //지정 순찰 위치까지 이동!
+        //지정 순찰 위치까지 이동
         m_Core.NvAgent.Resume();
         m_Core.NvAgent.destination = patrolWayPoints[nowPatrolWayPointIndex].position;
+        m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", true);
     }
     
     //플레이어 위치로 이동
     void GoToPlayerPatrol()
     {
-        //플레이어 위치까지 이동!
+        //플레이어 위치까지 이동
         m_Core.NvAgent.Resume();
         m_Core.NvAgent.destination = m_Core.PlayerTr.position;
+        m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", true);
     }
 
@@ -141,11 +143,15 @@ public class M_Patrol : M_FSMState
     //인식 상태로 체인지
     public void ChangeStateToRecognition()
     {
-        if (isPlayerInAlley)
+        if (isPlayerInAlley)                                    //플레이어가 골목 안에 있다면
+        {
+            M_Alley.instance.IsStartToIdleOrPatrol = true;
             m_Core.ChangeState(M_Alley.instance);               //골목상태로 변경
+        }
         else
             m_Core.ChangeState(M_Attack.instance);              //공격상태로 변경
     }
+
 
 
     //몬스터 경직
@@ -159,10 +165,11 @@ public class M_Patrol : M_FSMState
     //상태 진입
     public override void Enter()
     {
-        m_Core.monState = topState;                             //몬스터의 현재 상태는 Patrol입니다
-        patrolState = M_PatrolState.RandomPatrol;               //시작은 랜덤부터
+        m_Core.monState = topState;                                                     //몬스터의 현재 상태는 Patrol입니다
+        patrolState = M_PatrolState.RandomPatrol;                                       //시작은 랜덤부터
 
-        nowPatrolWayPointIndex = Random.Range(0, patrolWayPoints.Length - 1);  //인덱스 랜덤 선택
+        Random.seed = (int)System.DateTime.Now.Ticks;                                   //랜덤값의 시드를 무작위로 만든다
+        nowPatrolWayPointIndex = Random.Range(0, patrolWayPoints.Length - 1);           //인덱스 랜덤 선택
         patrolTimeCounter = 0.0f;
 
         //////Debug.Log("Enter Patrol");

@@ -23,12 +23,12 @@ public class O_AlleyGateTrigger : MonoBehaviour {
             if (inCornerPos)    //코너가 존재하면
             {
                 //게이트(자신) 위치, 게이트 앞 포인트 위치, 골목 안쪽 코너 위치  몬스터에게 전달
-                M_Alley.instance.CheckAlleying(transform.position, gateForwardPos.position, inCornerPos.position);  
+                M_Alley.instance.CheckAlleying(gameObject, transform.position, gateForwardPos.position, inCornerPos.position);  
             }
             else
             {
                 //게이트(자신) 위치, 게이트 앞 포인트 위치  몬스터에게 전달
-                M_Alley.instance.CheckAlleying(transform.position, gateForwardPos.position, Vector3.zero);
+                M_Alley.instance.CheckAlleying(gameObject, transform.position, gateForwardPos.position, Vector3.zero);
             }
         }
     }

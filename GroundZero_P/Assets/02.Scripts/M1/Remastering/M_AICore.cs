@@ -2,13 +2,10 @@
 using System.Collections;
 
 /// <summary>
-/// 마지막 수정 날짜       160421
 /// 작성자                 JSH
 /// Monster AI Core
 /// 
 /// *코멘트
-///     데이터 구조체로 묶어 정리
-///     Sight Auditory등의 체크로 가져올 데이터를 분리할 것인가?
 /// </summary>
 
 
@@ -22,29 +19,25 @@ public enum M_TopState          //최상위 상태
     Patrol,
     Attack,
     Alley,
-    Rigid,
+    Getaway,
     Dead
 }
 
 public enum M_AttackState       //공격 상태
 {
     None = 0,
-    BodyPress,
-    Breath,
-    Magic_1,
-    Magic_2,
-    EnergyEmission,
-    JumpAttack,
-    Trace
+    UnderCycle,
+    InCycle,
+    OverCycle
 }
 
 public enum M_AlleyState        //골목 상태
 {
     None = 0,
     Starting,
-    ForeFootPress,
     InSight,
     Tracing,
+    NoWait,
     Patrol
 }
 
@@ -57,7 +50,9 @@ public enum M_PatrolState       //순찰 상태
 
 #endregion
 
+
 #region 몬스터 수치 구조체
+
 public struct SightValue        //시야 체크 수치
 {
     public bool isPlayerInSight;                    //플레이어가 시야에 있는가
@@ -79,18 +74,10 @@ public struct AuditoryValue     //청역 체크 수치
     public int trToPlayerPathCornerLangth;          //플레이어까지 경로의 코너 갯수
 }
 
-public struct DistValue         //플레이어와의 거리 수치
+public struct CycleDistValue    //플레이어와의 거리 수치
 {
-    public enum SigntInCycleState
-    {
-        None,
-        UnderCycle,
-        InCycle,
-        OverCycle
-    }
-
     public float trToPlayerDist;                    //플레이어까지의 직선거리  
-    public SigntInCycleState sightInCycleState;     //플레이어의 시야 Cycle 상태
+    public M_AttackState sightInCycleState;     //플레이어의 시야 Cycle 상태
 }
 
 #endregion
@@ -102,30 +89,30 @@ public class M_AICore : MonoBehaviour {
 
     #region 몬스터 스테이터스 및 상태
 
-    public int HP = 500;                                            //HP
+    public int HP = 500;                                                    //HP
 
-    private bool isDie = false;                                     //사망 여부
+    private bool isDie = false;                                             //사망 여부
 
-    public M_TopState monState;                                     //몬스터 현재 상위 상태 Key
-    private M_FSMState m_FsmState;                                  //몬스터 현재 상위 상태 객체
+    public M_TopState monState;                                             //몬스터 현재 상위 상태 Key
+    private M_FSMState m_FsmState;                                          //몬스터 현재 상위 상태 객체
 
-    private bool isDoingOther = false;                              //다른 행동중 여부
+    private bool isDoingOther = false;                                      //다른 행동중 여부
     public bool IsDoingOther { get { return isDoingOther; } set { isDoingOther = value; } }
 
-    private bool isDelay = false;                                   //판단 딜레이 여부
-    public float delayTime = 1.0f;                                  //딜레이 시간
-    private float delayTimeCounter = 0.0f;                          //딜레이 카운터
+    private bool isDelay = false;                                           //판단 딜레이 여부
+    public float delayTime = 1.0f;                                          //딜레이 시간
+    private float delayTimeCounter = 0.0f;                                  //딜레이 카운터
 
-    private bool isStop = false;                                    //행동 강제종료 명령
+    private bool isStop = false;                                            //행동 강제종료 명령
     
-    private Transform tr;                                           //몬스터 Transform
+    private Transform tr;                                                   //몬스터 Transform
     public Transform Tr { get { return tr; } }
-    private NavMeshAgent nvAgent;                                   //몬스터 NavMeshAgent
+    private NavMeshAgent nvAgent;                                           //몬스터 NavMeshAgent
     public NavMeshAgent NvAgent { get { return nvAgent; } }
-    private Animator animator;                                      //몬스터 Animator
+    private Animator animator;                                              //몬스터 Animator
     public Animator Animator { get { return animator; } }
 
-    private bool isRigid = false;                                    //몬스터 경직 여부
+    private bool isRigid = false;                                           //몬스터 경직 여부
     public bool IsRigid { get { return isRigid; } set { isRigid = value; } }
 
     #endregion
@@ -133,9 +120,9 @@ public class M_AICore : MonoBehaviour {
 
     #region 플레이어 정보
 
-    private Transform playerTr;                     //플레이어 위치
+    private Transform playerTr;                                             //플레이어 위치
     public Transform PlayerTr { get { return playerTr; } }
-    private bool isPlayerDie = false;               //플레이어 사망여부
+    private bool isPlayerDie = false;                                       //플레이어 사망여부
 
     #endregion
 
@@ -143,29 +130,33 @@ public class M_AICore : MonoBehaviour {
     #region 몬스터 기본 판단
 
     //거리 판단
-    private DistValue distValue;                   //몬스터에서 플레이어까지의 거리
-    public DistValue DistValue { get { return distValue; } }
-    private Vector3 trToPlayerVector;               //몬스터에서 플레이어를 가리키는 Vector
+    private CycleDistValue distValue;                                       //몬스터에서 플레이어까지의 거리
+    public CycleDistValue DistValue { get { return distValue; } }
+    private Vector3 trToPlayerVector;                                       //몬스터에서 플레이어를 가리키는 Vector
 
     //시야 판단
-    public float sightDistRange = 50.0f;            //시야 거리 범위
-    public float sightAngleRange = 40.0f;           //시야각 범위
-    private Ray sightRay;                           //시야 Ray
-    private RaycastHit hit;                         //시야 Ray에 맞은 물체
-    private int inSightLayerMask;                   //시야 Ray 레이어 마스크 
+    public float sightDistRange = 50.0f;                                    //시야 거리 범위
+    public float sightAngleRange = 40.0f;                                   //시야각 범위
+    private Ray sightRay;                                                   //시야 Ray
+    private RaycastHit hit;                                                 //시야 Ray에 맞은 물체
+    private int inSightLayerMask;                                           //시야 Ray 레이어 마스크 
 
-    private SightValue sightValue = new SightValue();                  //시야 정보     
+    private SightValue sightValue = new SightValue();                       //시야 정보     
 
     //청각 판단
-    public float hearingMaxCircleDist = 80.0f;      //청각 범위 반지름 값
-    public float hearingMaxNavDist = 180.0f;        //청각 범위 실 거리값
+    public float hearingMaxRadiusDist = 80.0f;                              //청각 범위 반지름 값
+    public float hearingMaxNavDist = 180.0f;                                //청각 범위 실 거리값
 
     private AuditoryValue auditoryValue = new AuditoryValue(false, -1);     //청각정보
 
     //공격 사이클 범위
-    public float minCycleRange = 4.0f;              //공격 사이클 최소 범위
-    public float maxCycleRange = 14.0f;             //공격 사이클 최대 범위
+    public float minCycleRange = 4.0f;                                      //공격 사이클 최소 범위
+    public float maxCycleRange = 14.0f;                                     //공격 사이클 최대 범위
 
+    //NvAgent의 목표 지점 갱신
+    private bool isNeedToChaseTr = false;                                   //목표 지점을 실시간으로 갱신할 필요가 있는가
+    private Transform destinationTr;                                        //목표 Transform
+    
     #endregion
 
     
@@ -173,30 +164,26 @@ public class M_AICore : MonoBehaviour {
     //Start
     void Start()
     {
-        Initialize();                               //AI 초기화
+        Initialize();                                               //AI 초기화
 
-        StartCoroutine(UpdateMon());                //몬스터 행동 시작
+        StartCoroutine(UpdateMon());                                //몬스터 행동 시작
     }
 
     
 
-    //UpdateMon  몬스터가 아직 죽지 않았거나 판단 딜레이중이 아니면 현재 FSM상태를 받아와서 그 상태의 Update문 실행
+    //몬스터가 아직 죽지 않았거나 판단 딜레이중이 아니면 현재 FSM상태를 받아와서 그 상태의 Update문 실행
     IEnumerator UpdateMon()
     {
-        while(!isDie)                           //죽지 않았고
+        while(!isDie)                                               //죽지 않았고
         {
-            if(!isDoingOther)                   //다른 특별한 행동을 하지 않고
+            if(!isDoingOther)                                       //다른 특별한 행동을 하지 않고
             {
-                if (!isDelay)                   //판단 딜레이중이 아니면
+                if (!isDelay)                                       //판단 딜레이중이 아니면
                 {
-
-                    //Debug.Log("Uptate Update");
-
-
                     //상태 Update 실행
                     m_FsmState.FSMUpdate();
-
-                    if(delayTime > 0.0f)        //Update실행 중 딜레이 타임이 설정되었으면 딜레이 시작
+                    
+                    if (delayTime > 0.0f)                           //Update실행 중 딜레이 타임이 설정되었으면 딜레이 시작
                         isDelay = true;
                 }
                 else
@@ -211,6 +198,10 @@ public class M_AICore : MonoBehaviour {
                     }
                 }
             }
+
+
+            if (isNeedToChaseTr)                                    //실시간 목표지점 갱신이 필요하다면
+                nvAgent.destination = destinationTr.position;       //목표지점 갱신
 
             yield return new WaitForEndOfFrame();
         }
@@ -245,9 +236,9 @@ public class M_AICore : MonoBehaviour {
 
 
 
-    #region 공통 사항
+    #region 판단
 
-    //CheckSight  시야 체크
+    //시야 체크
     public SightValue CheckSight()
     {
         //몬스터에서 플레이어를 가리키는 벡터 구하기
@@ -257,9 +248,6 @@ public class M_AICore : MonoBehaviour {
         //시야 판단
         if (Physics.Raycast(sightRay, out hit, sightDistRange, inSightLayerMask))
         {
-            //    Debug.Log("InSightRay " + hit.collider.gameObject.name);                   //시야에 닿은 물체 디버깅
-
-
             if (hit.collider.tag == Tags.Player)                                            //시야에 플레이어가 들어온다면
             {
                 sightValue.isPlayerInStraightLine = true;                                   //직선거리 안에서 플레이어 확인 성공
@@ -294,14 +282,14 @@ public class M_AICore : MonoBehaviour {
         return sightValue;
     }
 
-    //CheckAuditoryField  청역 체크
+    //청역 체크
     public AuditoryValue CheckAuditoryField()
     {
         //플레이어까지의 직선거리 판단
         distValue.trToPlayerDist = Vector3.Distance(tr.position, playerTr.position);
 
         //직선거리 반경 한계 이하일 때 청역판단 활성화
-        if (distValue.trToPlayerDist < hearingMaxCircleDist)
+        if (distValue.trToPlayerDist < hearingMaxRadiusDist)
         {
             NavMeshPath path = new NavMeshPath();                               //NavMesh경로를 저장할 Path
 
@@ -315,9 +303,6 @@ public class M_AICore : MonoBehaviour {
             float pathLength = 0;                                               //경로 총 거리
             int pathCornersLength = path.corners.Length;                        //경로 내 코너 갯수
             
-            //Debug.Log("Length " + path.corners.Length);                         //경로의 길이 디버깅
-
-
             if (pathCornersLength > 0)                                          //경로 내 코너 갯수가 0 이상
             {
                 pathLength += Vector3.Distance(tr.position, path.corners[0]);   //현재 몬스터 위치에서 경로 첫 지점까지의 거리부터 더하기 시작
@@ -327,10 +312,7 @@ public class M_AICore : MonoBehaviour {
                     //저장된 경로를 따라 경로 지점 사이의 거리를 구해 총 거리를 계산한다
                     pathLength += Vector3.Distance(path.corners[i], path.corners[i + 1]);
                 }
-
-                //Debug.Log("PathFin " + pathLength);
-
-
+                
                 //실 거리가 청역 범위 이내일 때 청역 내 플레이어 확인 성공 
                 if (pathLength < hearingMaxNavDist)
                 {
@@ -363,26 +345,26 @@ public class M_AICore : MonoBehaviour {
         return auditoryValue;
     }
 
-    //CheckDist  거리 체크 사이클 거리와 비교
-    public DistValue CheckDist()
+    //거리 체크 사이클 거리와 비교
+    public CycleDistValue CheckDist()
     {
         //플레이어와의 직선거리 판단
         distValue.trToPlayerDist = Vector3.Distance(tr.position, playerTr.position);
 
         //거리 사이클 체크
         if (distValue.trToPlayerDist < minCycleRange)
-        { distValue.sightInCycleState = DistValue.SigntInCycleState.UnderCycle; }
+        { distValue.sightInCycleState = M_AttackState.UnderCycle; }
 
         else if (distValue.trToPlayerDist < maxCycleRange)
-        { distValue.sightInCycleState = DistValue.SigntInCycleState.InCycle; }
+        { distValue.sightInCycleState = M_AttackState.InCycle; }
 
         else
-        { distValue.sightInCycleState = DistValue.SigntInCycleState.OverCycle; }
+        { distValue.sightInCycleState = M_AttackState.OverCycle; }
 
         return distValue;
     }
 
-    //CheckNevDist  실제 거리 체크
+    //실제 거리 체크
     public float CheckNevDist(Vector3 targetPos)
     {
         NavMeshPath path = new NavMeshPath();                                   //NavMesh경로를 저장할 Path
@@ -391,9 +373,6 @@ public class M_AICore : MonoBehaviour {
         //NavAgent가 활성화중이면 NavAgent를 이용하여 타겟 지점까지 경로 계산
         if (nvAgent.enabled)
             nvAgent.CalculatePath(targetPos, path);
-
-
-        //Debug.Log("Length " + path.corners.Length);                         //경로의 길이 디버깅
 
         //계산된 경로를 따라 실 거리를 구한다
         float pathLength = 0;                                                   //경로 총 거리
@@ -409,20 +388,31 @@ public class M_AICore : MonoBehaviour {
                 pathLength += Vector3.Distance(path.corners[i], path.corners[i + 1]);
             }
         }
-        
-        //Debug.Log("PathFin " + pathLength);
-
+         
         return pathLength;
     } 
 
-    
-    //RigidMon  경직
+    //실시간 목표지점 갱신 처리 체크
+    public void SetDestinationRealtime(bool _isNeedToChaseTr, Transform tr)
+    {
+        isNeedToChaseTr = _isNeedToChaseTr;
+
+        if (isNeedToChaseTr)
+            destinationTr = tr;
+    }
+
+    #endregion
+
+
+    #region 공통 판단
+
+    //경직
     public void RigidMon()
     {
         m_FsmState.MonRigid();
     }
 
-    //DieMon  몬스터 사망 
+    //몬스터 사망 
     public void DieMon()
     {
         isDie = true;
@@ -433,7 +423,7 @@ public class M_AICore : MonoBehaviour {
 
 
 
-    //ChangeState  스테이트 변경
+    //스테이트 변경
     public void ChangeState(M_FSMState m_ChangState)
     {
         m_FsmState.Exit();                              //이전 State 이탈

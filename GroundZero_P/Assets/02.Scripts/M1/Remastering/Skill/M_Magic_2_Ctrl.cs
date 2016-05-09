@@ -11,16 +11,18 @@ using System.Collections;
 
 
 
-public class M_Magic_2_Ctrl : MonoBehaviour {
-
+public class M_Magic_2_Ctrl : MonoBehaviour
+{
+    private float traceSpeed;                               //추적 속도
     private float speed;                                    //발사 속도
     public float delayTime = 0.5f;                          //발사 대기 시간
     private float maxDist = 100.0f;                         //최대 사거리
 
     private bool isShooted = false;                         //이미 발사되었는가
-    public bool IsShooted { get { return isShooted; } }               
+    public bool IsShooted { get { return isShooted; } }
 
-    private Transform monsterTr;                            //몬스터 위치
+    private Transform shootPointTr;                         //발사하려는 Transform 위치
+    public Transform ShootPointTr { set { shootPointTr = value; } }
     private Vector3 shootPos;                               //발사 위치
     
 
@@ -28,31 +30,25 @@ public class M_Magic_2_Ctrl : MonoBehaviour {
 
 
 
-    void Start()
-    { 
-        //필요한 정보 수집
-        speed = M_Magic_2.instance.magic_2_Speed;          
-        delayTime = M_Magic_2.instance.magic_2_ShootDelayTIme;
-        maxDist = M_Magic_2.instance.magic_2_MaxDist;
-
-        monsterTr = GameObject.FindWithTag(Tags.Monster).GetComponent<Transform>();
-
-
-        isStart = true;
-
-        shootPos = monsterTr.position;                  //발사 시점의 몬스터의 위치를 발사 시작 지점으로 설정
-    }
-
-
     //OnEnable
     void OnEnable()
     {
         isShooted = false;
 
-        if (isStart)                                    //Start함수가 호출된 후, 초기화가 완료된 시점에서
-            shootPos = monsterTr.position;              //발사 시점의 몬스터의 위치를 발사 시작 지점으로 설정
+        if (!isStart)                                       //아직 초기화가 되어있지 않다면
+        {
+            //필요한 정보 수집
+            traceSpeed = M_Magic_2.instance.magic_2_TraceSpeed;
+            speed = M_Magic_2.instance.magic_2_Speed;
+            delayTime = M_Magic_2.instance.magic_2_ShootDelayTIme;
+            maxDist = M_Magic_2.instance.magic_2_MaxDist;
 
-        StartCoroutine(this.ShootMagic_2());            //마법 1 발사
+            isStart = true;
+        }
+        else
+        {
+            StartCoroutine(this.ShootMagic_2());            //마법 2 발사
+        }
     }
 
 
@@ -60,13 +56,28 @@ public class M_Magic_2_Ctrl : MonoBehaviour {
     //마법 2 발사
     IEnumerator ShootMagic_2()
     {
-        yield return new WaitForSeconds(delayTime);                             //발사 대기
-        
-        GetComponent<Rigidbody>().AddForce(transform.forward * speed);          //바라보는 방향으로 Speed만큼 힘을 가해 발사
+        float timeCounter = 0.0f;
 
-        StartCoroutine(this.CheckDist());                                       //거리 체크 시작
+        yield return new WaitForSeconds(0.03f);                                         //위치 설정이 되길 대기
 
-        isShooted = true;                                                       //발사 완료
+        //딜레이 타임 동안 발사 시작 위치를 따라다닌다
+        while (timeCounter < delayTime)
+        {
+            transform.position = Vector3.Lerp(transform.position, shootPointTr.position, Time.deltaTime * traceSpeed);
+            transform.rotation = shootPointTr.rotation;
+
+            timeCounter += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+
+        shootPos = shootPointTr.position;                                               //발사가 시작되는 위치 저장
+
+
+        GetComponent<Rigidbody>().AddForce(transform.forward * speed);                  //바라보는 방향으로 Speed만큼 힘을 가해 발사
+
+        StartCoroutine(this.CheckDist());                                               //거리 체크 시작
+
+        isShooted = true;                                                               //발사 완료
     }
 
 
@@ -75,12 +86,12 @@ public class M_Magic_2_Ctrl : MonoBehaviour {
     {
         while (true)
         {
-            //발사 시작 지점에서 일정 거리 이상 멀어지면 마법 1 비활성화
+            //발사 시작 지점에서 일정 거리 이상 멀어지면 마법 2 비활성화
             if (Vector3.Distance(gameObject.transform.position, shootPos) > maxDist)
             {
-                GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);         //이전에 적용된 힘 제거
+                GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);     //이전에 적용된 힘 제거
                 gameObject.SetActive(false);
-
+                isShooted = false;
 
                 yield break;
             }
@@ -90,16 +101,19 @@ public class M_Magic_2_Ctrl : MonoBehaviour {
     }
 
 
-    //플레이어가 공격(총알)하면  파괴
-    void OnCollisionEnter(Collision coll)
-    {
-        if (coll.collider.gameObject.layer == LayerMask.NameToLayer(Layers.Bullet))         
-            Destroy(gameObject);
-    }
-
+    //OnTriggerEnter
     void OnTriggerEnter(Collider coll)
     {
-        if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.Bullet))
-            Destroy(gameObject);
+        if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.Bullet))              //플레이어의 공격(총알)하면 파괴
+        {
+            GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);         //이전에 적용된 힘 제거
+            gameObject.SetActive(false);
+        }
+
+        else if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.Floor))          //큰 배경(바닥 벽)에 부딛히면 파괴
+        {
+            GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);         //이전에 적용된 힘 제거
+            gameObject.SetActive(false);
+        }
     }
 }
