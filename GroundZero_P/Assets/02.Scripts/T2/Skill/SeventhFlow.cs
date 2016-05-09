@@ -20,7 +20,7 @@ namespace T2.Skill
         }
         #endregion
         //스킬의 필수 기본 변수들, 나중에 public으로 변환.
-        public Manager.SkillType PointType;
+        public Manager.SkillType PointType = Manager.SkillType.PP;
         public int iDecPoint = 10;
         public float beforeDelayTime = 0.0f;
         public float afterDelayTime = 0.0f;
@@ -75,9 +75,7 @@ namespace T2.Skill
         {
             //기본 변수 초기화.
             base.Enter(skillCtrl);
-            base.skillCtrl = skillCtrl;
             base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
-            base.bUsing = true;
             base.CoolTimeCoroutine = CoolTimer(coolTime);           
             fOrizinFOV = base.skillCtrl.cam.fieldOfView;           
 

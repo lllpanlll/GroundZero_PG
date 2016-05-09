@@ -81,4 +81,16 @@ public class ObjectPool : MonoBehaviour{
         }
         objectPool = null;
     }
+
+    public bool FullActiveCheck()
+    {
+        for (int i = 0; i < objectNum; i++)
+        {
+            if (objectPool[i].activeSelf == false)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 }
