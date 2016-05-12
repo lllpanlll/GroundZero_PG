@@ -98,7 +98,7 @@ namespace T2
         void Update()
         {
             //임시 지구력 UI.
-            fillGaugeBar.size = ep * 0.01f;
+            //fillGaugeBar.size = ep * 0.01f;
 
             #region<Sprint로 인한 EP증감>
             if (skillCtrl == State.idle || skillCtrl == State.attack)

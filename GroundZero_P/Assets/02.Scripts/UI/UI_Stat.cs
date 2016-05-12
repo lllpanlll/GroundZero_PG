@@ -6,25 +6,35 @@ public class UI_Stat : MonoBehaviour
 {
     T2.Manager t_mgr;
     public GameObject oPlayer, oAimPanel, oDpPp, oEmptyAP, oSkill;
-    public Slider sliderEP;
-    Slider sliderAP, sliderDP, sliderPP;
 
+    // EP
+    public Slider sliderEP;
     Image[] imageEP;
     float fScaleEpHandle = 1;
-    Text textEp, textAp;
-
-    Image imageHP, imageHighlight, imageEmptyAP, imageAim1, imageAim2;
-    RectTransform trHighlight, trPpHandle, trAim1, trAim2;
-    int iPrePp;
-    float fRotHighlight;
-    float timerEp, timerAp;
-    bool bHighlight;
+    Text textEp;
+    float timerEp = 0;
+    // AP
+    Slider sliderAP;
+    Text textAp;
+    Image imageEmptyAP, imageAim1, imageAim2;
+    RectTransform trAim1, trAim2;
+    float timerAp = 0;
+    Quaternion qAimRot;
+    // PP
+    Slider sliderPP;
+    Image imageHighlight;
+    RectTransform trHighlight, trPpHandle;
+    int iPrePp = 0;
+    float fRotHighlight = 0;
+    bool bHighlight = false;
+    // DP
+    Slider sliderDP;
+    Image imageHP;
 
     float fAlphaEp = 1f, fAlphaPp = 0f, fAlphaAp = 1f;
     float fFadeoutSpeed = 0.5f; // 전체 페이드아웃 속력
 
-    Quaternion qAimRot;
-
+    // Skills
     T2.Skill.SeventhFlow skillSeventhFlow;
     float coolTimerSeventhFlow;
     Slider[] sliderSkill;
@@ -51,16 +61,21 @@ public class UI_Stat : MonoBehaviour
         imageHighlight = trHighlight.GetComponent<Image>();
         trPpHandle = sliderPP.transform.FindChild("PpHandle").GetComponent<RectTransform>();
         sliderSkill = oSkill.GetComponentsInChildren<Slider>();
-        imageSkill1 = sliderSkill[0].GetComponentsInChildren<Image>();
+        imageSkill1 = sliderSkill[0].GetComponentsInChildren<Image>(); // 1번째 스킬칸
+        imageSkill2 = sliderSkill[1].GetComponentsInChildren<Image>(); // 2번째 스킬칸
         skillSeventhFlow = oPlayer.GetComponent<T2.Skill.SeventhFlow>();
-        imageSkill2 = sliderSkill[1].GetComponentsInChildren<Image>();
-        imageSkill3 = sliderSkill[2].GetComponentsInChildren<Image>();
-        imageSkill4 = sliderSkill[3].GetComponentsInChildren<Image>();
+        imageSkill3 = sliderSkill[2].GetComponentsInChildren<Image>(); // 3번째 스킬칸
+        imageSkill4 = sliderSkill[3].GetComponentsInChildren<Image>(); // 4번째 스킬칸
     }
+
     void Start()
     {
+        sliderAP.maxValue = T2.Stat.MAX_AP;
+        sliderEP.maxValue = T2.Stat.MAX_EP;
+        sliderPP.maxValue = T2.Stat.MAX_PP;
+        sliderDP.maxValue = T2.Stat.MAX_DP;
         sliderSkill[1].maxValue = skillSeventhFlow.coolTime;
-        iPrePp = 100;
+        iPrePp = (int)sliderPP.maxValue;
         for (int i = 0; i < 4; i++)
         {
             timerSkill[i] = 5;
@@ -88,21 +103,23 @@ public class UI_Stat : MonoBehaviour
         {
             coolTimerSeventhFlow = sliderSkill[1].maxValue;
         }
-        SkillCooltimeComplite(imageSkill2, 1);
+        CompleteSkillCooltime(imageSkill2, 1);
     }
 
-    void SkillCooltimeComplite(Image[] _imageSkill, int _num)
+    // 스킬쿨타임 완료체크 (ex => CompleteSkillCooltime(imageSkill2, 1)) = 2번째 스킬인 7플로우를 뜻함
+    // _imageSkill[n]에서 2는 테두리 하이라이트, 3은 boom이펙트
+    void CompleteSkillCooltime(Image[] _imageSkill, int _num)
     {
         sliderSkill[_num].value = SkillCooltime(ref coolTimerSeventhFlow);
 
         if (sliderSkill[_num].value.Equals(0))
         {
             timerSkill[_num] += Time.deltaTime;
-            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f)
+            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f) // 1초 동안 스킬의 쿨타임이 완료 됐음을 알림
             {
                 _imageSkill[2].color = Color.white;
             }
-            else if (timerSkill[_num] < 0.1f)
+            else if (timerSkill[_num] < 0.1f) // 스킬의 쿨타임이 완료 되면 잠깐동안 boom 이펙트
             {
                 fAlphaSkill[_num] = 1;
             }
@@ -111,7 +128,7 @@ public class UI_Stat : MonoBehaviour
                 _imageSkill[2].color = Color.clear;
             }
         }
-        else if(sliderSkill[_num].value > sliderSkill[_num].maxValue - 1)
+        else// if(sliderSkill[_num].value > sliderSkill[_num].maxValue - 1)
         {
             timerSkill[_num] = 0;
             _imageSkill[2].color = Color.clear;
