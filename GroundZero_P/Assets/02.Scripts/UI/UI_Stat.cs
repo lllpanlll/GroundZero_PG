@@ -10,7 +10,7 @@ public class UI_Stat : MonoBehaviour
     // EP
     public Slider sliderEP;
     Image[] imageEP;
-    float fScaleEpHandle = 1;
+    float fScaleEpHandle = 2;
     Text textEp;
     float timerEp = 0;
     // AP
@@ -206,6 +206,7 @@ public class UI_Stat : MonoBehaviour
                 imageEP[2].rectTransform.localScale = new Vector3(1, 1, 1);
                 textEp.color = new Color(1, 1, 1, FadeInOut(ref fAlphaEp, -1));
             }
+            imageEP[2].rectTransform.localScale = new Vector3(1,1,1);
         }
         else if (sliderEP.value < sliderEP.maxValue)
         {
@@ -223,8 +224,8 @@ public class UI_Stat : MonoBehaviour
     float TransmuteImageScale(ref float _f)
     {
         _f -= Time.deltaTime;
-        _f = Mathf.Clamp(_f, 0.5f, 1f);
-        if (_f < 0.6) _f = 1;
+        _f = Mathf.Clamp(_f, 0.5f, 1.5f);
+        if (_f < 0.6) _f = 1.5f;
 
         return _f;
     }

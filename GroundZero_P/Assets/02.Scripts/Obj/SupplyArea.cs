@@ -3,7 +3,7 @@ using System.Collections;
 
 public class SupplyArea : MonoBehaviour {
 
-    public float tRespawnTime = 1f;
+    public float fRespawnTime = 1f;
     public GameObject oApCharger;
     GameObject oAp;
     public float x1, x2, z1, z2;
@@ -22,7 +22,7 @@ public class SupplyArea : MonoBehaviour {
     
     IEnumerator RespawnCycle()
     {
-        yield return new WaitForSeconds(tRespawnTime);
+        yield return new WaitForSeconds(fRespawnTime);
         // 생성 -> 이동 -> 활성
         // vPoint[0] = fixedCam.WorldToScreenPoint(new Vector3(
         // rend.bounds.center.x + rend.bounds.extents.x, 
