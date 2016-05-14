@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Monster Magic_2 Control
+/// 마법 2 발사체 컨트롤. 앞을 향해 발사된다.
 /// 
 /// *코멘트
 ///     <<추가완료>>  오브젝트 풀 사용
@@ -104,13 +105,14 @@ public class M_Magic_2_Ctrl : MonoBehaviour
     //OnTriggerEnter
     void OnTriggerEnter(Collider coll)
     {
-        if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.Bullet))              //플레이어의 공격(총알)하면 파괴
-        {
-            GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);         //이전에 적용된 힘 제거
-            gameObject.SetActive(false);
-        }
+        //if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.Bullet))              //플레이어의 공격(총알)하면 파괴
+        //{
+        //    GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);         //이전에 적용된 힘 제거
+        //    gameObject.SetActive(false);
+        //}
 
-        else if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.Floor))          //큰 배경(바닥 벽)에 부딛히면 파괴
+        //else 
+        if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.Floor))          //큰 배경(바닥 벽)에 부딛히면 파괴
         {
             GetComponent<Rigidbody>().velocity = new Vector3(0.0f, 0.0f, 0.0f);         //이전에 적용된 힘 제거
             gameObject.SetActive(false);

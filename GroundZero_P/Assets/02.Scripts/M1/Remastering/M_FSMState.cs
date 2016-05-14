@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Monster FSM SuperClass
+/// 스킬에서 공통으로 사용될 변수와 인터페이스 정의.
 /// 
 /// *코멘트
 /// </summary>
@@ -84,13 +85,9 @@ public class M_FSMState : MonoBehaviour
     protected IEnumerator DoNothingInRigid()
     {
         m_Core.IsDoingOther = true;
-
-        //Debug.Log("Delay Start Rigid");
-
+        
         yield return new WaitForSeconds(rigidTime);
-
-        //Debug.Log("Delay End Rigid");
-
+        
         m_Core.IsDoingOther = false;
         m_Core.IsRigid = false;
     }

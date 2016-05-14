@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// AlleyBreath 1 
+/// 골목 브레스 1. 골목 안쪽을 향해 발사체를 연사하고, 잔불을 남긴다.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_AlleyBreath_1 : M_Skill
 {
     #region SingleTon
@@ -14,29 +24,29 @@ public class M_AlleyBreath_1 : M_Skill
 
 
     //골목 브레스 1
-    public GameObject alleyBreath_1_Pref;                               //골목 브레스_1 프리팹
-    private GameObject alleyBreath_1_Obj;                               //골목 브레스_1 오브젝트
-    private ObjectPool alleyBreath_1_Pool = new ObjectPool();           //골목 브레스_1 오브젝트풀
+    public GameObject alleyBreath_1_Pref;                                       //골목 브레스_1 프리팹
+    private GameObject alleyBreath_1_Obj;                                       //골목 브레스_1 오브젝트
+    private ObjectPool alleyBreath_1_Pool = new ObjectPool();                   //골목 브레스_1 오브젝트풀
 
-    public Transform alleyBreath_1_Pivot;                               //골목 브레스_1이 발동될 Pivot 
+    public Transform alleyBreath_1_Pivot;                                       //골목 브레스_1이 발동될 Pivot 
 
-    public int alleyBreath_1_FireNum = 3;                               //골목 브레스_1의 발사체 갯수
-    public float alleyBreath_1_CreateDelayTime = 0.5f;                  //골목 브레스_1 생성 시간 차
+    public int alleyBreath_1_FireNum = 3;                                       //골목 브레스_1의 발사체 갯수
+    public float alleyBreath_1_CreateDelayTime = 0.5f;                          //골목 브레스_1 생성 시간 차
 
-    public float alleyBreath_1_Speed = 2000.0f;                         //골목 브레스_1 발사 속도
+    public float alleyBreath_1_Speed = 2000.0f;                                 //골목 브레스_1 발사 속도
 
-    private Vector3 targetPos;                                          //목표 위치
+    private Vector3 targetPos;                                                  //목표 위치
     public Vector3 TargetPos { get { return targetPos; } }
 
 
     //잔불
-    public GameObject emberPref;                                        //잔불 프리팹
-    private ObjectPool emberPool = new ObjectPool();                    //잔불 오브젝트풀
+    public GameObject emberPref;                                                //잔불 프리팹
+    private ObjectPool emberPool = new ObjectPool();                            //잔불 오브젝트풀
     public ObjectPool EmberPool { get{ return emberPool; } }
 
-    public int emberDamage = 10;                                        //잔불 데미지
-    public float emberCurTime = 2.0f;                                   //잔불 유지시간
-    public float createEmberDistance = 4.0f;                            //잔불 생성 간격
+    public int emberDamage = 10;                                                //잔불 데미지
+    public float emberCurTime = 2.0f;                                           //잔불 유지시간
+    public float createEmberDistance = 4.0f;                                    //잔불 생성 간격
     public float CreatrEmberDistance { get { return createEmberDistance; } }
     
 
@@ -53,6 +63,9 @@ public class M_AlleyBreath_1 : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
         targetPos = target;
 
         //안쪽 코너를 향해 회전
@@ -87,6 +100,8 @@ public class M_AlleyBreath_1 : M_Skill
 
 
         m_Core.IsDoingOther = false;                                            //행동 종료 
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

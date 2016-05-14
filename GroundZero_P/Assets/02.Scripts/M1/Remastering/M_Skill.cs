@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Skill Super Class
+/// 스킬에서 공통으로 사용될 변수와 인터페이스 정의.
 /// 
 /// *코멘트
 /// </summary>
@@ -27,20 +28,20 @@ public enum M_SkillCoad
 
 
 [System.Serializable]
-public class M_SkillStatus
+public class M_SkillStatus              //스킬 스테이터스
 {
-    private M_SkillCoad skillCode;
+    private M_SkillCoad skillCode;      //스킬 분류
     public M_SkillCoad SkillCode
     {
         get { return skillCode; }
         set { skillCode = value; }
     }
 
-    public int damage;
+    public int damage;                  //스킬 데미지
 
-    public float beforeDelayTime;
-    public float curTime;
-    public float AfterDelayTime;
+    public float beforeDelayTime;       //스킬 선 딜레이
+    public float curTime;               //스킬 실행 시간
+    public float AfterDelayTime;        //스킬 후 딜레이
 }
 
 
@@ -65,7 +66,7 @@ public class M_Skill : MonoBehaviour
 
 
     public virtual void InitSkill() { }                     //최초 스킬 초기화
-    public virtual IEnumerator UseSkill(Vector3 target)   //스킬 사용
+    public virtual IEnumerator UseSkill(Vector3 target)     //스킬 사용
     { yield return null; } 
     public virtual void CancelSkill() { }                   //스킬 캔슬 시 처리
 
@@ -97,5 +98,12 @@ public class M_Skill : MonoBehaviour
 
 
         m_Core.IsDoingOther = false;
+    }
+
+    //스킬 사용 후 스킬 스테이트 None으로 돌림
+    protected void ResetUseSkillNone()
+    {
+        M_Attack.instance.AttackSkillState = M_AttackSkillState.None;
+        M_Alley.instance.AlleySkillState = M_AlleySkillState.None;
     }
 }

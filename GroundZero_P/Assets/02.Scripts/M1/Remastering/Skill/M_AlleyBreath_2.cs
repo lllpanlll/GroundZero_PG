@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// AlleyBreath 2 
+/// 골목 브레스 2. 골목 안쪽을 향해 발사체를 발사하며, 분기마다 나뉜다.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_AlleyBreath_2 : M_Skill
 {
     #region SingleTon
@@ -47,6 +57,9 @@ public class M_AlleyBreath_2 : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
         //안쪽 코너를 향해 회전
         yield return StartCoroutine(this.RotateToPoint(m_Core.transform, target, lookRotationTime));
 
@@ -62,6 +75,9 @@ public class M_AlleyBreath_2 : M_Skill
 
         alleyBreath_2_Obj.transform.position = alleyBreath_2_Pivot.position;
         alleyBreath_2_Obj.transform.rotation = alleyBreath_2_Pivot.rotation;
+        
+        //Debug.Log("Breath2 Strating  " + M_Alley.instance.AlleyGateTrigger.name);
+        //Debug.Log("Breath2 Destination   " + M_Alley.instance.AlleyGateTrigger.GetComponent<M_AlleyBreath_2_Points>().connectPoints[0].name);
 
         alleyBreath_2_Obj.GetComponent<M_AlleyBreath_2_Ctrl>().Starting = M_Alley.instance.AlleyGateTrigger;
         alleyBreath_2_Obj.GetComponent<M_AlleyBreath_2_Ctrl>().Destination = M_Alley.instance.
@@ -74,6 +90,8 @@ public class M_AlleyBreath_2 : M_Skill
 
 
         m_Core.IsDoingOther = false;                                            //행동 종료 
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

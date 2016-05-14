@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// JumpAttack
+/// 점프 공격. 애니메이션이 실행되는 일정 시간동안 목표지점까지 이동.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_JumpAttack : M_Skill
 {
     #region SingleTon
@@ -17,6 +27,7 @@ public class M_JumpAttack : M_Skill
     public GameObject jumpAttack;                                               //바디 콜리더
 
 
+
     //최초 스킬 초기화
     public override void InitSkill()
     {
@@ -28,6 +39,9 @@ public class M_JumpAttack : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
         //플레이어를 향해 회전
         yield return StartCoroutine(this.RotateToPoint(m_Core.transform, target, lookRotationTime));
 
@@ -61,7 +75,9 @@ public class M_JumpAttack : M_Skill
         yield return new WaitForSeconds(skillStatus.AfterDelayTime);            //점프공격 대기
 
 
-        m_Core.IsDoingOther = false;                                //행동 종료 
+        m_Core.IsDoingOther = false;                                            //행동 종료 
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

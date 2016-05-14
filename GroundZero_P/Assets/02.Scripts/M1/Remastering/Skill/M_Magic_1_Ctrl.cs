@@ -4,13 +4,14 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Monster Magic_1 Control
+/// 마법 1 발사체 컨트롤. 곡선을 그리며 플레이어를 향해 발사.
 /// 
 /// *코멘트
 ///     <<추가완료>>  오브젝트 풀 사용
 ///     <<추가완료>> 아직 출발하지 않은 애들은 캔슬 시 삭제
 /// </summary>
 
-    
+
 
 public class M_Magic_1_Ctrl : MonoBehaviour
 {

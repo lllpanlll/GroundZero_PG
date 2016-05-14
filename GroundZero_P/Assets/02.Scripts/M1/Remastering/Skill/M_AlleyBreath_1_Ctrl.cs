@@ -1,36 +1,46 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// AlleyBreath 1 Control
+/// 골목 브레스 1의 발사체 컨트롤.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_AlleyBreath_1_Ctrl : MonoBehaviour
 {
-    private float speed;                                        //발사 속도  
-    private float maxDist = 100.0f;                             //최대 사거리
+    private float speed;                                                        //발사 속도  
+    private float maxDist = 100.0f;                                             //최대 사거리
 
-    private Vector3 shootPos;                                   //발사 위치
-    private Vector3 targetPos;                                  //목표 위치
+    private Vector3 shootPos;                                                   //발사 위치
+    private Vector3 targetPos;                                                  //목표 위치
 
 
-    private GameObject emberObj;                                //잔불 오브젝트
+    private GameObject emberObj;                                                //잔불 오브젝트
 
-    private bool isRoleOfEmber = false;                         //잔불 생성 역할 여부 
-    public bool IsRoleOfEmber { set { isRoleOfEmber = value; } }
+    private bool isRoleOfEmber = false;                                         //잔불 생성 역할 여부 
+    public bool IsRoleOfEmber { set { isRoleOfEmber = value; } }                
 
-    private int emberDamage = 10;                               //잔불 데미지
+    private int emberDamage = 10;                                               //잔불 데미지
 
-    private float createEmberDistance = 3.0f;                   //잔불 생성 간격                        
-    private Vector3 beforeEmberPos;                             //잔불 생성 이전 위치
+    private float createEmberDistance = 3.0f;                                   //잔불 생성 간격                        
+    private Vector3 beforeEmberPos;                                             //잔불 생성 이전 위치
 
-    private bool isEndSoon = false;                             //발사 금방 종료
-    private bool isEnd = false;                                 //발사 종료
+    private bool isEndSoon = false;                                             //발사 금방 종료
+    private bool isEnd = false;                                                 //발사 종료
 
-    private bool isStart = false;                               //초기화 여부
+    private bool isStart = false;                                               //초기화 여부
 
 
 
     //OnEnable
     void OnEnable()
     {
-        if (!isStart)                                           //아직 초기화가 되어있지 않다면
+        if (!isStart)                                                           //아직 초기화가 되어있지 않다면
         {
             //필요한 정보 수집
             speed = M_AlleyBreath_1.instance.alleyBreath_1_Speed;
@@ -43,9 +53,9 @@ public class M_AlleyBreath_1_Ctrl : MonoBehaviour
             isEnd = false;
             isEndSoon = false;
 
-            targetPos = M_AlleyBreath_1.instance.TargetPos;                                 //목표 위치 찾음
+            targetPos = M_AlleyBreath_1.instance.TargetPos;                     //목표 위치 찾음
             
-            StartCoroutine(this.CheckAlleyBreath_1());                                      //발사 및 거리체크 시작
+            StartCoroutine(this.CheckAlleyBreath_1());                          //발사 및 거리체크 시작
         }
     }
     

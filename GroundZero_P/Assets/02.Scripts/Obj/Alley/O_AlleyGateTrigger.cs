@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Alley Gate Trigger
+/// 골목 입구에 설치된 트리거. 플레이어가 지날 때마다 몬스터에게 신호.
 /// 
 /// *코멘트
 /// </summary>

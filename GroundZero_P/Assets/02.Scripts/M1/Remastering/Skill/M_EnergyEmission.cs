@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// EnergyEmission
+/// 에너지 방출. 콜리더를 키워가면서 공격을 날린다.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_EnergyEmission : M_Skill
 {
     #region SingleTon
@@ -30,6 +40,9 @@ public class M_EnergyEmission : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
         energyEmission.GetComponent<Transform>().localScale = energyEmissionMinScale;    //원래 사이즈로 축소
         float energySize = 0;
 
@@ -60,7 +73,7 @@ public class M_EnergyEmission : M_Skill
         }
         yield return new WaitForSeconds(0.08f);
 
-        //.Log("EnergyEmission Active End");
+        //Debug.Log("EnergyEmission Active End");
 
         energyEmission.SetActive(false);                                     //에너지 비활성화
 
@@ -69,6 +82,8 @@ public class M_EnergyEmission : M_Skill
         //Debug.Log("EnergyEmission Delay End");
 
         m_Core.IsDoingOther = false;                                            //행동 종료 
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

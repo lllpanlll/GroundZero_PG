@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// Magic 2
+/// 마법 2. 3개의 지점에서 발사체 발사.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_Magic_2 : M_Skill
 {
     #region SingleTon
@@ -43,6 +53,9 @@ public class M_Magic_2 : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
         m_Core.IsDoingOther = true;                                             //행동 시작
 
 
@@ -74,6 +87,8 @@ public class M_Magic_2 : M_Skill
 
 
         m_Core.IsDoingOther = false;                                            //행동 종료 
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

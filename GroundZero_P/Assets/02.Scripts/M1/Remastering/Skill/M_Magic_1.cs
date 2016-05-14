@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// Magic 1
+/// 마법 1. 10개의 지점에서 랜덤한 순서로 생성된 발사체가 발사.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_Magic_1 : M_Skill
 {
     #region SingleTon
@@ -48,6 +58,12 @@ public class M_Magic_1 : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
+        //플레이어를 향해 회전
+        yield return StartCoroutine(this.RotateToPoint(m_Core.transform, target, lookRotationTime));
+
         m_Core.IsDoingOther = true;                                             //행동 시작
 
 
@@ -92,7 +108,9 @@ public class M_Magic_1 : M_Skill
         yield return new WaitForSeconds(skillStatus.AfterDelayTime);
          
 
-        m_Core.IsDoingOther = false;                                            //행동 종료 
+        m_Core.IsDoingOther = false;                                            //행동 종료  
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

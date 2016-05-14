@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// Magic 3
+/// 마법 3. 발사체를 발사한다.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_Magic_3 : M_Skill
 {
     #region SingleTon
@@ -22,15 +32,15 @@ public class M_Magic_3 : M_Skill
 
 
     //폭발 이펙트
-    public GameObject explosion_Pref;                              //폭발 프리팹
-    private ObjectPool explosion_Pool = new ObjectPool();          //폭발 오브젝트풀
+    public GameObject explosion_Pref;                                   //폭발 프리팹
+    private ObjectPool explosion_Pool = new ObjectPool();               //폭발 오브젝트풀
     public ObjectPool Explosion_Pool { get { return explosion_Pool; } }
 
 
     public float magic_3_ShootDelayTime = 1.0f;                         //Magic_3 발사 대기시간
 
     public float gravity = -9.8f;
-    public float horizontalSpeed = 10.0f;
+    public float flightTime = 2.0f;
 
 
 
@@ -52,6 +62,9 @@ public class M_Magic_3 : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
         //안쪽 코너를 향해 회전
         yield return StartCoroutine(this.RotateToPoint(m_Core.transform, target, lookRotationTime));
 
@@ -68,6 +81,8 @@ public class M_Magic_3 : M_Skill
         
 
         m_Core.IsDoingOther = false;                                            //행동 종료 
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

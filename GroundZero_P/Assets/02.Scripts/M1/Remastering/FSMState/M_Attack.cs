@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Monster Attack State
+/// 도로에서 플레이어를 추격하며 전투하는 상태.
 /// 
 /// *코멘트
 ///     <<추가완료>>  경직 적용 
@@ -49,10 +50,13 @@ public class M_Attack : M_FSMState
 
     private M_AttackSkillSetState skillSetState = M_AttackSkillSetState.None;       //사용 중인 SkillSet 
     private M_AttackSkillState attackSkillState = M_AttackSkillState.None;          //사용 중인 스킬 상태
+    public M_AttackSkillState AttackSkillState { set { attackSkillState = value; } }
 
     private bool isCycling = false;                                                 //사이클 실행중 여부
 
-    
+    public float roadStoppingDistance = 8.0f;                                       //도로 전투 시 제동 거리
+
+
 
     //상태 초기화
     public override void FSMInitialize()
@@ -225,8 +229,16 @@ public class M_Attack : M_FSMState
         //          사용 스킬 인덱스를 기억한다던가 M_Skill 슈퍼클래스 변수 하나 가지고 있다던가...
         //          여기 처리 때문에 매 스킬 사용때마다 SkillState 설정해주고 있잖은가!
 
-        switch(attackSkillState)
+        Debug.Log(attackSkillState);
+
+        switch (attackSkillState)
         {
+            case M_AttackSkillState.None:                                           //아무런 상태가 아니면 일반 경직
+                {
+                    base.MonRigid();
+                }
+                break;
+
             case M_AttackSkillState.BodyPress:                                      //바디 프레스 캔슬 가능
                 {
                     StopAllCoroutines();
@@ -273,12 +285,14 @@ public class M_Attack : M_FSMState
         isCycling = false;                                                  //사이클 실행중이 아님
         skillSetState = M_AttackSkillSetState.SkillSet_1;                   //스킬 세트 1에서부터 사용
 
+        m_Core.NvAgent.stoppingDistance = roadStoppingDistance;             //플레이어와 너무 겹치지 않기 위한 거리 설정
         //////Debug.Log("Enter Attack");
     }
 
     //상태 이탈                 
     public override void Exit()
     {
+        m_Core.NvAgent.stoppingDistance = 0.0f;                             //제동 거리 초기화
         //////Debug.Log("Exit Attack");
     }
 }

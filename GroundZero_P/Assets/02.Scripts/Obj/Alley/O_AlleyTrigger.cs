@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Alley Trigger
+/// 골목 트리거. 플레이어가 지날 때마다 몬스터에게 신호.
 /// 
 /// *코멘트
 ///     <<추가>>  몬스터 대기 / 순찰 때에도 플레이어 골목 여부 전달

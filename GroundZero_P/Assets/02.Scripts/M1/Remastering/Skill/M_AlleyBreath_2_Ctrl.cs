@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// AlleyBreath 2 Control
+/// 골목 브레스 2 발사체 컨트롤. 골목 안쪽을 향해 발사되며, 분기를 만났을 때 갈라진다.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_AlleyBreath_2_Ctrl : MonoBehaviour {
 
     private float speed;                                        //발사 속도  
@@ -55,19 +65,22 @@ public class M_AlleyBreath_2_Ctrl : MonoBehaviour {
     IEnumerator CheckAlleyBreath_2()
     {
         yield return new WaitForSeconds(0.03f);
-
+        
+        //Debug.Log(starting.transform.position + " " + destination.transform.position);
+        
         rigidBody.AddForce(Vector3.Normalize(destination.transform.position
-            - starting.transform.position) * speed);                                                 //목표지점 방향으로 Speed만큼 힘을 가해 브레스 발사
+            - starting.transform.position) * speed);                                                //목표지점 방향으로 Speed만큼 힘을 가해 브레스 발사
 
-        beforeEmberPos = transform.position;                                                //잔불 생성 이전 위치 시작 위치로 초기화  
-        createEmberDistance = M_AlleyBreath_2.instance.CreatrEmberDistance;                 //잔불 생성 간격
+        beforeEmberPos = transform.position;                                                        //잔불 생성 이전 위치 시작 위치로 초기화  
+        createEmberDistance = M_AlleyBreath_2.instance.CreatrEmberDistance;                         //잔불 생성 간격
 
         while (true)
         {
-            if (isEnd)                                                                      //발사가 종료되면 체크 종료
+            if (isEnd)                                                                              //발사가 종료되면 체크 종료
                 yield break;
-
-
+            
+            //Debug.Log(Vector3.Distance(transform.position, destination.transform.position));
+            
             //목표 지점에 어느정도 가까워지면 
             if (!isEndSoon &&
                 (Vector3.Distance(transform.position, destination.transform.position) < 2.5f))
@@ -78,6 +91,9 @@ public class M_AlleyBreath_2_Ctrl : MonoBehaviour {
 
                 GameObject curStarting = starting;
                 GameObject curDestination = destination;
+
+
+                yield return new WaitForSeconds(0.1f);                                              //5의 거리를 두고 검사했으니 그만큼 다시 가라고...
 
 
                 //이전에 Starting지점을 제외한 다른 Point들이 있는지 체크 <- 연결 지점이 1개 이상인지 (1개라면 온 데밖에 없는것임)

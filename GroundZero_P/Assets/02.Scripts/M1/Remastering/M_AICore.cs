@@ -4,8 +4,10 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Monster AI Core
+/// 몬스터 AI의 중심점. FSM 실행 및 판단 정의.
 /// 
 /// *코멘트
+///     <<수정>> 청각판단 수정 정확도 상승
 /// </summary>
 
 
@@ -77,7 +79,7 @@ public struct AuditoryValue     //청역 체크 수치
 public struct CycleDistValue    //플레이어와의 거리 수치
 {
     public float trToPlayerDist;                    //플레이어까지의 직선거리  
-    public M_AttackState sightInCycleState;     //플레이어의 시야 Cycle 상태
+    public M_AttackState sightInCycleState;         //플레이어의 시야 Cycle 상태
 }
 
 #endregion
@@ -199,6 +201,9 @@ public class M_AICore : MonoBehaviour {
                 }
             }
 
+            //다른 특별한 행동 중이어도 해야 할 판단은 여기에
+            if (HP < 0)
+                DieMon();
 
             if (isNeedToChaseTr)                                    //실시간 목표지점 갱신이 필요하다면
                 nvAgent.destination = destinationTr.position;       //목표지점 갱신
@@ -306,13 +311,16 @@ public class M_AICore : MonoBehaviour {
             if (pathCornersLength > 0)                                          //경로 내 코너 갯수가 0 이상
             {
                 pathLength += Vector3.Distance(tr.position, path.corners[0]);   //현재 몬스터 위치에서 경로 첫 지점까지의 거리부터 더하기 시작
-                
-                for (int i = 0; i < pathCornersLength - 2; i++)                 //경로 지점의 선분 갯수만큼 반복하며
+
+                for (int i = 0; i < pathCornersLength - 1; i++)                 //경로 지점의 선분 갯수만큼 반복하며
                 {
                     //저장된 경로를 따라 경로 지점 사이의 거리를 구해 총 거리를 계산한다
                     pathLength += Vector3.Distance(path.corners[i], path.corners[i + 1]);
                 }
-                
+
+                pathLength += Vector3.Distance(path.corners[path.corners.Length - 1], playerTr.position);
+
+
                 //실 거리가 청역 범위 이내일 때 청역 내 플레이어 확인 성공 
                 if (pathLength < hearingMaxNavDist)
                 {
@@ -378,17 +386,19 @@ public class M_AICore : MonoBehaviour {
         float pathLength = 0;                                                   //경로 총 거리
         int pathCornersLength = path.corners.Length;
 
-        if(pathCornersLength > 0)                                               //경로의 총 길이가 0 이상일 때만
+        if (pathCornersLength > 0)                                               //경로의 총 길이가 0 이상일 때만
         {
-            pathLength += Vector3.Distance(tr.position, path.corners[0]);       //현재 몬스터 위치에서 경로 첫 지점까지의 거리부터 더하기 시작
+            pathLength += Vector3.Distance(tr.position, path.corners[0]);   //현재 몬스터 위치에서 경로 첫 지점까지의 거리부터 더하기 시작
 
-            for (int i = 0; i < pathCornersLength - 2; i++)                     //경로 지점의 선분 갯수만큼 반복하며
+            for (int i = 0; i < pathCornersLength - 1; i++)                 //경로 지점의 선분 갯수만큼 반복하며
             {
                 //저장된 경로를 따라 경로 지점 사이의 거리를 구해 총 거리를 계산한다
                 pathLength += Vector3.Distance(path.corners[i], path.corners[i + 1]);
             }
+
+            pathLength += Vector3.Distance(path.corners[path.corners.Length - 1], playerTr.position);
         }
-         
+
         return pathLength;
     } 
 
@@ -415,8 +425,10 @@ public class M_AICore : MonoBehaviour {
     //몬스터 사망 
     public void DieMon()
     {
+        Debug.Log("Die Monster");
+
         isDie = true;
-        Destroy(gameObject);
+        //Destroy(gameObject);
     }
 
     #endregion

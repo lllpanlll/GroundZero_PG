@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/// <summary>
+/// 작성자                 JSH
+/// Breath
+/// 브레스. 입에서 브레스를 키워가면서 공격.
+/// 
+/// *코멘트
+/// </summary>
+
+
+
 public class M_Breath : M_Skill
 {
     #region SingleTon
@@ -17,6 +27,7 @@ public class M_Breath : M_Skill
     public Vector3 breathEndScale = new Vector3(3.0f, 20.0f, 3.0f);             //브레스 콜리더 최종 크기
 
 
+
     //최초 스킬 초기화
     public override void InitSkill()
     {
@@ -28,6 +39,9 @@ public class M_Breath : M_Skill
     //스킬 사용                   
     public override IEnumerator UseSkill(Vector3 target)
     {
+        if (m_Core.IsRigid)                                                     //경직이면 아무것도 하지 않는다
+            yield break;
+
         Vector3 startScale = new Vector3(1.0f, 1.0f, 1.0f);                     //원본 사이즈
         breath.GetComponent<Transform>().localScale = startScale;            //원래 사이즈로 축소
         float breathSize = 0;
@@ -60,6 +74,8 @@ public class M_Breath : M_Skill
 
 
         m_Core.IsDoingOther = false;                                            //행동 종료 
+
+        ResetUseSkillNone();                                                    //스킬 상태 None으로 복귀
     }
 
     //스킬 캔슬 시 처리           

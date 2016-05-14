@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Monster Patrol State
+/// 도로 순찰 상태.
 /// 
 /// *코멘트
 ///     <<추가완료>>  인식했을 때 플레이어가 골목인지 아닌지 판단 후 골목/공격 상태 변환 결정

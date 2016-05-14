@@ -4,6 +4,7 @@ using System.Collections;
 /// <summary>
 /// 작성자                 JSH
 /// Monster Alley State
+/// 플레이어가 골목 안에 있을 때, 그에 대응하는 상태.
 /// 
 /// *코멘트
 ///     <<추가완료>>  경직 적용
@@ -45,7 +46,10 @@ public class M_Alley : M_FSMState
     private M_AlleyState alleyState = M_AlleyState.None;                    //골목 상태  
 
     private M_AlleySkillState alleySkillState = M_AlleySkillState.None;     //사용 중인 스킬 상태
+    public M_AlleySkillState AlleySkillState { set { alleySkillState = value; } }
 
+
+    private bool isAlleyEnterCheck = false;                                 //골목 진입 체크
 
     private O_AlleyTrigger alleyBigTrigger;                                 //현재 위치 골목 Trigger 스크립트
 
@@ -158,7 +162,9 @@ public class M_Alley : M_FSMState
             m_Core.NvAgent.Stop();
             m_Core.SetDestinationRealtime(false, null);
             m_Core.Animator.SetBool("IsRunning", false);
-            
+
+            StartCoroutine(RotateToPoint(m_Core.transform, alleyInCornerPos, lookRotationTime));
+
             alleyState = M_AlleyState.InSight;                              //시야 안으로 상태 변경
         }
         else                                                                //도착지점까지의 거리가 충분히 가깝지 않다면
@@ -185,7 +191,6 @@ public class M_Alley : M_FSMState
                 if (Vector3.Distance(alleyInCornerPos, m_Core.PlayerTr.position) < alleyBreathInCornerDist) 
                 {
                     alleySkillState = M_AlleySkillState.AlleyBreath_1;
-
                     StartCoroutine(M_AlleyBreath_1.instance.UseSkill(alleyInCornerPos));                    //브레스 1 사용
                 }
 
@@ -252,41 +257,76 @@ public class M_Alley : M_FSMState
             NavMeshPath path = new NavMeshPath();
 
             float minTriggerDist = 10000;
+            float tempDist = 0;
+            Vector3 tempTargetPosition;
 
-            for (int i = 0; i < alleyBigTrigger.gateTrigger.Length; i++)    
+            for (int i = 0; i < alleyBigTrigger.gateTrigger.Length; i++)
             {
-                NavMesh.CalculatePath(m_Core.PlayerTr.position, 
-                    alleyBigTrigger.gateTrigger[i].GetComponent<Transform>().position, NavMesh.AllAreas, path);
-            
-                float tempDist = 0;
-                
-                tempDist += Vector3.Distance(m_Core.PlayerTr.position, path.corners[0]);    
+                tempDist = 0;
+                tempTargetPosition = alleyBigTrigger.gateTrigger[i].GetComponent<Transform>().position;
 
-                 for (int j = 0; j < path.corners.Length - 2; j++)                        
-                 {
+                //Debug.Log("target"+ i + "  " + tempTargetPosition);
+
+                //<<추가>> 여기에 Alley 레이어마스크 씌워야하나?? 모르겠네 나중에 문제생기려나
+                NavMesh.CalculatePath(m_Core.PlayerTr.position, tempTargetPosition, NavMesh.AllAreas, path);
+
+                tempDist += Vector3.Distance(m_Core.PlayerTr.position, path.corners[0]);
+                //Debug.Log("startDist" + i + "  " + m_Core.PlayerTr.position + "-" + path.corners[0] + " = " + Vector3.Distance(m_Core.PlayerTr.position, path.corners[0]));
+
+                for (int j = 0; j < path.corners.Length - 1; j++)
+                {
                     tempDist += Vector3.Distance(path.corners[j], path.corners[j + 1]);
-                 }
-                
+                    //Debug.Log("inDist" + i + "-" + j + "  " + path.corners[j] + "-" + path.corners[j + 1] + " = " + Vector3.Distance(path.corners[j], path.corners[j + 1]));
+                }
+
+                tempDist += Vector3.Distance(path.corners[path.corners.Length - 1], tempTargetPosition);
+                //Debug.Log("LastDist" + i + "  " + path.corners[path.corners.Length - 1] + "-" + tempTargetPosition + " = " + Vector3.Distance(path.corners[path.corners.Length - 1], tempTargetPosition));
+
+
+                //Debug.Log("mindist  " + minTriggerDist + " / dist" + i + "  " + tempDist);
+
                 if (tempDist < minTriggerDist)
                 {
+                    //Debug.Log("Changed" + i);
+
                     minTriggerDist = tempDist;
-                    targetGatePos = alleyBigTrigger.gateTrigger[i].GetComponent<Transform>().position;
+                    targetGatePos = tempTargetPosition;
                     targetCornerPos = alleyBigTrigger.gateTrigger[i].GetComponent<O_AlleyGateTrigger>().inCornerPos.position;
                     targetGateForwardPos = alleyBigTrigger.gateTrigger[i].GetComponent<O_AlleyGateTrigger>().gateForwardPos.position;
                 }
             }
-            
+
+
+            // Debug.Log("TargetDist  " + minTriggerDist);
+            // Debug.Log("TargetGatePos  " + targetGatePos);
+            // Debug.Log("TargetGateForwardPos  " + targetGateForwardPos);
+
+
+            // NavMesh.CalculatePath(m_Core.PlayerTr.position, targetGatePos, NavMesh.AllAreas, path);
+            //this.GetComponent<LineRenderer>().SetVertexCount(path.corners.Length);
+
+            // for (int i = 0; i < path.corners.Length; i++)
+            // {
+            //     this.GetComponent<LineRenderer>().SetPosition(i, path.corners[i]);
+            // }
+
+
 
             //목적지까지의 path 경로 구함
             if (m_Core.NvAgent.enabled)
                 m_Core.NvAgent.CalculatePath(targetGateForwardPos, path);
 
+            //Debug.Log("PathCorner  " + path.corners.Length);
 
             //경로의 코너가 3개 이하이며, 일정 거리 이내로 목적지에 들어왔을 때
-            if ((path.corners.Length < 3) && (Vector3.Distance(m_Core.Tr.position, targetGateForwardPos) < finTraceDist))
+            if ((path.corners.Length < 5) && (Vector3.Distance(m_Core.Tr.position, targetGateForwardPos) < finTraceDist))
             {
                 //기습 대기중 체크
                 isFinTrace = true;
+
+
+                //Debug.Log("Tracing Waiting");
+
 
                 m_Core.NvAgent.speed = originSpeed;
 
@@ -296,12 +336,18 @@ public class M_Alley : M_FSMState
 
 
                 //대기 시간이 일정 시간이 넘어가면 
-                finTraceWaitTimeCounter += Time.deltaTime + 0.2f;
+                finTraceWaitTimeCounter += Time.deltaTime + 0.1f;
 
-                if(finTraceWaitTimeCounter > finTraceWaitTimeLimit)
+                if (finTraceWaitTimeCounter > finTraceWaitTimeLimit)
                 {
+
+                    //Debug.Log("NoMoreWait");
+
+
                     isFinTrace = false;
                     finTraceWaitTimeCounter = 0;
+
+
                     alleyState = M_AlleyState.NoWait;                       //보스 골목 안쪽 바라보기 상태로 변경
                 }
             }
@@ -325,7 +371,15 @@ public class M_Alley : M_FSMState
         //플레이어의 위치를 아예 잃어버렸다면
         else
         {
+            Debug.Log("Alley Tracing GoTo Patrol");
+
+
             SelectStartPatrol();
+
+
+            Debug.Log("Start Patrol " + nowPatrolingPointIndex);
+
+
             alleyState = M_AlleyState.Patrol;                               //골목 외길 순찰로 상태 변경
         }
     }
@@ -368,14 +422,16 @@ public class M_Alley : M_FSMState
         m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", true);
 
-        
+
         if (Vector3.Distance(nowPatrolingPos, m_Core.Tr.position) < 1.0f)   //패트롤 지점에 충분히 가까워졌다면
         {
             if ((isStartPatroling) && (nowPatrolingPointIndex.Equals(patrolingEndIndex)))  //첫 지점 통과 후, 도착 지점에 도달한 것이면
             {
+                Debug.Log("Alley Patrol Fin");
+
                 m_Core.ChangeState(M_Patrol.instance);                      //순찰상태로 변경 
             }
-            
+
 
             //다음으로 이동할 waypoint Index 지정
             if (isPatrolingClockwise)
@@ -393,6 +449,11 @@ public class M_Alley : M_FSMState
                     nowPatrolingPointIndex = alleyBigTrigger.patrolWayPoints.Length - 1;  //마지막부터 다시
             }
 
+
+            Debug.Log("Next Patrol " + nowPatrolingPointIndex);
+
+
+
             isStartPatroling = true;                                        //첫 지점 통과했습니다!
 
 
@@ -403,17 +464,17 @@ public class M_Alley : M_FSMState
 
     #endregion
 
-    
+
 
     //브레스 2 사용체크
     IEnumerator CheckTimeToBreath_2()
     {
         float timeCounter = 0.0f;
 
-        while(true)
+        while (true)
         {
             timeCounter += Time.deltaTime;                          //시간 계산
-            
+
 
             //브레스 2 사용 검토중이며 그 차례가 InSight일때
             if (isTrunOfCountInSight && m_Core.CheckSight().isPlayerInStraightLine)
@@ -430,8 +491,10 @@ public class M_Alley : M_FSMState
             }
 
             //시야 안밖을 왔다갔다 한 횟수가 일정 횟수를 넘어가면 
-            if (countTurn >= maxTrun * 2)                           
+            if (countTurn >= maxTrun * 2)
             {
+                Debug.Log("Alley Breath2 Use");
+
                 StartCoroutine(M_AlleyBreath_2.instance.UseSkill(alleyInCornerPos));  //브레스 2 사용
 
                 isCheckingBreath_2 = false;                         //브레스 2 검토 중단        
@@ -453,6 +516,8 @@ public class M_Alley : M_FSMState
     //추적 체크
     IEnumerator CheckTracing()
     {
+        Debug.Log("Alley Tracing Check Start");
+
         float timeCounter = 0.0f;
 
         isCheckTracing = true;
@@ -461,12 +526,14 @@ public class M_Alley : M_FSMState
         {
             timeCounter += Time.deltaTime;                          //시간 계산
 
-            if(!isCheckTracing)                                     //추적 검토가 외부에서 중단되었다면
+            if (!isCheckTracing)                                     //추적 검토가 외부에서 중단되었다면
                 yield break;
 
             if ((timeCounter > checkTimeToBreath_2) &&              //브레스 2 사용을 위한 체크 시간이 다 지나갔고
                 !m_Core.CheckSight().isPlayerInStraightLine)        //캐릭터가 시야에 없다면
             {
+                Debug.Log("Alley GoTo Tracing");
+
                 isCheckTracing = false;                             //추적 검토 중단
                 isCheckingBreath_2 = false;                         //브레스 2 검토 중단
                 alleyState = M_AlleyState.Tracing;                  //추적으로 상태 변경
@@ -484,8 +551,6 @@ public class M_Alley : M_FSMState
     {
         yield return StartCoroutine(RotateToPoint(m_Core.transform, targetGatePos, lookRotationTime));
 
-        //<<추가>>  시야에 보이면 다시 골목 시작부터, 아님 패트롤 시켰는데 우쩔까용
-
         if (m_Core.CheckSight().isPlayerInStraightLine)                     //플레이어가 직선거리 상에 위치하고 있으면
         {
             //정보 갱신
@@ -497,17 +562,23 @@ public class M_Alley : M_FSMState
         }
         else
         {
+
+            Debug.Log("Alley CheckInAlley GoTo Patrol");
+
             SelectStartPatrol();
+
+            Debug.Log("Start Patrol " + nowPatrolingPointIndex);
+
             alleyState = M_AlleyState.Patrol;                               //골목 순찰 상태로 변경
         }
     }
 
-
+    //패트롤 할 시작지점을 선택
     void SelectStartPatrol()
     {
-        isStartPatroling = false;                                       //패트롤 첫 지점 통과 false
+        isStartPatroling = false;                                           //패트롤 첫 지점 통과 false
 
-        if (alleyBigTrigger.isPatrolLooping)                            //순찰 지점이 순환 가능하다면
+        if (alleyBigTrigger.isPatrolLooping)                                //순찰 지점이 순환 가능하다면
         {
             //현재 자신과 가장 가까운 Nav거리 상의 패트롤 지점 선택
             float minTriggerDist = 10000.0f;
@@ -516,7 +587,7 @@ public class M_Alley : M_FSMState
             {
                 float tempDist = m_Core.CheckNevDist(alleyBigTrigger.patrolWayPoints[i].position);
 
-                if (tempDist < minTriggerDist)                          //가장 가까운 지점에서 순찰 시작
+                if (tempDist < minTriggerDist)                              //가장 가까운 지점에서 순찰 시작
                 {
                     minTriggerDist = tempDist;
 
@@ -531,13 +602,13 @@ public class M_Alley : M_FSMState
             isPatrolingClockwise = Random.Range(0, 1).Equals(0) ? true : false;  //순찰 방향 결정
         }
 
-        else                                                            //순찰 지점이 순환하지 않는다면
+        else                                                                //순찰 지점이 순환하지 않는다면
         {
             //패트롤의 시작지점과 끝지점 중에서 Nav거리 상 가까운 쪽 선택 
             float tempStartDist = m_Core.CheckNevDist(alleyBigTrigger.patrolWayPoints[0].position);
             float tempEndDist = m_Core.CheckNevDist(alleyBigTrigger.patrolWayPoints[alleyBigTrigger.patrolWayPoints.Length - 1].position);
 
-            if (tempStartDist < tempEndDist)                            //시작 지점이 더 가까우면 시작 지점에서 순찰 시작
+            if (tempStartDist < tempEndDist)                                //시작 지점이 더 가까우면 시작 지점에서 순찰 시작
             {
                 nowPatrolingPointIndex = 0;
                 patrolingStartIndex = 0;
@@ -546,7 +617,7 @@ public class M_Alley : M_FSMState
 
                 isPatrolingClockwise = true;
             }
-            else                                                        //끝 지점이 더 가까우면 끝 지점에서 순찰 시작
+            else                                                            //끝 지점이 더 가까우면 끝 지점에서 순찰 시작
             {
                 nowPatrolingPointIndex = alleyBigTrigger.patrolWayPoints.Length - 1;
                 patrolingStartIndex = alleyBigTrigger.patrolWayPoints.Length - 1;
@@ -576,67 +647,67 @@ public class M_Alley : M_FSMState
     {
         nowInAlleyIndex = -1;
 
-        if ((m_Core.CheckSight().isPlayerInSight)                           //시야에 플레이어가 있거나
-            || (m_Core.CheckAuditoryField().isHearing))                     //청역범위에 플레이어가 있으면
-            m_Core.ChangeState(M_Attack.instance);                          //공격상태로 변경
+        if ((m_Core.CheckSight().isPlayerInSight)                               //시야에 플레이어가 있거나
+            || (m_Core.CheckAuditoryField().isHearing))                         //청역범위에 플레이어가 있으면
+            m_Core.ChangeState(M_Attack.instance);                              //공격상태로 변경
 
-        else                                                                //플레이어 감지 불가능 상태라면 
-            m_Core.ChangeState(M_Patrol.instance);                          //순찰 상태로 변경
+        else                                                                    //플레이어 감지 불가능 상태라면 
+            m_Core.ChangeState(M_Patrol.instance);                              //순찰 상태로 변경
     }
 
 
     //대기 시 플레이어가 GateTrigger를 밟으면 플레이어 덮침
     public void CheckAlleying(GameObject obj, Vector3 gatePoint, Vector3 forwardPoint, Vector3 inCornerPoint)
     {
-        //정보 갱신
-        alleyGateTrigger = obj;                                             //으 브레스땜시 어쩔 수 없긴 한데 넘 더럽다
-        alleyGateTriggerPos = gatePoint;
-        alleyGateForwardPos = forwardPoint;
-        alleyInCornerPos = inCornerPoint;
+        if (!isAlleyEnterCheck                                                  //골목 진입 체크를 했는가
+           || isFinTrace)                                                       //혹은 추격 대기를 완료했는가
+        {
+            //정보 갱신
+            alleyGateTrigger = obj;                                             //으 브레스땜시 어쩔 수 없긴 한데 넘 더럽다
 
-        MonCheckHoldDown();                                                 //플레이어 덮침
+            alleyGateTriggerPos = gatePoint;
+            alleyGateForwardPos = forwardPoint;
+            alleyInCornerPos = inCornerPoint;
+
+            Debug.Log("Alley GateTrigger STEP  " + alleyGateTrigger.name);
+
+            isAlleyEnterCheck = true;                                           //진입 체크 완료
+
+        }
+
+        if (isFinTrace)                                                         //현재 추적을 끝내고 대기상태인지
+        {
+            MonCheckHoldDown();                                                 //플레이어 덮침
+        }
     }
 
 
     //플레이어 덮침
     void MonCheckHoldDown()
     {
-        m_Core.delayTime = 0.5f;                                            //딜레이 설정
+        m_Core.delayTime = 0.5f;                                                //딜레이 설정
 
-        if (isFinTrace)                                                     //현재 추적을 끝내고 대기상태인지
+        isFinTrace = false;                                                     //상태 변환
+
+        //확률에 따라 브레스 1과 점프 어택 중 택 1
+        Random.seed = (int)System.DateTime.Now.Ticks;                           //랜덤값의 시드를 무작위로 만든다
+        int randomChance = Random.Range(0, 1000);
+
+
+
+        if (randomChance < 500)
         {
-            isFinTrace = false;                                             //상태 변환
-
-            //확률에 따라 브레스 1과 점프 어택 중 택 1
-            Random.seed = (int)System.DateTime.Now.Ticks;                   //랜덤값의 시드를 무작위로 만든다
-            int randomChance = Random.Range(0, 1000);
-
-
-
-            if (randomChance < 500)
-            {
-                alleySkillState = M_AlleySkillState.JumpAttack;
-                StartCoroutine(M_JumpAttack.instance.UseSkill(alleyGateForwardPos));    //점프 어택으로 덮침
-            }
-            else
-            {
-                alleySkillState = M_AlleySkillState.Breath;
-                StartCoroutine(M_Breath.instance.UseSkill(alleyGateForwardPos));        //브레스로 덮침
-            }
-
-            alleyState = M_AlleyState.Starting;                                         //골목 스타트 상태로 변경
+            alleySkillState = M_AlleySkillState.JumpAttack;
+            StartCoroutine(M_JumpAttack.instance.UseSkill(alleyGateForwardPos));    //점프 어택으로 덮침
         }
+        else
+        {
+            alleySkillState = M_AlleySkillState.Breath;
+            StartCoroutine(M_Breath.instance.UseSkill(alleyGateForwardPos));        //브레스로 덮침
+        }
+
+        alleyState = M_AlleyState.Starting;                                         //골목 스타트 상태로 변경
     }
-
-    #endregion
-
-
-
-    #region 스킬
-
-    //<<추가>>  골목 브레스 2 작성.  골목을 따라 투사체가 플레이어 위치로 이동하는 스킬
-    
-    //<<추가>>  마법 3 작성.  포물선으로 3개의 투사체를 날려 플레이어 위치 근처에서 폭발 -> 내용은 미확정인듯? 기획서에 없네
 
     #endregion
 
@@ -645,20 +716,19 @@ public class M_Alley : M_FSMState
     //몬스터 경직
     public override void MonRigid()
     {
-        //<<추가>> 어떤 스킬은 캔슬되지 말아야 한다
+        Debug.Log(alleySkillState);
 
         switch (alleySkillState)
         {
+            case M_AlleySkillState.None:
+                {
+                    base.MonRigid();
+                }
+                break;
+
             case M_AlleySkillState.ForeFootPress:
                 {
-                    //경직 안됨
-
-                    //StopAllCoroutines();
-
-                    //foreach (GameObject armObj in monAttkArms)
-                    //{ armObj.SetActive(false); }
-
-                    //base.MonRigid();
+                    //경직 불가
                 }
                 break;
 
@@ -691,18 +761,14 @@ public class M_Alley : M_FSMState
 
             case M_AlleySkillState.AlleyBreath_1:
                 {
-                    //경직불가
-                    //StopAllCoroutines();
-                    //monAlleyBreath.SetActive(false);
-                    //base.MonRigid();
+                    //경직 불가
                 }
                 break;
 
             case M_AlleySkillState.JumpAttack:
                 {
-                    //<<나중추가>>  점프 도중에는 경직이 먹지 않는다  점프 도중을 체크하고 그때만 경직 먹게 하자
-                    //StopAllCoroutines();
-                    //base.MonRigid();
+                    //일단은 경직 불가
+                    //<<나중추가>>  점프 준비때에는 가능하나, 점프 도중에는 경직이 먹지 않는다  점프 도중을 체크하고 그때만 경직 먹게 하자
                 }
                 break;
         }
@@ -713,7 +779,7 @@ public class M_Alley : M_FSMState
     public override void Enter()
     {
         //진입점이 대기 또는 순찰상태였다면 플레이어와 실 거리가 가장 가까운 입구쪽을 목표 지점으로 시작한다
-        if(isStartToIdleOrPatrol)
+        if (isStartToIdleOrPatrol)
         {
             isStartToIdleOrPatrol = false;
 
@@ -722,29 +788,39 @@ public class M_Alley : M_FSMState
 
             //플레이어와 가까운 쪽의 Gate에 저장된 Pos를 목적지로 함
             float minTriggerDist = 10000;
+            float tempDist = 0;
+            Vector3 tempTargetPosition;
 
             for (int i = 0; i < alleyBigTrigger.gateTrigger.Length; i++)
             {
-                NavMesh.CalculatePath(m_Core.PlayerTr.position,
-                    alleyBigTrigger.gateTrigger[i].GetComponent<Transform>().position, NavMesh.AllAreas, path);
+                tempDist = 0;
+                tempTargetPosition = alleyBigTrigger.gateTrigger[i].GetComponent<Transform>().position;
 
-                float tempDist = 0;
+                NavMesh.CalculatePath(m_Core.PlayerTr.position, tempTargetPosition, NavMesh.AllAreas, path);
 
                 tempDist += Vector3.Distance(m_Core.PlayerTr.position, path.corners[0]);    //현재 플레이어 위치에서 경로 첫 지점까지의 거리부터 더하기 시작
 
-                for (int j = 0; j < path.corners.Length - 2; j++)                           //경로 지점의 선분 갯수만큼 반복하며
+                for (int j = 0; j < path.corners.Length - 1; j++)                           //경로 지점의 선분 갯수만큼 반복하며
                 {
                     //저장된 경로를 따라 경로 지점 사이의 거리를 구해 총 거리를 계산한다
                     tempDist += Vector3.Distance(path.corners[j], path.corners[j + 1]);
                 }
-                
+
+                tempDist += Vector3.Distance(path.corners[path.corners.Length - 1], tempTargetPosition);
+
 
                 if (tempDist < minTriggerDist)
                 {
                     minTriggerDist = tempDist;
 
+
                     //정보 갱신
                     alleyGateTrigger = alleyBigTrigger.gateTrigger[i];                      //으 브레스땜시 어쩔 수 없긴 한데 넘 더럽다 이거 분명 다른데에서 더 깔끔하게 가져올 수 있을텐데 일단은
+
+
+                    Debug.Log("Alley GateTrigger After THINK  " + alleyGateTrigger.name);
+
+
                     alleyGateTriggerPos = alleyBigTrigger.gateTrigger[i].GetComponent<Transform>().position;
                     alleyGateForwardPos = alleyBigTrigger.gateTrigger[i].GetComponent<O_AlleyGateTrigger>().gateForwardPos.position;
                     alleyInCornerPos = alleyBigTrigger.gateTrigger[i].GetComponent<O_AlleyGateTrigger>().inCornerPos.position;
@@ -765,6 +841,7 @@ public class M_Alley : M_FSMState
     public override void Exit()
     {
         m_Core.NvAgent.speed = originSpeed;                                 //원래 속도로 변경
+        isAlleyEnterCheck = false;                                          //진입 체크 미완료로 변경
 
         //////Debug.Log("Exit Alley");
     }
