@@ -109,7 +109,7 @@ public class M_AlleyBreath_1_Ctrl : MonoBehaviour
 
     IEnumerator WaitForDestroy()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.5f);
 
         isEnd = true;
 

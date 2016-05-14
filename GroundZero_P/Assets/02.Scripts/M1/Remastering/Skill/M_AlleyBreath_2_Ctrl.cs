@@ -93,7 +93,7 @@ public class M_AlleyBreath_2_Ctrl : MonoBehaviour {
                 GameObject curDestination = destination;
 
 
-                yield return new WaitForSeconds(0.1f);                                              //5의 거리를 두고 검사했으니 그만큼 다시 가라고...
+                yield return new WaitForSeconds(0.05f);                                              //5의 거리를 두고 검사했으니 그만큼 다시 가라고...
 
 
                 //이전에 Starting지점을 제외한 다른 Point들이 있는지 체크 <- 연결 지점이 1개 이상인지 (1개라면 온 데밖에 없는것임)

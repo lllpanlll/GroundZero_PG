@@ -163,6 +163,7 @@ public class M_Alley : M_FSMState
             m_Core.SetDestinationRealtime(false, null);
             m_Core.Animator.SetBool("IsRunning", false);
 
+            Debug.Log("SeeIn");
             StartCoroutine(RotateToPoint(m_Core.transform, alleyInCornerPos, lookRotationTime));
 
             alleyState = M_AlleyState.InSight;                              //시야 안으로 상태 변경
@@ -316,10 +317,10 @@ public class M_Alley : M_FSMState
             if (m_Core.NvAgent.enabled)
                 m_Core.NvAgent.CalculatePath(targetGateForwardPos, path);
 
-            //Debug.Log("PathCorner  " + path.corners.Length);
+            Debug.Log("PathCorner  " + path.corners.Length);
 
-            //경로의 코너가 3개 이하이며, 일정 거리 이내로 목적지에 들어왔을 때
-            if ((path.corners.Length < 5) && (Vector3.Distance(m_Core.Tr.position, targetGateForwardPos) < finTraceDist))
+            //경로의 코너가 3개 이하이며, 일정 거리 이내로 목적지에 들어왔을 때 (path.corners.Length < 5) && 
+            if ((Vector3.Distance(m_Core.Tr.position, targetGateForwardPos) < finTraceDist))
             {
                 //기습 대기중 체크
                 isFinTrace = true;
