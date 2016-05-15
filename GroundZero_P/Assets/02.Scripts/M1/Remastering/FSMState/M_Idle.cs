@@ -88,10 +88,17 @@ public class M_Idle : M_FSMState
 
         //제자리에서 Idle 출력
         m_Core.NvAgent.Stop();
-        m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", false);
 
         #endregion
+    }
+
+
+    //상태 매 프레임 Update
+    public override void FSMMustUpdate()
+    {
+        //<<추가>>  빈 함수지만 호출하는 것만으로도 부하가 되겠지...?
+        //None  
     }
 
 

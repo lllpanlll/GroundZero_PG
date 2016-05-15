@@ -89,6 +89,13 @@ public class M_Patrol : M_FSMState
     }
 
 
+    //상태 매 프레임 Update
+    public override void FSMMustUpdate()
+    {
+        //None
+    }
+
+
 
     #region 하위 상태
 
@@ -123,7 +130,6 @@ public class M_Patrol : M_FSMState
         //지정 순찰 위치까지 이동
         m_Core.NvAgent.Resume();
         m_Core.NvAgent.destination = patrolWayPoints[nowPatrolWayPointIndex].position;
-        m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", true);
     }
     
@@ -133,7 +139,6 @@ public class M_Patrol : M_FSMState
         //플레이어 위치까지 이동
         m_Core.NvAgent.Resume();
         m_Core.NvAgent.destination = m_Core.PlayerTr.position;
-        m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", true);
     }
 

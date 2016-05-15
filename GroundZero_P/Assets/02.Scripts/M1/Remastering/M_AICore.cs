@@ -154,10 +154,6 @@ public class M_AICore : MonoBehaviour {
     //공격 사이클 범위
     public float minCycleRange = 4.0f;                                      //공격 사이클 최소 범위
     public float maxCycleRange = 14.0f;                                     //공격 사이클 최대 범위
-
-    //NvAgent의 목표 지점 갱신
-    private bool isNeedToChaseTr = false;                                   //목표 지점을 실시간으로 갱신할 필요가 있는가
-    private Transform destinationTr;                                        //목표 Transform
     
     #endregion
 
@@ -201,12 +197,16 @@ public class M_AICore : MonoBehaviour {
                 }
             }
 
-            //다른 특별한 행동 중이어도 해야 할 판단은 여기에
+           
+            //IsDoingOther과는 별개로 매 프레임 해야 하는 Update문 실행
+            m_FsmState.FSMMustUpdate();
+            
+            //if (isNeedToChaseTr)                                    //실시간 목표지점 갱신이 필요하다면
+            //    nvAgent.destination = destinationTr.position;       //목표지점 갱신
+
+            //사망 체크
             if (HP < 0)
                 DieMon();
-
-            if (isNeedToChaseTr)                                    //실시간 목표지점 갱신이 필요하다면
-                nvAgent.destination = destinationTr.position;       //목표지점 갱신
 
             yield return new WaitForEndOfFrame();
         }
@@ -401,15 +401,6 @@ public class M_AICore : MonoBehaviour {
 
         return pathLength;
     } 
-
-    //실시간 목표지점 갱신 처리 체크
-    public void SetDestinationRealtime(bool _isNeedToChaseTr, Transform tr)
-    {
-        isNeedToChaseTr = _isNeedToChaseTr;
-
-        if (isNeedToChaseTr)
-            destinationTr = tr;
-    }
 
     #endregion
 

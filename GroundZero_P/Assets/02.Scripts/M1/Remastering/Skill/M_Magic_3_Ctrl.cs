@@ -63,7 +63,8 @@ public class M_Magic_3_Ctrl : MonoBehaviour {
     {
         yield return new WaitForSeconds(delayTime);                                                 //발사 대기
 
-        destination = playerTr.position;                                                            //발사를 시작하려는 타이밍의 플레이어 위치를 목표 지점으로 삼음
+        //<<추가>> 모든 곳에서 이 스킬을 사용하려면 목표지점 설정에 꼭 Alley를 거쳐야 하면 안된다...!
+        destination = M_Alley.instance.LastInSightPlayerPos;                                        //발사를 시작하려는 타이밍의 플레이어 위치를 목표 지점으로 삼음
 
         toDestination = Vector3.Normalize(new Vector3(destination.x, 0, destination.z)
             - new Vector3(transform.position.x, 0, transform.position.z));                          //목표 지점을 향하는 수평 성분만의 방향 벡터 산출

@@ -69,11 +69,12 @@ public class M_Alley : M_FSMState
 
     private float originSpeed;                                              //몬스터 원래 속도
     public float alleyTracingSpeed = 30.0f;                                 //골목 추격 시 몬스터 속도
-    
     public float alleyForeFootAttackDist = 8.0f;                            //골목 추격 거리 제한
-
     public float alleyBreathInCornerDist = 10.0f;                           //골목 브레스 코너 거리 제한
-    
+
+
+    private Vector3 lastInSightPlayerPos;                                   //시야에서 마지막으로 확인한 플레이어 위치
+    public Vector3 LastInSightPlayerPos { get { return lastInSightPlayerPos; } }
     private bool isCheckingBreath_2 = false;                                //브레스 2 사용을 검토중인가
     public float checkTimeToBreath_2 = 3.0f;                                //브레스 2 사용 검토의 시간 한계
     private bool isTrunOfCountInSight = false;                              //시야 안 카운트를 할 시점인가
@@ -99,6 +100,7 @@ public class M_Alley : M_FSMState
     private int patrolingStartIndex = -1;                                   //Patrol 시작 Index
     private int patrolingEndIndex = -1;                                     //Patrol 끝 Index 
 
+   
     public float lookRotationTime = 0.5f;                                   //플레이어를 바라볼 회전 시간
 
 
@@ -107,6 +109,8 @@ public class M_Alley : M_FSMState
     public override void FSMInitialize()
     {
         topState = M_TopState.Alley;                                        //이 상태는 Alley입니다
+
+        lastInSightPlayerPos = Vector3.zero;
     }
 
 
@@ -149,6 +153,19 @@ public class M_Alley : M_FSMState
     }
 
 
+    //상태 매 프레임 Update
+    public override void FSMMustUpdate()
+    {
+        //None
+        //InSignt 상태 시 시야 안에서의 플레이어 위치 갱신
+        if(alleyState.Equals(M_AlleyState.InSight) 
+            && m_Core.CheckSight().isPlayerInStraightLine)
+        {
+            lastInSightPlayerPos = m_Core.PlayerTr.position;
+        }
+    }
+
+
 
     #region 하위 상태 
 
@@ -160,7 +177,6 @@ public class M_Alley : M_FSMState
             m_Core.NvAgent.speed = originSpeed;
 
             m_Core.NvAgent.Stop();
-            m_Core.SetDestinationRealtime(false, null);
             m_Core.Animator.SetBool("IsRunning", false);
 
             Debug.Log("SeeIn");
@@ -175,7 +191,6 @@ public class M_Alley : M_FSMState
 
             m_Core.NvAgent.Resume();
             m_Core.NvAgent.destination = alleyGateForwardPos;
-            m_Core.SetDestinationRealtime(false, null);
             m_Core.Animator.SetBool("IsRunning", true);
         }
     }
@@ -332,7 +347,6 @@ public class M_Alley : M_FSMState
                 m_Core.NvAgent.speed = originSpeed;
 
                 m_Core.NvAgent.Stop();
-                m_Core.SetDestinationRealtime(false, null);
                 m_Core.Animator.SetBool("IsRunning", false);
 
 
@@ -361,7 +375,6 @@ public class M_Alley : M_FSMState
 
                 m_Core.NvAgent.Resume();
                 m_Core.NvAgent.destination = targetGateForwardPos;
-                m_Core.SetDestinationRealtime(false, null);
                 m_Core.Animator.SetBool("IsRunning", true);
 
                 finTraceWaitTimeCounter = 0;
@@ -391,14 +404,12 @@ public class M_Alley : M_FSMState
         //골목 바깥 포인트로 이동
         m_Core.NvAgent.Resume();
         m_Core.NvAgent.destination = targetGateForwardPos;
-        m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", true);
 
         //골목 바깥 포인트에 도착하면 안쪽을 확인
         if (Vector3.Distance(m_Core.Tr.position, targetGateForwardPos) < 1.0f)
         {
             m_Core.NvAgent.Stop();
-            m_Core.SetDestinationRealtime(false, null);
             m_Core.Animator.SetBool("IsRunning", false);
 
             StartCoroutine(CheckInAlley());
@@ -420,7 +431,6 @@ public class M_Alley : M_FSMState
 
         m_Core.NvAgent.Resume();
         m_Core.NvAgent.destination = nowPatrolingPos;
-        m_Core.SetDestinationRealtime(false, null);
         m_Core.Animator.SetBool("IsRunning", true);
 
 

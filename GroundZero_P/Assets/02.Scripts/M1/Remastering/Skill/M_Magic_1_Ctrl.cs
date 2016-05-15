@@ -98,7 +98,8 @@ public class M_Magic_1_Ctrl : MonoBehaviour
         while (true)
         {
             trToPlayerVector = Vector3.Normalize(playerTr.position - transform.position);   //플레이어를 향하는 방향 벡터를 구함
-            GetComponent<Rigidbody>().AddForce(trToPlayerVector * speed * Time.deltaTime * 3.2f);  //플레이어 방향으로 소량의 Speed만큼 힘을 가해 발사
+            GetComponent<Rigidbody>().velocity *= 0.75f;                                     //이전에 적용된 힘 반으로 줄임
+            GetComponent<Rigidbody>().AddForce(trToPlayerVector * speed * Time.deltaTime);  //플레이어 방향으로 소량의 Speed만큼 힘을 가해 발사
             
             //발사 시작 지점에서 일정 거리 이상 멀어지면 마법 1 비활성화
             if (Vector3.Distance(gameObject.transform.position, shootPos) > maxDist)

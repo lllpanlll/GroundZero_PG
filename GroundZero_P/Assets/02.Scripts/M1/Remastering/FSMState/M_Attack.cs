@@ -54,7 +54,13 @@ public class M_Attack : M_FSMState
 
     private bool isCycling = false;                                                 //사이클 실행중 여부
 
-    public float roadStoppingDistance = 8.0f;                                       //도로 전투 시 제동 거리
+
+    private Transform realtimeDestination;                                          //쫓아야 할 목표 Transform   
+    //<<추가>> 뭔가 NavMeshAgent.Velocity와 Animator Parametor Float(Speed) 로 어떻게 해결 가능할 거 같은데 이런 거 없이도 이걸로 애니메이션 속도를 조절해도 좋고
+    private bool isMustCheckDistToPlayer = false;                                   //플레이어와의 거리를 체크할 필요가 있는가
+
+
+    public float roadStoppingDistance = 10.0f;                                      //도로 전투 시 제동 거리
 
 
 
@@ -102,6 +108,25 @@ public class M_Attack : M_FSMState
     }
 
 
+    //상태 매 프레임 Update
+    public override void FSMMustUpdate()
+    {
+        //매 프레임 목표하는 Trnasform의 position을 쫓아가야 한다면 위치 갱신
+        if (realtimeDestination)
+            m_Core.NvAgent.destination = realtimeDestination.position;
+        
+        //플레이어와의 거리를 체크해야 한다면 
+        if(isMustCheckDistToPlayer)
+        {
+            //플레이어와 일정 거리 이상 가까워지면 Idle
+            if(m_Core.NvAgent.remainingDistance > m_Core.NvAgent.stoppingDistance + 2.0f)
+                m_Core.Animator.SetBool("IsRunning", true);
+            else
+                m_Core.Animator.SetBool("IsRunning", false);
+        }
+    }
+
+
 
     #region 하위 상태 
 
@@ -109,7 +134,8 @@ public class M_Attack : M_FSMState
     void UnderCycle() 
     {
         m_Core.NvAgent.Stop();
-        m_Core.SetDestinationRealtime(false, null);
+        realtimeDestination = null;
+        isMustCheckDistToPlayer = false;
         m_Core.Animator.SetBool("IsRunning", false);
 
         isCycling = false;                                                          //사이클 실행중이 아님
@@ -149,8 +175,8 @@ public class M_Attack : M_FSMState
                     {
                         //스킬 세트 1은 이동하면서 사용한다
                         m_Core.NvAgent.Resume();
-                        m_Core.SetDestinationRealtime(true, m_Core.PlayerTr);       //이 경우, 스킬 사용으로 판단이 멈추더라도 목적지 정보가 계속 갱신되어야 한다
-                        m_Core.Animator.SetBool("IsRunning", true);
+                        realtimeDestination = m_Core.PlayerTr;
+                        isMustCheckDistToPlayer = true;
 
                         if (randomChance < 500)                                                  
                         {
@@ -171,7 +197,8 @@ public class M_Attack : M_FSMState
                 case M_AttackSkillSetState.SkillSet_2:
                     {
                         m_Core.NvAgent.Stop();
-                        m_Core.SetDestinationRealtime(false, null);
+                        realtimeDestination = null;
+                        isMustCheckDistToPlayer = false;
                         m_Core.Animator.SetBool("IsRunning", false);
 
                         //아직은 스킬 세트 2에 소속된 스킬은 에너지 방출밖에 없다
@@ -192,13 +219,14 @@ public class M_Attack : M_FSMState
             
             m_Core.NvAgent.Resume();
             m_Core.NvAgent.destination = m_Core.PlayerTr.position;
-            m_Core.SetDestinationRealtime(false, null);                             //이 경우 업데이트가 0.1초 간격으로 이미 진행되고 있기 때문에 특별하게 따로 갱신할 필요는 없음
+            realtimeDestination = null;
+            isMustCheckDistToPlayer = false;
             m_Core.Animator.SetBool("IsRunning", true);
         }
     }
 
     //사이클 범위 초과
-    void OverCycle() 
+    void OverCycle()
     {
         m_Core.delayTime = 0.1f;                                                    //업데이트 주기 설정
 
@@ -206,7 +234,8 @@ public class M_Attack : M_FSMState
         
         m_Core.NvAgent.Resume();
         m_Core.NvAgent.destination = m_Core.PlayerTr.position;
-        m_Core.SetDestinationRealtime(false, null);
+        realtimeDestination = null;
+        isMustCheckDistToPlayer = false;
         m_Core.Animator.SetBool("IsRunning", true);
     }
 

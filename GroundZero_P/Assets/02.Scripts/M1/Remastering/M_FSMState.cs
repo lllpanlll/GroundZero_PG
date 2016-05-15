@@ -34,7 +34,7 @@ public class M_FSMState : MonoBehaviour
     public virtual void FSMInitialize() { }                 //상태 초기화
 
     public virtual void FSMUpdate() { }                     //상태 Update
-
+    public virtual void FSMMustUpdate() { }                 //상태 매 프레임 Update
 
     public virtual void Enter() { }                         //상태 진입
     public virtual void Exit() { }                          //상태 탈출
