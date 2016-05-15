@@ -4,7 +4,6 @@ using System.Collections;
 
 public class FollowCam : MonoBehaviour {
     private Transform trTarget;
-    //private LookAtIK lookAt;
     private Transform trPlayerModel;
     private T2.MoveCtrl moveCtrl;
 
@@ -51,8 +50,6 @@ public class FollowCam : MonoBehaviour {
         fDampTrace = DAMP_TRACE;
         trTarget = GameObject.FindGameObjectWithTag(Tags.CameraTarget).GetComponent<Transform>();
         trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
-        //lookAt = GameObject.FindGameObjectWithTag(Tags.PlayerModel).GetComponent<LookAtIK>();
-        //lookAt.enabled = false;
 
         moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
         cam = Camera.main;
@@ -113,31 +110,11 @@ public class FollowCam : MonoBehaviour {
         //    Time.deltaTime * DAMP_TRACE);
 
         //transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp); // 기존, 계산은 바닥충돌처리에서 한꺼번에 함으로 주석처리
-        transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 30); // 러프 버전 O
+        //transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 30); // 러프 버전 O
         //print(DIST + " || " + Vector3.Distance(transform.position, trTarget.position)); // 텍텍
-        //transform.position = vCamPos; // 러프 버전 X
+        transform.position = vCamPos; // 러프 버전 X
         //transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
         transform.rotation = Quaternion.Slerp(transform.rotation, trTarget.rotation, Time.deltaTime * 20);
-
-        //LookIK
-        //카메라가 캐릭터 후방에 있다면, 타겟 위치를 에임방향으로.
-        //카메라가 캐릭터 전방에 있다면, 타겟 위치를 카메라위치로.        
-        //float fLookAngle = Vector3.Angle(trPlayerModel.forward, transform.forward);
-        //if (fLookAngle > 100.0f && moveCtrl.GetMoveState() == T2.MoveCtrl.MoveState.Stop)
-        //    vTarget = transform.position;
-        //else
-        //    vTarget = trTarget.position + (trTarget.forward * 100.0f);
-
-        //if (moveCtrl.GetMoveFlag().backward)
-        //{
-        //    lookAt.enabled = false;
-        //}
-        //else
-        //{
-        //    lookAt.enabled = true;
-        //    //lookAt.solver.IKPosition = Vector3.Lerp(lookAt.solver.IKPosition, vTarget, Time.deltaTime * fTargetRotSpeed);           
-        //}
-        //lookAt.solver.IKPosition = vTarget;
 
         if(bFOV)
         {

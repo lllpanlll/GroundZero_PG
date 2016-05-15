@@ -31,21 +31,51 @@ namespace T2.Skill
         //각 스킬의 고유 변수들
         public int iDamage = 10;
         public float fBallSpeed = 30.0f;
-        public float fReach = 10.0f;
-        public GameObject oDimensionBallPref;
-        private GameObject oDimensionBall;
-        private ObjectPool ballPool = new ObjectPool();
+        public float fMaxReach = 10.0f;
+        [HideInInspector]
+        public float fReach;
+        public GameObject oDimensionBall;
 
-        void Start()
+        //궁버프 이후 바뀔 수치
+        private float beforeDelayTime_Buff = 0.0f;
+        private float afterDelayTime_Buff = 0.0f;
+        private float coolTime_Buff = 1.0f;
+        //궁버프 이전 수치
+        private float beforeDelayTime_Orizin;
+        private float afterDelayTime_Orizin;
+        private float coolTime_Orizin;
+
+
+        void Awake()
         {
-            ballPool.CreatePool(oDimensionBallPref, 3);
+            oDimensionBall = (GameObject)Instantiate(oDimensionBall);
+            oDimensionBall.SetActive(false);
+
+            fReach = fMaxReach;
+            beforeDelayTime_Orizin = beforeDelayTime;
+            afterDelayTime_Orizin = afterDelayTime;
+            coolTime_Orizin = coolTime;
         }
 
         public override void Enter(SkillCtrl skillCtrl)
         {
             base.Enter(skillCtrl);
+
+            if(T2.Skill.SilverStream.GetInstance().bSilverStream == true)
+            {
+                beforeDelayTime = beforeDelayTime_Buff;
+                afterDelayTime = afterDelayTime_Buff;
+                coolTime = coolTime_Buff;
+            }
+            else
+            {
+                beforeDelayTime = beforeDelayTime_Orizin;
+                afterDelayTime = afterDelayTime_Orizin;
+                coolTime = coolTime_Orizin;
+            }
+
             //기본 변수 초기화.
-            base.skillCtrl.mgr.DecreaseSkillPoint(Manager.SkillType.EP, iDecPoint);
+            base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
             base.CoolTimeCoroutine = CoolTimer(coolTime);
 
             skillCtrl.mgr.ChangeState(T2.Manager.State.Skill);
@@ -69,30 +99,35 @@ namespace T2.Skill
 
         public IEnumerator BeforeDelayTimer(float time)
         {
+            transform.rotation = Quaternion.Euler(0.0f, Camera.main.transform.eulerAngles.y, 0.0f);
             yield return new WaitForSeconds(time);
             StartCoroutine(ActionTimer(actionTime));
         }
 
         public IEnumerator ActionTimer(float time)
         {
-            //특정 스킬로 쿨타임이 없어지면 오브젝트가 늘어날 가능성이 존재하여 임시로 오브젝트풀의 모든 오브젝트가 활성화되어있지 않은
-            //상태인 경우에만 스킬이 발동되도록 한다.
-            if (!ballPool.FullActiveCheck())
+            
+            float fPlayerDist = Vector3.Distance(skillCtrl.trCamPivot.position + skillCtrl.trCamPivot.forward * 1.0f, skillCtrl.cam.transform.position);
+            //캐릭터의 y축 1.5미터 지점, z축 1.0미터 지점에서부터 카메라 방향으로 레이를 만든다.
+            Ray aimRay = new Ray(skillCtrl.cam.transform.position + skillCtrl.cam.transform.forward * fPlayerDist, skillCtrl.cam.transform.forward);
+            oDimensionBall.transform.position = transform.position + (transform.up * 1.5f + transform.forward * 1.0f);
+            //카메라에서 쏘는 레이가 부딪힌 위치에 플레이어의 총알이 발사되는 각도를 조정한다.
+            RaycastHit aimRayHit;
+            if (Physics.Raycast(aimRay, out aimRayHit, fMaxReach))
             {
-                //투사체를 활성화시킨뒤, 현재 위치에서 에임방향으로 발사한다.
-                //oDimensionBall.SetActive(true);
-                oDimensionBall = ballPool.UseObject();
-                //캐릭터의 y축 1.5미터 지점, z축 1.0미터 지점에서부터 카메라 방향으로 레이를 만든다.
-                Ray aimRay = new Ray(transform.position + (transform.up * 1.5f + transform.forward * 1.0f), skillCtrl.cam.transform.forward);
-                oDimensionBall.transform.position = aimRay.origin;
-
-                //카메라에서 쏘는 레이가 부딪힌 위치에 플레이어의 총알이 발사되는 각도를 조정한다.
-                RaycastHit aimRayHit;
-                if (Physics.Raycast(aimRay, out aimRayHit, fReach, 1))
+                if (aimRayHit.collider.transform.root.tag != Tags.Monster)
+                {
                     oDimensionBall.transform.LookAt(aimRayHit.point);
-                else
-                    oDimensionBall.transform.LookAt(aimRay.GetPoint(fReach));
+                    fReach = Vector3.Distance(new Vector3(aimRay.origin.x, 0.0f, aimRay.origin.z), new Vector3(aimRayHit.point.x, 0.0f, aimRayHit.point.z));
+                }
             }
+            else
+            {
+                oDimensionBall.transform.LookAt(aimRay.GetPoint(fMaxReach));
+            }
+            oDimensionBall.transform.rotation = Quaternion.Euler(0.0f, oDimensionBall.transform.eulerAngles.y,  oDimensionBall.transform.eulerAngles.z);
+            //투사체를 활성화시킨뒤, 현재 위치에서 에임방향으로 발사한다.
+            oDimensionBall.SetActive(true);
             yield return new WaitForSeconds(time);
             StartCoroutine(AfterDelayTimer(afterDelayTime));
         }
@@ -111,9 +146,11 @@ namespace T2.Skill
 
         public IEnumerator CoolTimer(float time)
         {
+            print("디멘션 볼 쿨타임 시작");
             base.bCoolTime = true;
             yield return new WaitForSeconds(time);
             base.bCoolTime = false;
+            print("디멘션 볼 쿨타임 끝");
         }
     }
 }

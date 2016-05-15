@@ -54,7 +54,7 @@ namespace T2.Skill
             print("일반회피");
             //기본 변수 초기화.
             base.Enter(skillCtrl);
-            base.skillCtrl.mgr.DecreaseSkillPoint(Manager.SkillType.EP, iDecPoint);
+            base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
             base.CoolTimeCoroutine = CoolTimer(coolTime);
 
             skillCtrl.mgr.ChangeState(T2.Manager.State.Skill);

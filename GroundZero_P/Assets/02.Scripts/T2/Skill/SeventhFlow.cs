@@ -37,7 +37,9 @@ namespace T2.Skill
         Vector3 moveDir = Vector3.zero;
         
         private float[] moveFlow;
-        private int iFlow = 0;   
+        private int iFlow = 0;
+        private int iFlowMax;
+       
 
         //카메라 줌 인,아웃
         private float fTargetFOV = 90.0f;
@@ -54,32 +56,80 @@ namespace T2.Skill
         private Vector3 vFireTargetPos = Vector3.zero;
         private Vector3 vPivotTargetPos = Vector3.zero;
         private float fInitCamRotY;
-        
+
+
+        //궁버프 이후 바뀔 수치
+        private float beforeDelayTime_Buff = 0.0f;
+        private float afterDelayTime_Buff = 0.0f;
+        private float coolTime_Buff = 0.0f;
+        private int iFlowMax_Buff = 6;
+        private float blinkTime_Buff = 0.1f;
+        private float blinkDist_Buff = 3.0f;
+        //궁버프 이전 수치
+        private float beforeDelayTime_Orizin;
+        private float afterDelayTime_Orizin;
+        private float coolTime_Orizin;
+        private int iFlowMax_Orizin = 3;
+        private float blinkTime_Orizin;
+        private float blinkDist_Orizin;
+
         void Awake()
         {
             blinkSpeed = blinkDist / blinkTime;
             
-            afterModelPool.CreatePool(oAfterModelPref, 50);
+            afterModelPool.CreatePool(oAfterModelPref, 20);
+
+            beforeDelayTime_Orizin = beforeDelayTime;
+            afterDelayTime_Orizin = afterDelayTime;
+            coolTime_Orizin = coolTime;
+            blinkTime_Orizin = blinkTime;
+            blinkDist_Orizin = blinkDist;
 
             moveFlow = new float[6];
-            moveFlow[0] = 195.0f;
-            moveFlow[1] = 55.0f;
-            moveFlow[2] = 285.0f;
-            moveFlow[3] = 135.0f;
-            moveFlow[4] = 325.0f;
-            moveFlow[5] = 180.0f;
-            //moveFlow[6] = 0.0f;
+            //moveFlow[0] = 195.0f;
+            //moveFlow[1] = 55.0f;
+            //moveFlow[2] = 285.0f;
+            //moveFlow[3] = 135.0f;
+            //moveFlow[4] = 325.0f;
+            //moveFlow[5] = 180.0f;
+            moveFlow[0] = 230.0f;
+            moveFlow[1] = 130.0f;
+            moveFlow[2] = 220.0f;
+            moveFlow[3] = 140.0f;
+            moveFlow[4] = 210.0f;
+            moveFlow[5] = 150.0f;
         }
 
         public override void Enter(T2.Skill.SkillCtrl skillCtrl)
         {
             //기본 변수 초기화.
             base.Enter(skillCtrl);
-            base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
-            base.CoolTimeCoroutine = CoolTimer(coolTime);           
-            fOrizinFOV = base.skillCtrl.cam.fieldOfView;           
 
+            if (T2.Skill.SilverStream.GetInstance().bSilverStream == true)
+            {
+                beforeDelayTime = beforeDelayTime_Buff;
+                afterDelayTime = afterDelayTime_Buff;
+                coolTime = coolTime_Buff;
+                iFlowMax = iFlowMax_Buff;
+                blinkTime = blinkTime_Buff;
+                blinkDist = blinkDist_Buff;
+            }
+            else
+            {
+                beforeDelayTime = beforeDelayTime_Orizin;
+                afterDelayTime = afterDelayTime_Orizin;
+                coolTime = coolTime_Orizin;
+                iFlowMax = iFlowMax_Orizin;
+                blinkTime = blinkTime_Orizin;
+                blinkDist = blinkDist_Orizin;
+            }
+            blinkSpeed = blinkDist / blinkTime;
+
+            base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
+            base.CoolTimeCoroutine = CoolTimer(coolTime);
             skillCtrl.mgr.ChangeState(T2.Manager.State.Skill);
+
+            fOrizinFOV = base.skillCtrl.cam.fieldOfView;                       
 
             //스킬이 끝난 후, 이동속도를 '처음'부터 가속하기 위해 moveState를 Stop으로 해 놓는다.
             base.skillCtrl.moveCtrl.SetMoveState(T2.MoveCtrl.MoveState.Stop);
@@ -248,7 +298,7 @@ namespace T2.Skill
             yield return new WaitForSeconds(time);
 
             //iFlow가 마지막이 아니라면 다시 StartAction함수를 실행시키고 마지막이라면 후딜레이 코루틴을 실행한다.
-            if (iFlow < moveFlow.Length)
+            if (iFlow < iFlowMax)
             {
                 StartAction();
             }

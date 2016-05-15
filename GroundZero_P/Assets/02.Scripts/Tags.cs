@@ -19,4 +19,5 @@ public class Tags : MonoBehaviour {
     //오브젝트
     public const string Object = "OBJECT";
     public const string Floor = "FLOOR";
+    public const string DimensionBall = "DIMENSIONBALL";
 }

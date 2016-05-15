@@ -14,7 +14,6 @@ namespace T2
         private int ap;
         private float ep;
         
-        public Scrollbar fillGaugeBar;
         
         public enum LayerState { invincibility, normal }
         private LayerState curLayerState;
@@ -61,6 +60,7 @@ namespace T2
 
         private LineRenderer line;
         public Transform trFire;
+        public Transform trCamPivot;
         void Start()
         {
             hp = T2.Stat.MAX_HP;
@@ -97,8 +97,6 @@ namespace T2
         }
         void Update()
         {
-            //임시 지구력 UI.
-            //fillGaugeBar.size = ep * 0.01f;
 
             #region<Sprint로 인한 EP증감>
             if (skillCtrl == State.idle || skillCtrl == State.attack)
@@ -122,10 +120,11 @@ namespace T2
 
             Transform camTr = Camera.main.transform;
             //화면의 중앙 벡터
-            Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 0.0f));
+            //Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 0.0f));
 
+            float fPlayerDist = Vector3.Distance(trCamPivot.position + trCamPivot.forward, camTr.position);
             //화면의 중앙에서 카메라의 정면방향으로 레이를 쏜다.
-            Ray aimRay = new Ray(centerPos, camTr.forward);
+            Ray aimRay = new Ray(camTr.position + camTr.forward * fPlayerDist, camTr.forward);
             //카메라의 기준이 되는 피벗의 방향을 정하는 레이를 만든다.
             Ray pivotRay = new Ray(GameObject.FindGameObjectWithTag(Tags.CameraTarget).transform.position,
                 GameObject.FindGameObjectWithTag(Tags.CameraTarget).transform.forward);

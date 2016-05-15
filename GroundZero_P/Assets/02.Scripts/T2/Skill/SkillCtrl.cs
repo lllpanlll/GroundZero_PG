@@ -80,7 +80,7 @@ namespace T2.Skill
 
 
 
-                //SeventhFlow_v1
+                //SeventhFlow
                 if (Input.GetKeyDown(KeyCode.Q))
                 {
                     if(mgr.PointCheck(SeventhFlow.GetInstance().PointType, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
@@ -90,8 +90,22 @@ namespace T2.Skill
                 //DimensionBall
                 if (Input.GetKeyDown(KeyCode.Alpha1))
                 {
-                    if (mgr.PointCheck(DimensionBall.GetInstance().PointType, T2.Skill.DimensionBall.GetInstance().iDecPoint))
-                        ChangeSkill(T2.Skill.DimensionBall.GetInstance());
+                    print(DimensionBall.GetInstance().bCoolTime);
+                    if (DimensionBall.GetInstance().oDimensionBall.activeSelf == false)
+                    {
+                        if (mgr.PointCheck(DimensionBall.GetInstance().PointType, T2.Skill.DimensionBall.GetInstance().iDecPoint))
+                            ChangeSkill(T2.Skill.DimensionBall.GetInstance());
+                    }
+                }
+
+                //SilverStream
+                if (Input.GetKeyDown(KeyCode.R))
+                {
+                    if (SilverStream.GetInstance().bSilverStream == false)
+                    {
+                        if (mgr.PointCheck(SilverStream.GetInstance().PointType, T2.Skill.SilverStream.GetInstance().iDecPoint))
+                            ChangeSkill(T2.Skill.SilverStream.GetInstance());
+                    }
                 }
             }
 
@@ -117,8 +131,7 @@ namespace T2.Skill
             {
                 //스킬 사용중이 아니라면, 새로운 스킬의 쿨타임이 false인 경우에만 스킬 체인지.
                 if (newSkill.bCoolTime == false)
-                {
-                   
+                {                   
                     //현재 스킬 상태가 IdleSkill이면 바로 스킬 체인지.
                     //(정상 종료됬었다면 무조건 IdleSkill상태일 테니)
                     if (curSkill == T2.Skill.IdleSkill.GetInstance())

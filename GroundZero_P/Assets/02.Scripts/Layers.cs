@@ -16,4 +16,5 @@ public class Layers : MonoBehaviour {
     public const string Bullet = "BULLET";
     public const string Floor = "FLOOR";
     public const string AlleyTrigger = "ALLEY_TRIGGER";
+    public const string Except_Monster = "EXCEPT_MONSTER";
 }

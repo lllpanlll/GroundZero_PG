@@ -23,6 +23,7 @@ namespace T2
         private T2.Manager mgr;
         private Animator animator;
         private Transform trPlayerModel;
+        private Transform trCamPivot;
 
         //타이머 변수
         private bool bFire = false;
@@ -58,7 +59,8 @@ namespace T2
 
             moveCtrl = GetComponent<T2.MoveCtrl>();
             mgr = GetComponent<T2.Manager>();
-            trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;            
+            trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
+            trCamPivot = GameObject.FindGameObjectWithTag(Tags.CameraTarget).transform;
             animator = GetComponentInChildren<Animator>();
 
             cam = Camera.main;
@@ -171,10 +173,11 @@ namespace T2
 
             Transform camTr = Camera.main.transform;
             //화면의 중앙 벡터
-            Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 0.0f));
+            //Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 0.0f));
 
+            float fPlayerDist = Vector3.Distance(trCamPivot.position + trCamPivot.forward, camTr.position);
             //화면의 중앙에서 카메라의 정면방향으로 레이를 쏜다.
-            Ray aimRay = new Ray(centerPos, camTr.forward);
+            Ray aimRay = new Ray(camTr.position + camTr.forward * fPlayerDist, camTr.forward);
             Debug.DrawLine(aimRay.origin, aimRay.direction, Color.blue);
 
             //카메라에서 쏘는 레이가 부딪힌 위치에 플레이어의 총알이 발사되는 각도를 조정한다.
