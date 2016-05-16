@@ -35,8 +35,9 @@ public class UI_Stat : MonoBehaviour
     float fFadeoutSpeed = 0.5f; // 전체 페이드아웃 속력
 
     // Skills
+    T2.Skill.DimensionBall skillDimensionBall;
     T2.Skill.SeventhFlow skillSeventhFlow;
-    float coolTimerSeventhFlow;
+    float coolTimerDimensionBall, coolTimerSeventhFlow;
     Slider[] sliderSkill;
     Image[] imageSkill1, imageSkill2, imageSkill3, imageSkill4;
     float[] timerSkill = new float[4];
@@ -62,6 +63,7 @@ public class UI_Stat : MonoBehaviour
         trPpHandle = sliderPP.transform.FindChild("PpHandle").GetComponent<RectTransform>();
         sliderSkill = oSkill.GetComponentsInChildren<Slider>();
         imageSkill1 = sliderSkill[0].GetComponentsInChildren<Image>(); // 1번째 스킬칸
+        skillDimensionBall = oPlayer.GetComponent<T2.Skill.DimensionBall>();
         imageSkill2 = sliderSkill[1].GetComponentsInChildren<Image>(); // 2번째 스킬칸
         skillSeventhFlow = oPlayer.GetComponent<T2.Skill.SeventhFlow>();
         imageSkill3 = sliderSkill[2].GetComponentsInChildren<Image>(); // 3번째 스킬칸
@@ -74,6 +76,7 @@ public class UI_Stat : MonoBehaviour
         sliderEP.maxValue = T2.Stat.MAX_EP;
         sliderPP.maxValue = T2.Stat.MAX_PP;
         sliderDP.maxValue = T2.Stat.MAX_DP;
+        sliderSkill[0].maxValue = skillDimensionBall.coolTime;
         sliderSkill[1].maxValue = skillSeventhFlow.coolTime;
         iPrePp = (int)sliderPP.maxValue;
         for (int i = 0; i < 4; i++)
@@ -99,19 +102,31 @@ public class UI_Stat : MonoBehaviour
 
     void Skill()
     {
+        if (skillDimensionBall.bUsing)
+        {
+            coolTimerDimensionBall = sliderSkill[0].maxValue;
+            imageSkill1[0].color = Color.blue;
+        }
+        if (sliderSkill[0].value.Equals(0))
+        {
+            imageSkill1[0].color = Color.white;
+        }
+
         if (skillSeventhFlow.bUsing)
         {
             coolTimerSeventhFlow = sliderSkill[1].maxValue;
         }
+
+        CompleteSkillCooltime(imageSkill1, 0);
         CompleteSkillCooltime(imageSkill2, 1);
+        sliderSkill[0].value = SkillCooltime(ref coolTimerDimensionBall);
+        sliderSkill[1].value = SkillCooltime(ref coolTimerSeventhFlow);
     }
 
-    // 스킬쿨타임 완료체크 (ex => CompleteSkillCooltime(imageSkill2, 1)) = 2번째 스킬인 7플로우를 뜻함
+    // 스킬쿨타임 완료체크 (ex => CompleteSkillCooltime(imageSkill2, 1)) = 2번째 스킬인 세븐쓰플로우를 뜻함
     // _imageSkill[n]에서 2는 테두리 하이라이트, 3은 boom이펙트
     void CompleteSkillCooltime(Image[] _imageSkill, int _num)
     {
-        sliderSkill[_num].value = SkillCooltime(ref coolTimerSeventhFlow);
-
         if (sliderSkill[_num].value.Equals(0))
         {
             timerSkill[_num] += Time.deltaTime;
@@ -300,7 +315,7 @@ public class UI_Stat : MonoBehaviour
 
         iPrePp = (int)sliderPP.value;
 
-        float fPi = 185 - (1.8f * sliderPP.value); // 185인 이유는 핸들이 제대로 못 덮기 때문이다
+        float fPi = 185 - (1.8f * sliderPP.value); // 185인 이유는 핸들이 제대로 못 덮기 때문이다 // 뭔가 이상해서 더 만져봐야겠다
         trPpHandle.transform.rotation = Quaternion.Euler(
                 oDpPp.transform.eulerAngles.x,
                 oDpPp.transform.eulerAngles.y,
