@@ -29,6 +29,7 @@ public enum M_AttackSkillState          //공격 상태 사용 스킬
     BodyPress,
     Magic_1,
     Magic_2,
+    Magic_4,
     EnergyEmission
 }
 
@@ -178,17 +179,22 @@ public class M_Attack : M_FSMState
                         realtimeDestination = m_Core.PlayerTr;
                         isMustCheckDistToPlayer = true;
 
-                        if (randomChance < 500)                                                  
+                        if (randomChance < 300)
                         {
                             attackSkillState = M_AttackSkillState.Magic_1;
                             StartCoroutine(M_Magic_1.instance.UseSkill(m_Core.PlayerTr.position));  //마법 1 사용
                         }
-                        else                                                
+                        else if (randomChance < 630)
                         {
                             attackSkillState = M_AttackSkillState.Magic_2;
                             StartCoroutine(M_Magic_2.instance.UseSkill(m_Core.PlayerTr.position));  //마법 2 사용
                         }
-
+                        else
+                        {
+                            attackSkillState = M_AttackSkillState.Magic_4;
+                            StartCoroutine(M_Magic_4.instance.UseSkill(m_Core.PlayerTr.position));  //마법 4 사용
+                        }
+                        
                         skillSetState = M_AttackSkillSetState.SkillSet_2;           //그 다음엔 스킬 세트 2를 진행해야 함
                     }
                     break;

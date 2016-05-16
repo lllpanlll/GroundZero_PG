@@ -18,6 +18,7 @@ public enum M_SkillCoad
     Magic_1,
     Magic_2,
     Magic_3,
+    Magic_4,
     JumpAttack,
     AlleyForeFootPress,
     AlleyBreath_1,
