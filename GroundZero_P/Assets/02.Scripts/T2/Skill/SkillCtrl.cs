@@ -90,7 +90,6 @@ namespace T2.Skill
                 //DimensionBall
                 if (Input.GetKeyDown(KeyCode.Alpha1))
                 {
-                    print(DimensionBall.GetInstance().bCoolTime);
                     if (DimensionBall.GetInstance().oDimensionBall.activeSelf == false)
                     {
                         if (mgr.PointCheck(DimensionBall.GetInstance().PointType, T2.Skill.DimensionBall.GetInstance().iDecPoint))

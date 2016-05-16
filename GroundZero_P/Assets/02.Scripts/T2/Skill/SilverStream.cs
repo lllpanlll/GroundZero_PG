@@ -78,6 +78,10 @@ namespace T2.Skill
             bSilverStream = true;
             StartCoroutine(AfterDelayTimer(afterDelayTime));
 
+
+            //디멘션볼 오브젝트가 있으면 폭파시킨다.
+            if(DimensionBall.GetInstance().oDimensionBall.activeSelf)
+                DimensionBall.GetInstance().oDimensionBall.GetComponent<T2.Pref.DimensionBallPref>().ExplosionDimensionBall();
             yield return new WaitForSeconds(time);
             
             bSilverStream = false;

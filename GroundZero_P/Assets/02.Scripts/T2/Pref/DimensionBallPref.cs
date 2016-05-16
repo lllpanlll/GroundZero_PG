@@ -25,6 +25,7 @@ namespace T2.Pref
         private CharacterController controller;
         private Transform trPlayer;
         private Vector3 moveDir;
+        private float fReachOfBall;
 
         void Awake()
         {
@@ -50,7 +51,7 @@ namespace T2.Pref
             fOrizinRadius = spherCollider.radius;
             meshRenderer.enabled = true;
             fReach = T2.Skill.DimensionBall.GetInstance().fReach;
-            vStartPos = GameObject.FindGameObjectWithTag(Tags.Player).transform.position;
+            vStartPos = new Vector3(trPlayer.position.x, 0.0f, trPlayer.position.z);
             bMove = true;
             bPlayerMove = false;
             spherCollider.radius = fOrizinRadius;
@@ -58,7 +59,6 @@ namespace T2.Pref
             oExplosion.SetActive(false);
 
             //디멘션볼 스킬의 쿨타임을 재설정한다.
-            //디멘션볼 스킬은 투사체가 없으면 쿨이 없는것?!        
             T2.Skill.DimensionBall.GetInstance().StopCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
             T2.Skill.DimensionBall.GetInstance().bCoolTime = true;
             StartCoroutine(LifeTimer(this.gameObject, lifeTime));
@@ -80,86 +80,105 @@ namespace T2.Pref
                 if (col.gameObject.layer == LayerMask.NameToLayer(Layers.MonsterHitCollider))
                 {
                     col.gameObject.GetComponent<M_HitCtrl>().OnHitMonster(iDamage, true);
+                    //쿨타임 시작
+                    T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
                     gameObject.SetActive(false);
                 }
             }
         }
 
-        void FixedUpdate()
+        void Update()
         {
+            #region<이동처리 Ray>
             //투사체 이동시 장애물 체크
             Ray[] ray = new Ray[3];
             ray[0] = new Ray(transform.position, transform.forward);
             ray[1] = new Ray(transform.position - transform.right * spherCollider.radius, transform.forward);
             ray[2] = new Ray(transform.position + transform.right * spherCollider.radius, transform.forward);
             RaycastHit hit;
-            int mask = (1 << LayerMask.NameToLayer(Layers.T_HitCollider)) | (1 << LayerMask.NameToLayer(Layers.Bullet)) |
-                (1 << LayerMask.NameToLayer(Layers.T_Invincibility) | (1 << LayerMask.NameToLayer(Layers.Except_Monster)));
+            int mask = (
+                1 << LayerMask.NameToLayer(Layers.T_HitCollider)) | (1 << LayerMask.NameToLayer(Layers.Bullet)) |
+                (1 << LayerMask.NameToLayer(Layers.T_Invincibility) | (1 << LayerMask.NameToLayer(Layers.Except_Monster)) |
+                (1 << LayerMask.NameToLayer(Layers.MonsterAttkCollider)) | (1 << LayerMask.NameToLayer(Layers.MonsterHitCollider))
+                );
             mask = ~mask;
             for (int i = 0; i < 3; i++)
             {
-                float fDist = fSpeed * Time.fixedDeltaTime;
+                float fDist = fSpeed * Time.deltaTime;
                 Debug.DrawLine(ray[i].origin, ray[i].GetPoint(fDist), Color.cyan);
                 if (Physics.Raycast(ray[i], out hit, fDist, mask))
                 {
                     //최상위 오브젝트의 태그가 몬스터인지 체크한다.
                     if (hit.collider.transform.root.tag != Tags.Monster)
                     {
+                        if (!bMove && (spherCollider.radius).Equals(fOrizinRadius))
+                        {
+                            Vector3 vHitPos = Vector3.zero;
+                            if (i == 1)
+                                vHitPos = hit.point + transform.right * spherCollider.radius;
+                            else if (i == 2)
+                                vHitPos = hit.point - transform.right * spherCollider.radius;
+                            else
+                                vHitPos = hit.point;
+                            StartCoroutine(AccuracyPosition(vHitPos));
+                        }
                         bMove = false;
-                        Vector3 vHitPos = Vector3.zero;
-                        if (i == 1)
-                            vHitPos = hit.point + transform.right * spherCollider.radius;
-                        else if (i == 2)
-                            vHitPos = hit.point - transform.right * spherCollider.radius;
-                        else
-                            vHitPos = hit.point;
-                        StartCoroutine(AccuracyPosition(vHitPos));
                     }
                     break;
                 }
             }
+            #endregion
 
             //사정거리 이내에서만 이동, 사정거리에 도착시 정지.
             float curDist = Vector3.Distance(vStartPos, new Vector3(transform.position.x, 0.0f, transform.position.z));
-            if (curDist < fReach && bMove == true)
+            if (curDist < fReach && bMove)
             {
-                transform.Translate(Vector3.forward * fSpeed * Time.fixedDeltaTime, Space.Self);
+                transform.Translate(Vector3.forward * fSpeed * Time.deltaTime, Space.Self);
             }
 
-
+            
             //스킬키와 동일한 키 입력시 해당 오브젝트로 플레이어를 이동시킨다.
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                if(mgr.GetState() != Manager.State.Skill && mgr.GetState() != Manager.State.be_Shot)
-                {
-                    if(T2.Skill.SilverStream.GetInstance().bSilverStream == true)
+                print("출발!");
+                if (mgr.GetCtrlPossible().Skill)
+                {                    
+                    //if (T2.Skill.SilverStream.GetInstance().bSilverStream && !bPlayerMove)
+                    if(!bPlayerMove)
                     {
+                        
                         bMove = false;
                         bPlayerMove = true;
+                        moveDir = transform.position - new Vector3(trPlayer.position.x, transform.position.y, trPlayer.position.z);
+                        moveDir = moveDir.normalized;
+                        fReachOfBall = Vector3.Distance(new Vector3(trPlayer.position.x, transform.position.y, trPlayer.position.z), transform.position);
                         mgr.ChangeState(T2.Manager.State.Skill);
                         mgr.SetLayerState(Manager.LayerState.invincibility);                        
                         StopAllCoroutines();
                     }
                 }
             }
-            if(bPlayerMove == true)
+            if(bPlayerMove)
             {
-                moveDir = (transform.position + transform.up * 1.5f )- trPlayer.position;
-                controller.Move(moveDir * 5.0f * Time.deltaTime);
-                if(Vector3.Distance(trPlayer.position, transform.position) < 1.5f )
+                float PlayerDist = Vector3.Distance(vStartPos, new Vector3(trPlayer.position.x, transform.position.y, trPlayer.position.z));
+                if (PlayerDist >= fReachOfBall)
                 {
                     bPlayerMove = false;
                     mgr.ChangeState(T2.Manager.State.idle);
                     mgr.SetLayerState(Manager.LayerState.normal);
-                    //디멘션볼 스킬의 쿨타임을 끝낸다.
-                    T2.Skill.DimensionBall.GetInstance().bCoolTime = false;
+                    //쿨타임 시작
+                    T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
                     gameObject.SetActive(false);
                 }
+                else
+                    controller.Move(moveDir * 30.0f * Time.deltaTime);
+                
             }
 
+            //우클릭시 폭파.
             if(Input.GetMouseButtonDown(1))
             {
-                if (mgr.GetState() != Manager.State.Skill && mgr.GetState() != Manager.State.be_Shot)
+                if (!(mgr.GetState()).Equals(Manager.State.Skill) && !(mgr.GetState()).Equals(Manager.State.be_Shot))
                 {
                     StopAllCoroutines();
                     meshRenderer.enabled = false;
@@ -184,17 +203,23 @@ namespace T2.Pref
             oExplosion.SetActive(true);
             yield return new WaitForSeconds(0.1f);
             spherCollider.radius = fOrizinRadius;
-            //디멘션볼 스킬의 쿨타임을 끝낸다.
-            T2.Skill.DimensionBall.GetInstance().bCoolTime = false;
+            //쿨타임 시작
+            T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
             gameObject.SetActive(false);
         }
 
         IEnumerator AccuracyPosition(Vector3 pos)
         {
-
             yield return new WaitForEndOfFrame();
-            transform.position = pos - (transform.forward * spherCollider.radius);
+            transform.position = pos - (transform.forward * spherCollider.radius * 1.5f);
+        }
 
+        public void ExplosionDimensionBall()
+        {
+            StopAllCoroutines();
+            meshRenderer.enabled = false;
+            spherCollider.radius = fExplosionRange;
+            StartCoroutine(ExplosionTimer());
         }
     }
 }

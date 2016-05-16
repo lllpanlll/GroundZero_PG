@@ -97,9 +97,13 @@ namespace T2
         }
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                //print("출발!");
+            }
 
-            #region<Sprint로 인한 EP증감>
-            if (skillCtrl == State.idle || skillCtrl == State.attack)
+                #region<Sprint로 인한 EP증감>
+                if (skillCtrl == State.idle || skillCtrl == State.attack)
             {
                 if (ep < 0.0f)
                     ctrlPossible.Sprint = false;
