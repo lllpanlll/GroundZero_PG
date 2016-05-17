@@ -31,12 +31,13 @@ namespace T2.Skill
         //각 스킬의 고유 변수들        
         public float blinkDist = 12.0f;
         public float fPuseTime = 0.07f;
+        private bool bPuseTime = false;
+        private float fTargetRot;
         //사격거리
         private float fReach = 100.0f;
         private float blinkSpeed;   
         Vector3 moveDir = Vector3.zero;
-        
-        private float[] moveFlow;
+
         private int iFlow = 0;
         private int iFlowMax;
        
@@ -55,23 +56,30 @@ namespace T2.Skill
 
         private Vector3 vFireTargetPos = Vector3.zero;
         private Vector3 vPivotTargetPos = Vector3.zero;
-        private float fInitCamRotY;
-
 
         //궁버프 이후 바뀔 수치
         private float beforeDelayTime_Buff = 0.0f;
         private float afterDelayTime_Buff = 0.0f;
         private float coolTime_Buff = 0.0f;
-        private int iFlowMax_Buff = 6;
+        private int iFlowMax_Buff = 20;
         private float blinkTime_Buff = 0.1f;
         private float blinkDist_Buff = 3.0f;
         //궁버프 이전 수치
         private float beforeDelayTime_Orizin;
         private float afterDelayTime_Orizin;
         private float coolTime_Orizin;
-        private int iFlowMax_Orizin = 3;
+        private int iFlowMax_Orizin = 20;
         private float blinkTime_Orizin;
         private float blinkDist_Orizin;
+
+        public struct MoveFlag
+        {
+            public bool forward ;
+            public bool backward ;
+            public bool right ;
+            public bool left ;
+        }
+        MoveFlag moveFlag;
 
         void Awake()
         {
@@ -84,20 +92,81 @@ namespace T2.Skill
             coolTime_Orizin = coolTime;
             blinkTime_Orizin = blinkTime;
             blinkDist_Orizin = blinkDist;
+            iFlowMax = iFlowMax_Orizin;
 
-            moveFlow = new float[6];
-            //moveFlow[0] = 195.0f;
-            //moveFlow[1] = 55.0f;
-            //moveFlow[2] = 285.0f;
-            //moveFlow[3] = 135.0f;
-            //moveFlow[4] = 325.0f;
-            //moveFlow[5] = 180.0f;
-            moveFlow[0] = 230.0f;
-            moveFlow[1] = 130.0f;
-            moveFlow[2] = 220.0f;
-            moveFlow[3] = 140.0f;
-            moveFlow[4] = 210.0f;
-            moveFlow[5] = 150.0f;
+            moveFlag.forward = false;
+            moveFlag.backward = false;
+            moveFlag.right = false;
+            moveFlag.left = false;
+        }
+        void FixedUpdate()
+        {
+
+            if (Input.GetKeyUp(KeyCode.W)) { moveFlag.forward = false; }
+            if (Input.GetKeyUp(KeyCode.S)) { moveFlag.backward = false; }
+            if (Input.GetKeyUp(KeyCode.D)) { moveFlag.right = false; }
+            if (Input.GetKeyUp(KeyCode.A)) { moveFlag.left = false; }
+
+            if (Input.GetKey(KeyCode.W)) moveFlag.forward = true;
+            if (Input.GetKey(KeyCode.S)) moveFlag.backward = true;
+            if (Input.GetKey(KeyCode.D)) moveFlag.right = true;
+            if (Input.GetKey(KeyCode.A)) moveFlag.left = true;
+
+            //float test = CalcTargetRot();
+            //print("그냥 " + test.ToString());
+        }
+        float CalcTargetRot()
+        {
+            //캐릭터 기준 rotation값에 카메라의 rotation값을 더해준다.
+            float CamRot = Camera.main.transform.eulerAngles.y;
+
+            if (moveFlag.forward)
+            {
+                if (moveFlag.right)          //전방 우측 대각선
+                    fTargetRot = 45.0f + CamRot;
+                else if (moveFlag.left)    //전방 좌측 대각선
+                    fTargetRot = 315.0f + CamRot;
+                else                    //전방
+                    fTargetRot = 0.0f + CamRot;
+            }
+            else if (moveFlag.backward)
+            {
+                if (moveFlag.right)          //후방 우측 대각선
+                    fTargetRot = 135.0f + CamRot;
+                else if (moveFlag.left)    //후방 좌측 대각선
+                    fTargetRot = 225.0f + CamRot;
+                else                    //후방
+                    fTargetRot = 180.0f + CamRot;
+            }
+            else if (moveFlag.right)
+            {
+                //if (moveFlag.forward)
+                //    fTargetRot = 45.0f + CamRot;
+                //else if (moveFlag.backward)
+                //    fTargetRot = 135.0f + CamRot;
+                //else                     //우측
+                    fTargetRot = 90.0f + CamRot;
+            }
+            else if (moveFlag.left)
+            {
+                //if (moveFlag.forward)
+                //    fTargetRot = 315.0f + CamRot;
+                //else if (moveFlag.backward)
+                //    fTargetRot = 225.0f + CamRot;
+                //else                     //좌측
+                
+                fTargetRot = 270.0f + CamRot;
+            }
+            print("왼쪽" + moveFlag.left);
+            print("오른쪽" + moveFlag.right);
+            print("전방" + moveFlag.forward);
+            print("후방" + moveFlag.backward);
+            moveFlag.forward = false;
+            moveFlag.backward = false;
+            moveFlag.right = false;
+            moveFlag.left = false;
+
+            return fTargetRot;
         }
 
         public override void Enter(T2.Skill.SkillCtrl skillCtrl)
@@ -134,13 +203,8 @@ namespace T2.Skill
             //스킬이 끝난 후, 이동속도를 '처음'부터 가속하기 위해 moveState를 Stop으로 해 놓는다.
             base.skillCtrl.moveCtrl.SetMoveState(T2.MoveCtrl.MoveState.Stop);
 
-            Transform camTr = Camera.main.transform;
-            fInitCamRotY = camTr.eulerAngles.y;
-            //화면의 중앙 벡터
-            Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 0.0f));
-
             //화면의 중앙에서 카메라의 정면방향으로 레이를 쏜다.
-            Ray aimRay = new Ray(centerPos, camTr.forward);
+            Ray aimRay = new Ray(base.skillCtrl.cam.transform.position, base.skillCtrl.cam.transform.forward);
             //카메라의 기준이 될 피벗의 방향을 정하는 레이를 만든다.
             Ray pivotRay = new Ray(base.skillCtrl.trCamPivot.position, base.skillCtrl.trCamPivot.forward);
 
@@ -163,8 +227,6 @@ namespace T2.Skill
                 vPivotTargetPos = pivotRay.GetPoint(fReach);
             }
 
-
-
             //선딜 타이머 시작.                
             StartCoroutine(BeforeDelayTimer(beforeDelayTime));            
         }
@@ -172,7 +234,19 @@ namespace T2.Skill
         {
             //피격시 비정상 종료.
             if (skillCtrl.mgr.GetState() == T2.Manager.State.be_Shot)
-                Exit(skillCtrl);            
+                Exit(skillCtrl);
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                if (!bPuseTime)
+                {
+                    print(iFlow);
+                    //CalcTargetRot();
+                    fTargetRot = CalcTargetRot();
+                    // print("스킬 중 "+fTargetRot.ToString());
+                    bPuseTime = true;
+                }
+            }
         }
         public override void Exit(T2.Skill.SkillCtrl skillCtrl)
         {
@@ -231,12 +305,19 @@ namespace T2.Skill
 
 
         void StartAction()
-        {
+        {           
             //플레이어와 캐릭터(모델)를 회전시킬 값을 구한다.
-            float targetRot = fInitCamRotY + moveFlow[iFlow];
+            if (iFlow == 0)
+                fTargetRot = base.skillCtrl.cam.transform.rotation.y + 180.0f;
 
+            
             //캐릭터(모델)를 회전시킨다.
-            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, targetRot, 0.0f);
+            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, fTargetRot, 0.0f);
+
+            moveFlag.forward = false;
+            moveFlag.backward = false;
+            moveFlag.right = false;
+            moveFlag.left = false;
 
             moveDir = base.skillCtrl.trPlayerModel.forward;
 
@@ -261,18 +342,19 @@ namespace T2.Skill
             {
                 base.skillCtrl.controller.Move(moveDir * Time.deltaTime * blinkSpeed);
 
-                base.skillCtrl.trCamPivot.LookAt(vPivotTargetPos);
+                //base.skillCtrl.trCamPivot.LookAt(vPivotTargetPos);
 
                 if (timeConunt >= (time * 0.6) && !bAfterImageOn)
                 {
                     bAfterImageOn = true;
                     this.StartCoroutine(AfterImagesDraw());
-                }             
-
+                }
+                
                 yield return new WaitForEndOfFrame();
 
                 timeConunt += Time.fixedDeltaTime;
             }
+            
 
             this.StartCoroutine(puseTime(fPuseTime));
         }
@@ -280,10 +362,9 @@ namespace T2.Skill
         IEnumerator puseTime(float time)
         {
             //모델과 카메라 방향을 타겟 위치로 회전시킨다.
-            base.skillCtrl.trPlayerModel.LookAt(vFireTargetPos);
-
-            
-            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trPlayerModel.eulerAngles.y, 0.0f);
+            //base.skillCtrl.trPlayerModel.LookAt(vFireTargetPos);            
+            //base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trPlayerModel.eulerAngles.y, 0.0f);
+            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, skillCtrl.cam.transform.rotation.y, 0.0f);
 
             //정지시 애니메이션 플레이.
             int iSprintHash = 0;
@@ -291,28 +372,60 @@ namespace T2.Skill
             base.skillCtrl.animator.speed = 1.0f;
             base.skillCtrl.animator.Play(iSprintHash);
 
-            //총알을 발사하고, 다음 이동방향 각도를 위해 iFlow를 증가시킨다.
-            base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
-            iFlow++;
-
-            yield return new WaitForSeconds(time);
-
-            //iFlow가 마지막이 아니라면 다시 StartAction함수를 실행시키고 마지막이라면 후딜레이 코루틴을 실행한다.
-            if (iFlow < iFlowMax)
+            //if(Input.GetMouseButtonDown(1))
+            //{
+            //    //총알을 발사하고, 다음 이동방향 각도를 위해 iFlow를 증가시킨다.
+            //    base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
+            //    iFlow++;
+            //}
+            //else
+            //{
+            //    iFlow = iFlowMax;
+            //}    
+            
+            float timeConunt = 0.0f;
+            while (time > timeConunt)
             {
-                StartAction();
+                if (bPuseTime)
+                {
+                    iFlow++;
+                    bPuseTime = false;
+                    StopAllCoroutines();
+
+                    if (iFlow < iFlowMax)
+                    {
+                        //총알을 발사하고, 다음 이동방향 각도를 위해 iFlow를 증가시킨다.
+                        base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
+                        StartAction();
+                    }
+                    else
+                    {
+                        FinishFlow();
+                    }
+                }
+                yield return new WaitForEndOfFrame();
+
+                timeConunt += Time.fixedDeltaTime;
             }
-            else
+
+
+            print("puseTime exit");
+            if (!bPuseTime)
             {
-                iFlow = 0;
-                base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, true);
-                //후딜레이 시작.
-                StartCoroutine(AfterDelayTimer(afterDelayTime));
-                //카메라 줌인
-                base.skillCtrl.followCam.ChangeFOV(fOrizinFOV, fZoomSpeed * 0.3f);
+                FinishFlow();
             }
         }
 
+        void FinishFlow()
+        {
+            bPuseTime = false;
+            iFlow = 0;
+            base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, true);
+            //후딜레이 시작.
+            StartCoroutine(AfterDelayTimer(afterDelayTime));
+            //카메라 줌인
+            base.skillCtrl.followCam.ChangeFOV(fOrizinFOV, fZoomSpeed * 0.3f);
+        }
         
         IEnumerator AfterImagesDraw()
         {

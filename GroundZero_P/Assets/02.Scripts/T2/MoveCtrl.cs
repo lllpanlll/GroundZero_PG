@@ -91,8 +91,7 @@ namespace T2
 
             Vector3 moveDir = (Vector3.forward * v) + (Vector3.right * h);
 
-            //전력질주의 캐릭터 방향을 정하는 'targetRot'변수를 설정해주는 함수,
-            CalcTargetRot();
+
 
             #region<switch(moveState)>
             switch (moveState)
@@ -153,12 +152,17 @@ namespace T2
             if (Input.GetKeyUp(KeyCode.D)) { moveFlag.right = false; v = 0.0f; }
             if (Input.GetKeyUp(KeyCode.A)) { moveFlag.left = false; v = 0.0f; }
 
-            if (mgr.GetCtrlPossible().Run == true)
+            if (Input.GetKey(KeyCode.W)) moveFlag.forward = true;
+            if (Input.GetKey(KeyCode.S)) moveFlag.backward = true;
+            if (Input.GetKey(KeyCode.D)) moveFlag.right = true;
+            if (Input.GetKey(KeyCode.A)) moveFlag.left = true;
+
+            if (mgr.GetCtrlPossible().Run == false)
             {
-                if (Input.GetKey(KeyCode.W)) moveFlag.forward = true;
-                if (Input.GetKey(KeyCode.S)) moveFlag.backward = true;
-                if (Input.GetKey(KeyCode.D)) moveFlag.right = true;
-                if (Input.GetKey(KeyCode.A)) moveFlag.left = true;
+                moveFlag.forward = false;
+                moveFlag.backward = false;
+                moveFlag.right = false;
+                moveFlag.left = false;
             }
             //else
             //{
@@ -169,6 +173,9 @@ namespace T2
             //    //h = v = 0.0f;
             //}
             #endregion
+
+            //전력질주의 캐릭터 방향을 정하는 'targetRot'변수를 설정해주는 함수,
+            CalcTargetRot();
 
             #region<MoveState Change>
             //걷기상태가 가능상태여야 전력질주도 가능하도록 한다.
@@ -298,8 +305,7 @@ namespace T2
             }
 
         }
-
-
+        
         void CalcTargetRot()
         {
             //캐릭터 기준 rotation값에 카메라의 rotation값을 더해준다.

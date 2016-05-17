@@ -7,7 +7,7 @@ namespace T2.Pref
     {
         private float lifeTime = 3.0f;
 
-        private float fSpeed;
+        private float fSpeed, fPlayerSpeed = 30.0f;
         private int iDamage;
         private float fReach;
         private Vector3 vStartPos;
@@ -66,8 +66,10 @@ namespace T2.Pref
 
         void OnDisable()
         {
-            //T2.Skill.DimensionBall.GetInstance().bCoolTime = false; // tj
+            T2.Skill.DimensionBall.GetInstance().bCoolTime = false;
             T2.Skill.DimensionBall.GetInstance().fReach = T2.Skill.DimensionBall.GetInstance().fMaxReach;
+            spherCollider.radius = fOrizinRadius;            
+
         }
 
 
@@ -135,12 +137,10 @@ namespace T2.Pref
             {
                 transform.Translate(Vector3.forward * fSpeed * Time.deltaTime, Space.Self);
             }
-
             
             //스킬키와 동일한 키 입력시 해당 오브젝트로 플레이어를 이동시킨다.
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                print("출발!");
                 if (mgr.GetCtrlPossible().Skill)
                 {                    
                     //if (T2.Skill.SilverStream.GetInstance().bSilverStream && !bPlayerMove)
@@ -160,6 +160,32 @@ namespace T2.Pref
             }
             if(bPlayerMove)
             {
+                Vector3 vPlayerPos = new Vector3(trPlayer.position.x, transform.position.y, trPlayer.position.z);
+                Ray[] playerRay = new Ray[3];
+                playerRay[0] = new Ray(vPlayerPos, moveDir);
+                playerRay[1] = new Ray(vPlayerPos - trPlayer.right * controller.radius, moveDir);
+                playerRay[2] = new Ray(vPlayerPos + trPlayer.right * controller.radius, moveDir);
+                for (int i = 0; i < 3; i++)
+                {
+                    float fDist = fPlayerSpeed * Time.deltaTime;
+                    Debug.DrawLine(playerRay[i].origin, playerRay[i].GetPoint(fDist), Color.cyan);
+                    if (Physics.Raycast(playerRay[i], out hit, fDist, mask))
+                    {
+                        //최상위 오브젝트의 태그가 몬스터인지 체크한다.
+                        if (hit.collider.transform.root.tag != Tags.Floor)
+                        {
+                            print(hit.collider.tag);
+                            bPlayerMove = false;
+                            mgr.ChangeState(T2.Manager.State.idle);
+                            mgr.SetLayerState(Manager.LayerState.normal);
+                            //쿨타임 시작
+                            T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
+                            gameObject.SetActive(false);
+                        }
+                        break;
+                    }
+                }
+
                 float PlayerDist = Vector3.Distance(vStartPos, new Vector3(trPlayer.position.x, transform.position.y, trPlayer.position.z));
                 if (PlayerDist >= fReachOfBall)
                 {
@@ -171,7 +197,9 @@ namespace T2.Pref
                     gameObject.SetActive(false);
                 }
                 else
-                    controller.Move(moveDir * 30.0f * Time.deltaTime);
+                {
+                    controller.Move(moveDir * fPlayerSpeed * Time.deltaTime);
+                }
                 
             }
 
@@ -202,7 +230,6 @@ namespace T2.Pref
             oExplosion.transform.position = transform.position;
             oExplosion.SetActive(true);
             yield return new WaitForSeconds(0.1f);
-            spherCollider.radius = fOrizinRadius;
             //쿨타임 시작
             T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
             gameObject.SetActive(false);

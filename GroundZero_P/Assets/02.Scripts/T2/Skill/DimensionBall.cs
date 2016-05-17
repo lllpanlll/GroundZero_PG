@@ -55,8 +55,6 @@ namespace T2.Skill
             beforeDelayTime_Orizin = beforeDelayTime;
             afterDelayTime_Orizin = afterDelayTime;
             coolTime_Orizin = coolTime;
-
-            base.bCoolTime = false; //tj
         }
 
         public override void Enter(SkillCtrl skillCtrl)
