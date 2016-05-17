@@ -573,7 +573,6 @@ public class M_Alley : M_FSMState
         }
         else
         {
-
             Debug.Log("Alley CheckInAlley GoTo Patrol");
 
             SelectStartPatrol();
@@ -637,7 +636,6 @@ public class M_Alley : M_FSMState
 
                 isPatrolingClockwise = false;
             }
-
         }
     }
 

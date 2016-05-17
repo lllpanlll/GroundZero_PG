@@ -69,11 +69,14 @@ public struct AuditoryValue     //청역 체크 수치
         isHearing = _isHearing;
         trToPlayerPathLangth = _langth;
         trToPlayerPathCornerLangth = (int)_langth;
+        sideValue = PlayerSideValue.None;
     }
 
     public bool isHearing;                          //플레이어가 청각 범위 내에 있는가
     public float trToPlayerPathLangth;              //플레이어까지의 실제 거리
     public int trToPlayerPathCornerLangth;          //플레이어까지 경로의 코너 갯수
+
+    public PlayerSideValue sideValue;
 }
 
 public struct CycleDistValue    //플레이어와의 거리 수치
@@ -82,6 +85,13 @@ public struct CycleDistValue    //플레이어와의 거리 수치
     public M_AttackState sightInCycleState;         //플레이어의 시야 Cycle 상태
 }
 
+public enum PlayerSideValue           //플레이어 위치 수치
+{
+    None,
+    Front,
+    Side,
+    Back
+}
 #endregion
 
 
@@ -139,6 +149,7 @@ public class M_AICore : MonoBehaviour {
     //시야 판단
     public float sightDistRange = 50.0f;                                    //시야 거리 범위
     public float sightAngleRange = 40.0f;                                   //시야각 범위
+    public float sightSideAngleRange = 120.0f;                              //측면 각 범위
     private Ray sightRay;                                                   //시야 Ray
     private RaycastHit hit;                                                 //시야 Ray에 맞은 물체
     private int inSightLayerMask;                                           //시야 Ray 레이어 마스크 
@@ -327,12 +338,14 @@ public class M_AICore : MonoBehaviour {
                     auditoryValue.isHearing = true;
                     auditoryValue.trToPlayerPathLangth = pathLength;
                     auditoryValue.trToPlayerPathCornerLangth = pathCornersLength;
+                    auditoryValue.sideValue = CheckToPlayerPosition();
                 }
                 else                                                            //실 거리 일정 이상 청역 내 플레이어 확인 실패
                 {
                     auditoryValue.isHearing = false;
                     auditoryValue.trToPlayerPathLangth = pathLength;
                     auditoryValue.trToPlayerPathCornerLangth = pathCornersLength;
+                    auditoryValue.sideValue = PlayerSideValue.None;
                 }
             }
             else                                                                //Path가 0 일 때는 그냥 직선거리만으로 거리 체크 OK시킨다 
@@ -340,6 +353,7 @@ public class M_AICore : MonoBehaviour {
                 auditoryValue.isHearing = true;
                 auditoryValue.trToPlayerPathLangth = 0;
                 auditoryValue.trToPlayerPathCornerLangth = 0;
+                auditoryValue.sideValue = CheckToPlayerPosition();
             }
         }
         else                                                                    //반경 일정 이상 청역 내 플레이어 확인 실패
@@ -347,9 +361,9 @@ public class M_AICore : MonoBehaviour {
             auditoryValue.isHearing = false;
             auditoryValue.trToPlayerPathLangth = -1.0f;
             auditoryValue.trToPlayerPathCornerLangth = -1;
+            auditoryValue.sideValue = PlayerSideValue.None;
         }
         
-
         return auditoryValue;
     }
 
@@ -400,8 +414,24 @@ public class M_AICore : MonoBehaviour {
         }
 
         return pathLength;
-    } 
+    }
 
+    //플레이어 위치 각 체크 
+    public PlayerSideValue CheckToPlayerPosition()
+    {
+        //몬스터에서 플레이어를 가리키는 벡터 구하기
+        trToPlayerVector = Vector3.Normalize(playerTr.position - tr.position);
+
+        float toPlayerAngle = Vector3.Angle(tr.forward, trToPlayerVector);        //현재 시야각
+        
+        if (toPlayerAngle < sightAngleRange)
+            return PlayerSideValue.Front;
+        else if (toPlayerAngle < sightSideAngleRange)
+            return PlayerSideValue.Side;
+        else
+            return PlayerSideValue.Back;
+    }
+    
     #endregion
 
 
