@@ -30,7 +30,8 @@ public enum M_AttackSkillState          //공격 상태 사용 스킬
     Magic_1,
     Magic_2,
     Magic_4,
-    EnergyEmission
+    EnergyEmission,
+    SafeZone
 }
 
 
@@ -207,10 +208,17 @@ public class M_Attack : M_FSMState
                         isMustCheckDistToPlayer = false;
                         m_Core.Animator.SetBool("IsRunning", false);
 
-                        //아직은 스킬 세트 2에 소속된 스킬은 에너지 방출밖에 없다
-                        attackSkillState = M_AttackSkillState.EnergyEmission;
-                        StartCoroutine(M_EnergyEmission.instance.UseSkill(m_Core.PlayerTr.position));  //에너지 방출 사용   
-
+                        if (randomChance < 500)
+                        {
+                            attackSkillState = M_AttackSkillState.EnergyEmission;
+                            StartCoroutine(M_EnergyEmission.instance.UseSkill(m_Core.PlayerTr.position));  //에너지 방출 사용   
+                        }
+                        else 
+                        {
+                            attackSkillState = M_AttackSkillState.SafeZone;
+                            StartCoroutine(M_SafeZone.instance.UseSkill(m_Core.PlayerTr.position));  //안전지대 사용
+                        }
+                       
                         skillSetState = M_AttackSkillSetState.SkillSet_1;           //스킬 세트 2를 사용한 후엔 다시 스킬 세트 1을 진행해야 함
                     }
                     break;
@@ -301,12 +309,33 @@ public class M_Attack : M_FSMState
                 }
                 break;
 
+            case M_AttackSkillState.Magic_4:                                        //마법_4 캔슬 가능
+                {
+                    StopAllCoroutines();
+                    M_Magic_4.instance.CancelSkill();
+
+                    base.MonRigid();
+                }
+                break;
+
             case M_AttackSkillState.EnergyEmission:                                 //에너지 방출 캔슬 가능
                 {
                     StopAllCoroutines();
                     M_EnergyEmission.instance.CancelSkill();
 
                     base.MonRigid();
+                }
+                break;
+
+            case M_AttackSkillState.SafeZone:                                       //안전지대 준비중에만 캔슬 가능
+                {
+                    if(M_SafeZone.instance.CanRigid)
+                    {
+                        StopAllCoroutines();
+                        M_SafeZone.instance.CancelSkill();
+
+                        base.MonRigid();
+                    }
                 }
                 break;
         }

@@ -35,6 +35,10 @@ public class M_BodyPress : M_Skill
     {
         skillStatus.SkillCode = M_SkillCoad.BodyPress;
 
+        //스킬 프로퍼티스 설정
+        bodyPress.GetComponent<M_AttackCtrl>().SetAttackProperty(skillStatus.damage, false);
+        bodyPressFloor.GetComponentInChildren<M_AttackCtrl>().SetAttackProperty(floorDamage, false);
+
         bodyPress.SetActive(false);
         bodyPressFloor.SetActive(false);
     }
@@ -54,10 +58,6 @@ public class M_BodyPress : M_Skill
 
         bodyPress.SetActive(true);                                              //바디 프레스용 콜리더 활성화
         bodyPressFloor.SetActive(true);                                         //바디 프레스 장판용 콜리더 활성화
-
-        //스킬 프로퍼티스 설정
-        bodyPress.GetComponent<M_AttackCtrl>().SetAttackProperty(skillStatus.damage, false);
-        bodyPressFloor.GetComponentInChildren<M_AttackCtrl>().SetAttackProperty(floorDamage, false);
 
         yield return new WaitForSeconds(skillStatus.curTime);
 
