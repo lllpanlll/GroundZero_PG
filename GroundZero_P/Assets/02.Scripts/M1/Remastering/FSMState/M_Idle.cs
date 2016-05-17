@@ -57,15 +57,26 @@ public class M_Idle : M_FSMState
     private bool isPlayerInAlley = false;                       //현재 플레이어가 골목에 있는지
     public bool IsPlayerInAlley { set { isPlayerInAlley = value; } }
 
+    private SightValue sightValue;                              //시야 수치
+    private AuditoryValue audiotoryValue;                       //청역 수치
+
+    private bool isCheckHearing = false;                        //청역 인식 시작했는가
+    private float checkHearingTime = 4.0f;                      //청역 인식 시간
+    public float checkHearingTimeToSide = 3.0f;                 //측면 청역 인식 시간
+    public float checkHearingTimeToBack = 5.0f;                 //후면 청역 인식 시간
+
+    public GameObject lookAttkBody;                             //몸통 공격에 쓰는 몸통 콜리더
 
     public float lookRotationTime = 0.5f;                       //플레이어를 바라볼 회전 시간
-
+    public float BackTrunRotationTime = 0.1f;                   //플레이어를 향해 뒤돌아볼 회전 시간
 
 
     //상태 초기화
     public override void FSMInitialize()
     {
         topState = M_TopState.Idle;                             //이 상태는 Idle입니다
+
+        lookAttkBody.SetActive(false);
     }
 
 
@@ -74,19 +85,56 @@ public class M_Idle : M_FSMState
     {
         m_Core.delayTime = 0.1f;                                //업데이트 주기 설정
 
+        sightValue = m_Core.CheckSight();                       //시야 판단
+        audiotoryValue = m_Core.CheckAuditoryField();           //청역 판단
 
-        #region 상태 판단
+        #region 상태 판단  
 
-        if ((m_Core.CheckSight().isPlayerInSight)               //시야에 플레이어가 있거나
-            || (m_Core.CheckAuditoryField().isHearing))         //청역범위에 플레이어가 있으면
-            ChangeStateToRecognition();                         //상태 변경
+        if (sightValue.isPlayerInSight)                         //시야에 플레이어가 있으면
+            ChangeStateToRecognition();                         //즉시 상태 변경
+
+        else if (audiotoryValue.isHearing)
+        {
+            switch (audiotoryValue.sideValue)
+            {
+                case PlayerSideValue.Front:
+                    ChangeStateToRecognition();                         //즉시 상태 변경
+                    break;
+
+                case PlayerSideValue.Side:
+                    checkHearingTime = checkHearingTimeToSide;
+
+                    if (!isCheckHearing)                                //청각 체크중이 아니면
+                    {
+                        isCheckHearing = true;
+                        StartCoroutine(CheckHearing());
+                    }
+                    break;
+
+                case PlayerSideValue.Back:
+                    checkHearingTime = checkHearingTimeToBack;
+
+                    if (!isCheckHearing)                                //청각 체크중이 아니면
+                    {
+                        isCheckHearing = true;
+                        StartCoroutine(CheckHearing());
+                    }
+                    break;
+            }
+
+        }
+
+        else
+        {
+            isCheckHearing = false;
+        }
 
         #endregion
 
 
-        #region 상태 행동 
+            #region 상태 행동 
 
-        //제자리에서 Idle 출력
+            //제자리에서 Idle 출력
         m_Core.NvAgent.Stop();
         m_Core.Animator.SetBool("IsRunning", false);
 
@@ -101,6 +149,37 @@ public class M_Idle : M_FSMState
         //None  
     }
 
+
+    IEnumerator CheckHearing()
+    {
+        float timeCounter = 0.0f;
+        
+        while (true)
+        {
+            timeCounter += Time.deltaTime;                          //시간 계산
+
+            if (!isCheckHearing)                                     //추적 검토가 외부에서 중단되었다면
+                yield break;
+            
+            if (timeCounter > checkHearingTime)              //브레스 2 사용을 위한 체크 시간이 다 지나갔고
+            {
+                ChangeStateToRecognition();                         //상태 변경
+
+                yield break;
+            }
+
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    IEnumerator LookBodyAttack()
+    {
+        lookAttkBody.SetActive(true);
+
+        yield return new WaitForSeconds(lookRotationTime + 0.15f);
+
+        lookAttkBody.SetActive(false);
+    }
 
 
     //인식 상태로 체인지
@@ -130,11 +209,23 @@ public class M_Idle : M_FSMState
     public override void Enter()
     {
         //////Debug.Log("Enter Idle");
-    }
+
+        lookRotationTime = 0.5f;                                //기본 회전 시간
+}
 
     //상태 탈출                   
     public override void Exit()
     {
+        audiotoryValue = m_Core.CheckAuditoryField();           //청역 판단
+
+        if(audiotoryValue.sideValue.Equals(PlayerSideValue.Back))
+        {
+            lookRotationTime = BackTrunRotationTime;
+
+            //<<추가완료>> 몸통의 Attk콜리터 켜야 함 근데 이거 스킬로 빼야 해?
+            StartCoroutine(LookBodyAttack());
+        }
+
         //플레이어를 바라보기
         StartCoroutine(RotateToPoint(m_Core.transform, m_Core.PlayerTr.position, lookRotationTime));
 

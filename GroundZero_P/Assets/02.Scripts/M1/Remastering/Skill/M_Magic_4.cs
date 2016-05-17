@@ -96,6 +96,8 @@ public class M_Magic_4 : M_Skill
             magic_4_Obj.transform.rotation = pivot.rotation;
         }
 
+        yield return new WaitForSeconds(magic_4_ShootDelayTime);                //2차 마법이 발사될 때 까지는 느린 속도
+
 
         //이 스킬은 특별히 본체의 속도를 제어합니다.
         m_Core.NvAgent.speed = magic_4_OriginMonSpeed;
