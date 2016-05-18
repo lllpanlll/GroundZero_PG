@@ -38,8 +38,7 @@ namespace T2.Skill
         public float blinkTime = 0.8f;
 
         //각 스킬의 고유 변수들
-        public float blinkDist = 5.0f;
-        public GameObject oBlinkEffect;        
+        public float blinkDist = 5.0f;       
         private float blinkSpeed;
         Vector3 moveDir = Vector3.zero;
 
@@ -75,7 +74,6 @@ namespace T2.Skill
         {
             //사용 중 캔슬 되어 버릴 수 있으니 바뀐 값을 되돌려야 한다.
             //ec)만약 무적판정이 있다면, 여기서 다시 한번 꺼주어야 한다.
-            oBlinkEffect.SetActive(false);
 
             base.Exit(skillCtrl);
         }
@@ -94,7 +92,6 @@ namespace T2.Skill
         }
         public IEnumerator ActionTimer(float time)
         {
-            oBlinkEffect.SetActive(true);
             moveDir = -base.skillCtrl.trCamPivot.forward;
             base.skillCtrl.moveCtrl.SetMoveState(T2.MoveCtrl.MoveState.Stop);
 
@@ -112,8 +109,6 @@ namespace T2.Skill
                 yield return new WaitForEndOfFrame();
                 timeConut += Time.deltaTime;
             }
-
-            oBlinkEffect.SetActive(false);
 
             base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trCamPivot.eulerAngles.y, 0.0f);
             StartCoroutine(AfterDelayTimer(afterDelayTime));

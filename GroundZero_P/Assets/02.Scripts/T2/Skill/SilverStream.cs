@@ -99,9 +99,11 @@ namespace T2.Skill
                 
         public IEnumerator CoolTimer(float time)
         {
+            print("실버스트림 쿨 시작");
             base.bCoolTime = true;
             yield return new WaitForSeconds(time);
             base.bCoolTime = false;
+            print("실버스트림 쿨 끝");
         }
     }
 }

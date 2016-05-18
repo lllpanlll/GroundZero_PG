@@ -31,8 +31,10 @@ namespace T2.Skill
         //각 스킬의 고유 변수들        
         public float blinkDist = 12.0f;
         public float fPuseTime = 0.07f;
-        private bool bPuseTime = false;
+        private bool bNextFlow = false;
+        private bool bMove = false;
         private float fTargetRot;
+        
         //사격거리
         private float fReach = 100.0f;
         private float blinkSpeed;   
@@ -40,10 +42,11 @@ namespace T2.Skill
 
         private int iFlow = 0;
         private int iFlowMax;
+        private float[] fFlowRot;
        
 
         //카메라 줌 인,아웃
-        private float fTargetFOV = 90.0f;
+        private float fTargetFOV = 100.0f;
         private float fOrizinFOV;
         private float fZoomSpeed = 25.0f;
 
@@ -61,30 +64,22 @@ namespace T2.Skill
         private float beforeDelayTime_Buff = 0.0f;
         private float afterDelayTime_Buff = 0.0f;
         private float coolTime_Buff = 0.0f;
-        private int iFlowMax_Buff = 20;
+        private int iFlowMax_Buff = 4;
         private float blinkTime_Buff = 0.1f;
         private float blinkDist_Buff = 3.0f;
         //궁버프 이전 수치
         private float beforeDelayTime_Orizin;
         private float afterDelayTime_Orizin;
         private float coolTime_Orizin;
-        private int iFlowMax_Orizin = 20;
+        private int iFlowMax_Orizin = 3;
         private float blinkTime_Orizin;
         private float blinkDist_Orizin;
-
-        public struct MoveFlag
-        {
-            public bool forward ;
-            public bool backward ;
-            public bool right ;
-            public bool left ;
-        }
-        MoveFlag moveFlag;
 
         void Awake()
         {
             blinkSpeed = blinkDist / blinkTime;
-            
+            //blinkSpeed = 10.0f;
+
             afterModelPool.CreatePool(oAfterModelPref, 20);
 
             beforeDelayTime_Orizin = beforeDelayTime;
@@ -94,79 +89,14 @@ namespace T2.Skill
             blinkDist_Orizin = blinkDist;
             iFlowMax = iFlowMax_Orizin;
 
-            moveFlag.forward = false;
-            moveFlag.backward = false;
-            moveFlag.right = false;
-            moveFlag.left = false;
-        }
-        void FixedUpdate()
-        {
+            fFlowRot = new float[4];
+            fFlowRot[0] = 160.0f;
+            fFlowRot[1] = 200.0f;
+            fFlowRot[2] = 160.0f;
+            fFlowRot[3] = 200.0f;
 
-            if (Input.GetKeyUp(KeyCode.W)) { moveFlag.forward = false; }
-            if (Input.GetKeyUp(KeyCode.S)) { moveFlag.backward = false; }
-            if (Input.GetKeyUp(KeyCode.D)) { moveFlag.right = false; }
-            if (Input.GetKeyUp(KeyCode.A)) { moveFlag.left = false; }
-
-            if (Input.GetKey(KeyCode.W)) moveFlag.forward = true;
-            if (Input.GetKey(KeyCode.S)) moveFlag.backward = true;
-            if (Input.GetKey(KeyCode.D)) moveFlag.right = true;
-            if (Input.GetKey(KeyCode.A)) moveFlag.left = true;
-
-            //float test = CalcTargetRot();
-            //print("그냥 " + test.ToString());
-        }
-        float CalcTargetRot()
-        {
-            //캐릭터 기준 rotation값에 카메라의 rotation값을 더해준다.
-            float CamRot = Camera.main.transform.eulerAngles.y;
-
-            if (moveFlag.forward)
-            {
-                if (moveFlag.right)          //전방 우측 대각선
-                    fTargetRot = 45.0f + CamRot;
-                else if (moveFlag.left)    //전방 좌측 대각선
-                    fTargetRot = 315.0f + CamRot;
-                else                    //전방
-                    fTargetRot = 0.0f + CamRot;
-            }
-            else if (moveFlag.backward)
-            {
-                if (moveFlag.right)          //후방 우측 대각선
-                    fTargetRot = 135.0f + CamRot;
-                else if (moveFlag.left)    //후방 좌측 대각선
-                    fTargetRot = 225.0f + CamRot;
-                else                    //후방
-                    fTargetRot = 180.0f + CamRot;
-            }
-            else if (moveFlag.right)
-            {
-                //if (moveFlag.forward)
-                //    fTargetRot = 45.0f + CamRot;
-                //else if (moveFlag.backward)
-                //    fTargetRot = 135.0f + CamRot;
-                //else                     //우측
-                    fTargetRot = 90.0f + CamRot;
-            }
-            else if (moveFlag.left)
-            {
-                //if (moveFlag.forward)
-                //    fTargetRot = 315.0f + CamRot;
-                //else if (moveFlag.backward)
-                //    fTargetRot = 225.0f + CamRot;
-                //else                     //좌측
-                
-                fTargetRot = 270.0f + CamRot;
-            }
-            print("왼쪽" + moveFlag.left);
-            print("오른쪽" + moveFlag.right);
-            print("전방" + moveFlag.forward);
-            print("후방" + moveFlag.backward);
-            moveFlag.forward = false;
-            moveFlag.backward = false;
-            moveFlag.right = false;
-            moveFlag.left = false;
-
-            return fTargetRot;
+            bNextFlow = false;
+            bSkillCancel = true;
         }
 
         public override void Enter(T2.Skill.SkillCtrl skillCtrl)
@@ -185,17 +115,17 @@ namespace T2.Skill
             }
             else
             {
-                beforeDelayTime = beforeDelayTime_Orizin;
-                afterDelayTime = afterDelayTime_Orizin;
-                coolTime = coolTime_Orizin;
-                iFlowMax = iFlowMax_Orizin;
-                blinkTime = blinkTime_Orizin;
-                blinkDist = blinkDist_Orizin;
+                beforeDelayTime_Orizin = beforeDelayTime;
+                afterDelayTime_Orizin = afterDelayTime;
+                coolTime_Orizin = coolTime;
+                iFlowMax_Orizin = iFlowMax;
+                blinkTime_Orizin = blinkTime;
+                blinkDist_Orizin = blinkDist;
             }
-            blinkSpeed = blinkDist / blinkTime;
+            blinkSpeed = blinkDist_Orizin / blinkTime_Orizin;
 
             base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
-            base.CoolTimeCoroutine = CoolTimer(coolTime);
+            base.CoolTimeCoroutine = CoolTimer(coolTime_Orizin);
             skillCtrl.mgr.ChangeState(T2.Manager.State.Skill);
 
             fOrizinFOV = base.skillCtrl.cam.fieldOfView;                       
@@ -228,7 +158,7 @@ namespace T2.Skill
             }
 
             //선딜 타이머 시작.                
-            StartCoroutine(BeforeDelayTimer(beforeDelayTime));            
+            StartCoroutine(BeforeDelayTimer(beforeDelayTime_Orizin));            
         }
         public override void Execute(T2.Skill.SkillCtrl skillCtrl)
         {
@@ -236,16 +166,13 @@ namespace T2.Skill
             if (skillCtrl.mgr.GetState() == T2.Manager.State.be_Shot)
                 Exit(skillCtrl);
 
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetKeyDown(KeyCode.Alpha2) && bMove)
             {
-                if (!bPuseTime)
+                if (!bNextFlow)
                 {
-                    print(iFlow);
-                    //CalcTargetRot();
-                    fTargetRot = CalcTargetRot();
-                    // print("스킬 중 "+fTargetRot.ToString());
-                    bPuseTime = true;
+                    bNextFlow = true;
                 }
+                print(bNextFlow);
             }
         }
         public override void Exit(T2.Skill.SkillCtrl skillCtrl)
@@ -258,7 +185,6 @@ namespace T2.Skill
                 //잔상을 모두 지운다.
                 afterModelPool.AllDeActiveObject();
                 afterImageCount = 0;
-                iFlow = 0;
                 base.skillCtrl.animator.speed = 1.0f;
                 base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, true);
 
@@ -266,14 +192,18 @@ namespace T2.Skill
                 base.skillCtrl.followCam.ChangeFOV(fOrizinFOV, fZoomSpeed * 0.3f);
             }
 
+            iFlow = 0;
+            bNextFlow = false;
             base.Exit(skillCtrl);
         }
 
         public IEnumerator BeforeDelayTimer(float time)
         {
-            base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, false);
+            //base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, false);
             //카메라 줌아웃
             base.skillCtrl.followCam.ChangeFOV(fTargetFOV, fZoomSpeed);
+
+            
             yield return new WaitForSeconds(time);
             StartAction();
         }
@@ -307,17 +237,9 @@ namespace T2.Skill
         void StartAction()
         {           
             //플레이어와 캐릭터(모델)를 회전시킬 값을 구한다.
-            if (iFlow == 0)
-                fTargetRot = base.skillCtrl.cam.transform.rotation.y + 180.0f;
-
-            
+            fTargetRot = fFlowRot[iFlow] + base.skillCtrl.cam.transform.eulerAngles.y;
             //캐릭터(모델)를 회전시킨다.
             base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, fTargetRot, 0.0f);
-
-            moveFlag.forward = false;
-            moveFlag.backward = false;
-            moveFlag.right = false;
-            moveFlag.left = false;
 
             moveDir = base.skillCtrl.trPlayerModel.forward;
 
@@ -327,8 +249,9 @@ namespace T2.Skill
             base.skillCtrl.animator.speed = 2.0f;
             base.skillCtrl.animator.Play(iSprintHash);
 
+            bMove = true;
             //이동 코루틴.
-            this.StartCoroutine(StartMove(blinkTime));
+            this.StartCoroutine(StartMove(blinkTime_Orizin));
         }
 
         IEnumerator StartMove(float time)
@@ -340,31 +263,32 @@ namespace T2.Skill
             bool bAfterImageOn = false;
             while (time > timeConunt)
             {
+                //blinkSpeed = Mathf.Lerp(blinkSpeed, 30.0f, Time.deltaTime * 30.0f);
                 base.skillCtrl.controller.Move(moveDir * Time.deltaTime * blinkSpeed);
 
                 //base.skillCtrl.trCamPivot.LookAt(vPivotTargetPos);
 
-                if (timeConunt >= (time * 0.6) && !bAfterImageOn)
+                if (timeConunt >= (time * 0.0) && !bAfterImageOn)
                 {
                     bAfterImageOn = true;
                     this.StartCoroutine(AfterImagesDraw());
-                }
-                
+                }                
                 yield return new WaitForEndOfFrame();
 
                 timeConunt += Time.fixedDeltaTime;
             }
-            
+            //blinkSpeed = 10.0f;
 
+            
             this.StartCoroutine(puseTime(fPuseTime));
         }
 
         IEnumerator puseTime(float time)
         {
             //모델과 카메라 방향을 타겟 위치로 회전시킨다.
-            //base.skillCtrl.trPlayerModel.LookAt(vFireTargetPos);            
-            //base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trPlayerModel.eulerAngles.y, 0.0f);
-            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, skillCtrl.cam.transform.rotation.y, 0.0f);
+            base.skillCtrl.trPlayerModel.LookAt(vFireTargetPos);            
+            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trPlayerModel.eulerAngles.y, 0.0f);
+            //base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, skillCtrl.trCamPivot.transform.rotation.y, 0.0f);
 
             //정지시 애니메이션 플레이.
             int iSprintHash = 0;
@@ -372,55 +296,48 @@ namespace T2.Skill
             base.skillCtrl.animator.speed = 1.0f;
             base.skillCtrl.animator.Play(iSprintHash);
 
-            //if(Input.GetMouseButtonDown(1))
-            //{
-            //    //총알을 발사하고, 다음 이동방향 각도를 위해 iFlow를 증가시킨다.
-            //    base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
-            //    iFlow++;
-            //}
-            //else
-            //{
-            //    iFlow = iFlowMax;
-            //}    
-            
+
             float timeConunt = 0.0f;
             while (time > timeConunt)
             {
-                if (bPuseTime)
+                if (timeConunt >= (time * 0.3))
                 {
-                    iFlow++;
-                    bPuseTime = false;
-                    StopAllCoroutines();
-
-                    if (iFlow < iFlowMax)
+                    if (bNextFlow)
                     {
-                        //총알을 발사하고, 다음 이동방향 각도를 위해 iFlow를 증가시킨다.
-                        base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
-                        StartAction();
-                    }
-                    else
-                    {
-                        FinishFlow();
+                        iFlow++;
+                        bNextFlow = false;
+                        if (iFlow < iFlowMax_Orizin)
+                        {
+                            base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
+                            StartAction();
+                        }
+                        else
+                        {
+                            FinishFlow();
+                        }
+                        break;
                     }
                 }
-                yield return new WaitForEndOfFrame();
-
+                yield return new WaitForEndOfFrame();              
                 timeConunt += Time.fixedDeltaTime;
             }
-
-
-            print("puseTime exit");
-            if (!bPuseTime)
+            
+            if (time < timeConunt)
             {
-                FinishFlow();
+                if (!bNextFlow)
+                {
+                    print("puseTime exit");
+                    FinishFlow();
+                }
             }
         }
 
         void FinishFlow()
         {
-            bPuseTime = false;
+            bNextFlow = false;
+            bMove = false;
             iFlow = 0;
-            base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, true);
+            //base.skillCtrl.mgr.SetCtrlPossible(T2.Manager.CtrlPossibleIndex.MouseRot, true);
             //후딜레이 시작.
             StartCoroutine(AfterDelayTimer(afterDelayTime));
             //카메라 줌인
@@ -442,7 +359,7 @@ namespace T2.Skill
             //잔상용 모델의 애니메이션을 1프레임뒤에 정지 시킨다.
             this.StartCoroutine(AfterImageStopDelay(oAfterModel));
 
-            yield return new WaitForSeconds(0.0225f);
+            yield return new WaitForSeconds(0.02f);
             //잔상용 모델을 afterImageMax 갯수만큼 만들지 못했으면 한번더 코루틴을 반복시킨다.
             if (afterImageCount < afterImageMax)
             {

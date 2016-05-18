@@ -99,7 +99,7 @@ namespace T2
                 case MoveState.Stop:
                     moveDir = Vector3.zero;
                     //h = v = 0.0f;
-                    fMoveSpeed = 5.0f;
+                    fMoveSpeed = 8.0f;
                     oSprintEffect.SetActive(false);
                     //oSprintEffect.GetComponentInChildren<ParticleSystem>().playOnAwake = false;
                     break;
@@ -146,16 +146,18 @@ namespace T2
             }
             #endregion
 
+            //animator.SetFloat("fHorizontal", h);
+            //animator.SetFloat("fVertical", v);
             #region<Input WASD>
-            if (Input.GetKeyUp(KeyCode.W)) { moveFlag.forward = false; h = 0.0f; }
-            if (Input.GetKeyUp(KeyCode.S)) { moveFlag.backward = false; h = 0.0f; }
-            if (Input.GetKeyUp(KeyCode.D)) { moveFlag.right = false; v = 0.0f; }
-            if (Input.GetKeyUp(KeyCode.A)) { moveFlag.left = false; v = 0.0f; }
+            if (Input.GetKeyUp(KeyCode.W)) { moveFlag.forward = false; h = 0.0f; animator.SetFloat("fHorizontal", 0.0f); }
+            if (Input.GetKeyUp(KeyCode.S)) { moveFlag.backward = false; h = 0.0f; animator.SetFloat("fHorizontal", 0.0f); }
+            if (Input.GetKeyUp(KeyCode.D)) { moveFlag.right = false; v = 0.0f; animator.SetFloat("fVertical", 0.0f); }
+            if (Input.GetKeyUp(KeyCode.A)) { moveFlag.left = false; v = 0.0f; animator.SetFloat("fVertical", 0.0f); }
 
-            if (Input.GetKey(KeyCode.W)) moveFlag.forward = true;
-            if (Input.GetKey(KeyCode.S)) moveFlag.backward = true;
-            if (Input.GetKey(KeyCode.D)) moveFlag.right = true;
-            if (Input.GetKey(KeyCode.A)) moveFlag.left = true;
+            if (Input.GetKey(KeyCode.W)) { moveFlag.forward = true; animator.SetFloat("fHorizontal", 1.0f); }
+            if (Input.GetKey(KeyCode.S)) { moveFlag.backward = true; animator.SetFloat("fHorizontal", -1.0f); }
+            if (Input.GetKey(KeyCode.D)) { moveFlag.right = true; animator.SetFloat("fVertical", 1.0f); }
+            if (Input.GetKey(KeyCode.A)) { moveFlag.left = true; animator.SetFloat("fVertical", -1.0f); }
 
             if (mgr.GetCtrlPossible().Run == false)
             {
@@ -199,8 +201,7 @@ namespace T2
 
             #endregion
 
-            animator.SetFloat("fHorizontal", h);
-            animator.SetFloat("fVertical", v);
+
 
 
             //카메라 줌 인,아웃
@@ -217,11 +218,11 @@ namespace T2
 
             if (mgr.GetCtrlPossible().Run == true)
             {
+                //플레이어를 카메라 정면방향으로 각도를 유지시킨다.
+                float CamRot = Camera.main.transform.eulerAngles.y;
                 //이동 처리
                 if (moveFlag.forward || moveFlag.backward || moveFlag.right || moveFlag.left)
-                {
-                    //플레이어를 카메라 정면방향으로 각도를 유지시킨다.
-                    float CamRot = Camera.main.transform.eulerAngles.y;
+                {                   
                     transform.rotation = Quaternion.Euler(0.0f, CamRot, 0.0f);
 
                     //if (moveState == MoveState.Run)
@@ -347,6 +348,8 @@ namespace T2
                 else                     //좌측
                     fTargetRot = 270.0f + CamRot;
             }
+            else
+                fTargetRot = 0.0f + CamRot;
         }
         public float GetTargetRot() { return fTargetRot; }
         public MoveState GetMoveState() { return moveState; }

@@ -15,7 +15,7 @@ namespace T2
         private GameObject oFlare;
         private ObjectPool flarePool = new ObjectPool();
 
-        public MeshRenderer[] muzzleFlash;
+        public GameObject[] muzzleFlash;
 
         public Transform[] trFire;
 
@@ -53,6 +53,8 @@ namespace T2
         private float fAccuracy = 0.1f;
         private bool bFirstShot = true;
 
+
+        float fRot = 0.0f;
         void Start()
         {
             iMaxMagazine = T2.Stat.MAX_MAGAZINE;
@@ -72,8 +74,8 @@ namespace T2
             bulletPool.CreatePool(oBulletPref, iMaxMagazine);
             flarePool.CreatePool(oFlarePref, iMaxMagazine * 2);
 
-            muzzleFlash[0].enabled = false;
-            muzzleFlash[1].enabled = false;
+            muzzleFlash[0].SetActive(false);
+            muzzleFlash[1].SetActive(false);
 
         }
 
@@ -145,7 +147,11 @@ namespace T2
                 if (moveCtrl.GetMoveState() == MoveCtrl.MoveState.Stop)
                 {
                     //플레이어 모델을 정면을 바라보게 한다.
-                    trPlayerModel.rotation = Quaternion.Euler(0.0f, Camera.main.transform.eulerAngles.y, 0.0f);
+                     trPlayerModel.rotation = Quaternion.Euler(0.0f, Camera.main.transform.eulerAngles.y, 0.0f);
+                    
+                    //float fCamY = Camera.main.transform.eulerAngles.y;
+                    //fRot = Mathf.LerpAngle(fRot, 0.0f + fCamY, Time.deltaTime * 0.0000002f);
+                    //trPlayerModel.rotation = Quaternion.Euler(0.0f, fRot, 0.0f);
                 }
 
                 //카메라 줌인
@@ -273,17 +279,12 @@ namespace T2
         {
             //i == 0 이면 오른손,
             //i == 1 이면 왼손.
-            float scale = Random.Range(1.0f, 1.5f);
-            muzzleFlash[i].transform.localScale = Vector3.one * scale;
 
-            Quaternion rot = Quaternion.Euler(0, 0, Random.Range(0, 360));
-            muzzleFlash[i].transform.localRotation = rot;
+            muzzleFlash[i].SetActive(true);
 
-            muzzleFlash[i].enabled = true;
+            yield return new WaitForSeconds(0.25f);
 
-            yield return new WaitForSeconds(Random.Range(0.05f, 0.008f));
-
-            muzzleFlash[i].enabled = false;
+            muzzleFlash[i].SetActive(false);
         }
     }
 }

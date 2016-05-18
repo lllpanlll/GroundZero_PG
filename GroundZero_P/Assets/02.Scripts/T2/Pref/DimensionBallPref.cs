@@ -7,7 +7,7 @@ namespace T2.Pref
     {
         private float lifeTime = 3.0f;
 
-        private float fSpeed, fPlayerSpeed = 30.0f;
+        private float fSpeed, fPlayerSpeed = 100.0f;
         private int iDamage;
         private float fReach;
         private Vector3 vStartPos;
@@ -33,7 +33,7 @@ namespace T2.Pref
             trPlayer = GameObject.FindGameObjectWithTag(Tags.Player).transform;
             controller = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<CharacterController>();
 
-            lifeTime = T2.Skill.DimensionBall.GetInstance().coolTime - 0.2f;
+            
             fSpeed = T2.Skill.DimensionBall.GetInstance().fBallSpeed;
             iDamage = T2.Skill.DimensionBall.GetInstance().iDamage;            
             vStartPos = transform.position;
@@ -41,6 +41,8 @@ namespace T2.Pref
            
             oExplosion = (GameObject)Instantiate(oExplosion);
             oExplosion.SetActive(false);
+
+            T2.Skill.DimensionBall.GetInstance().bCoolTime = false;
         }
 
         void OnEnable()
@@ -58,15 +60,17 @@ namespace T2.Pref
 
             oExplosion.SetActive(false);
 
+            //lifeTime에 -0.2f는 폭발하는 시간이다.
+            lifeTime = T2.Skill.DimensionBall.GetInstance().coolTime - 0.2f;
             //디멘션볼 스킬의 쿨타임을 재설정한다.
             T2.Skill.DimensionBall.GetInstance().StopCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
-            T2.Skill.DimensionBall.GetInstance().bCoolTime = true;
+            //T2.Skill.DimensionBall.GetInstance().bCoolTime = true;
             StartCoroutine(LifeTimer(this.gameObject, lifeTime));
         }
 
         void OnDisable()
         {
-            T2.Skill.DimensionBall.GetInstance().bCoolTime = false;
+            
             T2.Skill.DimensionBall.GetInstance().fReach = T2.Skill.DimensionBall.GetInstance().fMaxReach;
             spherCollider.radius = fOrizinRadius;            
 
@@ -99,10 +103,10 @@ namespace T2.Pref
             ray[2] = new Ray(transform.position + transform.right * spherCollider.radius, transform.forward);
             RaycastHit hit;
             int mask = (
-                1 << LayerMask.NameToLayer(Layers.T_HitCollider)) | (1 << LayerMask.NameToLayer(Layers.Bullet)) |
-                (1 << LayerMask.NameToLayer(Layers.T_Invincibility) | (1 << LayerMask.NameToLayer(Layers.Except_Monster)) |
-                (1 << LayerMask.NameToLayer(Layers.MonsterAttkCollider)) | (1 << LayerMask.NameToLayer(Layers.MonsterHitCollider))
-                );
+                        (1 << LayerMask.NameToLayer(Layers.T_HitCollider)) | (1 << LayerMask.NameToLayer(Layers.Bullet)) |
+                        (1 << LayerMask.NameToLayer(Layers.T_Invincibility)) | (1 << LayerMask.NameToLayer(Layers.Except_Monster)) |
+                        (1 << LayerMask.NameToLayer(Layers.MonsterAttkCollider)) | (1 << LayerMask.NameToLayer(Layers.MonsterHitCollider))
+                        );
             mask = ~mask;
             for (int i = 0; i < 3; i++)
             {
@@ -110,6 +114,7 @@ namespace T2.Pref
                 Debug.DrawLine(ray[i].origin, ray[i].GetPoint(fDist), Color.cyan);
                 if (Physics.Raycast(ray[i], out hit, fDist, mask))
                 {
+                    print(hit.collider.name);
                     //최상위 오브젝트의 태그가 몬스터인지 체크한다.
                     if (hit.collider.transform.root.tag != Tags.Monster)
                     {
@@ -137,6 +142,7 @@ namespace T2.Pref
             {
                 transform.Translate(Vector3.forward * fSpeed * Time.deltaTime, Space.Self);
             }
+
             
             //스킬키와 동일한 키 입력시 해당 오브젝트로 플레이어를 이동시킨다.
             if (Input.GetKeyDown(KeyCode.Alpha1))

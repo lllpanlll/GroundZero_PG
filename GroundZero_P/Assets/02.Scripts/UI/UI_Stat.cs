@@ -29,6 +29,7 @@ public class UI_Stat : MonoBehaviour
     bool bHighlight = false;
     // DP
     Slider sliderDP;
+    // Risk_Vignette 체력 없을 때 깜빡깜빡
     Image imageHP;
 
     float fAlphaEp = 1f, fAlphaPp = 0f, fAlphaAp = 1f;
@@ -37,7 +38,8 @@ public class UI_Stat : MonoBehaviour
     // Skills
     T2.Skill.DimensionBall skillDimensionBall;
     T2.Skill.SeventhFlow skillSeventhFlow;
-    float coolTimerDimensionBall, coolTimerSeventhFlow;
+    T2.Skill.SilverStream skillSilverStream;
+    float coolTimerDimensionBall, coolTimerSeventhFlow, coolTimerSilverStream;
     Slider[] sliderSkill;
     Image[] imageSkill1, imageSkill2, imageSkill3, imageSkill4;
     float[] timerSkill = new float[4];
@@ -68,16 +70,18 @@ public class UI_Stat : MonoBehaviour
         skillSeventhFlow = oPlayer.GetComponent<T2.Skill.SeventhFlow>();
         imageSkill3 = sliderSkill[2].GetComponentsInChildren<Image>(); // 3번째 스킬칸
         imageSkill4 = sliderSkill[3].GetComponentsInChildren<Image>(); // 4번째 스킬칸
+        skillSilverStream = oPlayer.GetComponent<T2.Skill.SilverStream>();
     }
 
     void Start()
     {
         sliderAP.maxValue = T2.Stat.MAX_AP;
         sliderEP.maxValue = T2.Stat.MAX_EP;
-        sliderPP.maxValue = T2.Stat.MAX_PP;
+        sliderPP.maxValue = T2.Stat.MAX_PP * 2;
         sliderDP.maxValue = T2.Stat.MAX_DP;
         sliderSkill[0].maxValue = skillDimensionBall.coolTime;
         sliderSkill[1].maxValue = skillSeventhFlow.coolTime;
+        sliderSkill[3].maxValue = skillSilverStream.coolTime;
         iPrePp = (int)sliderPP.maxValue;
         for (int i = 0; i < 4; i++)
         {
@@ -85,6 +89,8 @@ public class UI_Stat : MonoBehaviour
             fAlphaSkill[i] = 0f;
         }
     }
+
+
 
     // Update is called once per frame
     void Update()
@@ -100,11 +106,18 @@ public class UI_Stat : MonoBehaviour
         Skill();
     }
 
+    //void CoolTime(T2.Skill.Skill skill)
+    //{
+    //    if(skill == T2.Skill.DimensionBall.GetInstance())
+    //    {
+    //        sliderSkill[0].value = SkillCooltime(ref T2.Skill.DimensionBall.GetInstance().coolTime);
+    //    }
+    //}
     void Skill()
     {
-        if (skillDimensionBall.bUsing)
+        if (skillDimensionBall.bCoolTime)
         {
-            coolTimerDimensionBall = sliderSkill[0].maxValue;
+            coolTimerDimensionBall = skillDimensionBall.coolTime;
             imageSkill1[0].color = Color.blue;
         }
         if (sliderSkill[0].value.Equals(0))
@@ -112,15 +125,24 @@ public class UI_Stat : MonoBehaviour
             imageSkill1[0].color = Color.white;
         }
 
-        if (skillSeventhFlow.bUsing)
+        if (skillSeventhFlow.bCoolTime)
         {
-            coolTimerSeventhFlow = sliderSkill[1].maxValue;
+            coolTimerSeventhFlow = skillSeventhFlow.coolTime;
+        }
+
+        if (skillSilverStream.bCoolTime)
+        {
+            coolTimerSilverStream = skillSilverStream.coolTime;
         }
 
         CompleteSkillCooltime(imageSkill1, 0);
         CompleteSkillCooltime(imageSkill2, 1);
+        CompleteSkillCooltime(imageSkill4, 3);
         sliderSkill[0].value = SkillCooltime(ref coolTimerDimensionBall);
         sliderSkill[1].value = SkillCooltime(ref coolTimerSeventhFlow);
+        sliderSkill[3].value = SkillCooltime(ref coolTimerSilverStream);
+        //sliderSkill[0].value = skillDimensionBall.coolTime -= Time.deltaTime;
+        //sliderSkill[1].value = skillSeventhFlow.coolTime -= Time.deltaTime;
     }
 
     // 스킬쿨타임 완료체크 (ex => CompleteSkillCooltime(imageSkill2, 1)) = 2번째 스킬인 세븐쓰플로우를 뜻함
@@ -130,11 +152,11 @@ public class UI_Stat : MonoBehaviour
         if (sliderSkill[_num].value.Equals(0))
         {
             timerSkill[_num] += Time.deltaTime;
-            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f) // 1초 동안 스킬의 쿨타임이 완료 됐음을 알림
+            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f) // 1초 동안 스킬의 쿨타임이 완료 됐음을 알림 // 나중에 애니메이션으로 바꿔버려야지
             {
                 _imageSkill[2].color = Color.white;
             }
-            else if (timerSkill[_num] < 0.1f) // 스킬의 쿨타임이 완료 되면 잠깐동안 boom 이펙트
+            else if (timerSkill[_num] < 0.1f) // 스킬의 쿨타임이 완료 되면 잠깐동안 boom 이펙트 // 나중에 애니메이션으로 바꿔버려야지
             {
                 fAlphaSkill[_num] = 1;
             }
@@ -274,7 +296,9 @@ public class UI_Stat : MonoBehaviour
             imageHP.enabled = true;
         }
         else
+        {
             imageHP.enabled = false;
+        }
 
     }
 
@@ -315,10 +339,16 @@ public class UI_Stat : MonoBehaviour
 
         iPrePp = (int)sliderPP.value;
 
-        float fPi = 185 - (1.8f * sliderPP.value); // 185인 이유는 핸들이 제대로 못 덮기 때문이다 // 뭔가 이상해서 더 만져봐야겠다
-        trPpHandle.transform.rotation = Quaternion.Euler(
-                oDpPp.transform.eulerAngles.x,
-                oDpPp.transform.eulerAngles.y,
-                (360 - oDpPp.transform.eulerAngles.z) + fPi);
+        float _fPi = 180f - (1.8f * sliderPP.value);
+        //trPpHandle.transform.rotation = Quaternion.Euler(
+        //        oDpPp.transform.eulerAngles.x,
+        //        oDpPp.transform.eulerAngles.y,
+        //        (360 - oDpPp.transform.eulerAngles.z) + fPi);
+
+        trPpHandle.transform.localRotation = Quaternion.Euler(
+                0, 
+                0, 
+                _fPi);
+        
     }
 }

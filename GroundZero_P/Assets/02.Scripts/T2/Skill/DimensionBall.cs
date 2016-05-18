@@ -69,18 +69,18 @@ namespace T2.Skill
             }
             else
             {
-                beforeDelayTime = beforeDelayTime_Orizin;
-                afterDelayTime = afterDelayTime_Orizin;
-                coolTime = coolTime_Orizin;
+                beforeDelayTime_Orizin = beforeDelayTime;
+                afterDelayTime_Orizin = afterDelayTime;
+                coolTime_Orizin = coolTime;
             }
 
             //기본 변수 초기화.
             base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
-            base.CoolTimeCoroutine = CoolTimer(coolTime);
+            base.CoolTimeCoroutine = CoolTimer(coolTime_Orizin);
 
             skillCtrl.mgr.ChangeState(T2.Manager.State.Skill);
             //선딜 타이머 시작.                
-            StartCoroutine(BeforeDelayTimer(beforeDelayTime));
+            StartCoroutine(BeforeDelayTimer(beforeDelayTime_Orizin));
         }
         public override void Execute(SkillCtrl skillCtrl)
         {
@@ -113,7 +113,13 @@ namespace T2.Skill
             oDimensionBall.transform.position = transform.position + (transform.up * 1.5f + transform.forward * 1.0f);
             //카메라에서 쏘는 레이가 부딪힌 위치에 플레이어의 총알이 발사되는 각도를 조정한다.
             RaycastHit aimRayHit;
-            if (Physics.Raycast(aimRay, out aimRayHit, fMaxReach))
+            int mask = (
+                       (1 << LayerMask.NameToLayer(Layers.T_HitCollider)) | (1 << LayerMask.NameToLayer(Layers.Bullet)) |
+                       (1 << LayerMask.NameToLayer(Layers.T_Invincibility)) | (1 << LayerMask.NameToLayer(Layers.Except_Monster)) |
+                       (1 << LayerMask.NameToLayer(Layers.MonsterAttkCollider)) | (1 << LayerMask.NameToLayer(Layers.MonsterHitCollider))
+                       );
+            mask = ~mask;
+            if (Physics.Raycast(aimRay, out aimRayHit, fMaxReach, mask))
             {
                 if (aimRayHit.collider.transform.root.tag != Tags.Monster)
                 {

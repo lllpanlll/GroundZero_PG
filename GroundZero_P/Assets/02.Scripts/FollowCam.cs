@@ -113,8 +113,8 @@ public class FollowCam : MonoBehaviour {
         //transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 30); // 러프 버전 O
         //print(DIST + " || " + Vector3.Distance(transform.position, trTarget.position)); // 텍텍
         transform.position = vCamPos; // 러프 버전 X
-        //transform.LookAt((trTarget.position + (trTarget.right * RIGHT)));
-        transform.rotation = Quaternion.Slerp(transform.rotation, trTarget.rotation, Time.deltaTime * 20);
+        transform.LookAt((trTarget.position + (trTarget.right * RIGHT))); //러프 버전x
+        //transform.rotation = Quaternion.Slerp(transform.rotation, trTarget.rotation, Time.deltaTime * 20); //러프버전 o
 
         if(bFOV)
         {

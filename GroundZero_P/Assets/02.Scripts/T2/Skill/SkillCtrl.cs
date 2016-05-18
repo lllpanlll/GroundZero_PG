@@ -59,7 +59,7 @@ namespace T2.Skill
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     //방향키 입력 후 Space입력은 일반회피.
-                    if (moveFlag.forward || moveFlag.backward || moveFlag.right || moveFlag.left)
+                    if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
                     {
                         //일반회피
                         if (mgr.PointCheck(Evasion.GetInstance().PointType, T2.Skill.Evasion.GetInstance().iDecPoint))
@@ -77,16 +77,7 @@ namespace T2.Skill
                         }
                     }
                 }
-
-
-
-                //SeventhFlow
-                if (Input.GetKeyDown(KeyCode.Q))
-                {
-                    if(mgr.PointCheck(SeventhFlow.GetInstance().PointType, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
-                        ChangeSkill(T2.Skill.SeventhFlow.GetInstance());
-                }
-
+                                
                 //DimensionBall
                 if (Input.GetKeyDown(KeyCode.Alpha1))
                 {
@@ -95,6 +86,13 @@ namespace T2.Skill
                         if (mgr.PointCheck(DimensionBall.GetInstance().PointType, T2.Skill.DimensionBall.GetInstance().iDecPoint))
                             ChangeSkill(T2.Skill.DimensionBall.GetInstance());
                     }
+                }
+
+                //SeventhFlow
+                if (Input.GetKeyDown(KeyCode.Alpha2) && !SeventhFlow.GetInstance().bUsing)
+                {
+                    if (mgr.PointCheck(SeventhFlow.GetInstance().PointType, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
+                        ChangeSkill(T2.Skill.SeventhFlow.GetInstance());
                 }
 
                 //SilverStream
@@ -113,6 +111,9 @@ namespace T2.Skill
             //Execute에는 기본적으로 피격으로 인한 스킬 정지 코드가 있다.
             if(curSkill != T2.Skill.IdleSkill.GetInstance())
                 curSkill.Execute(this);
+
+            //if (DimensionBall.GetInstance())
+                //print(DimensionBall.GetInstance().bCoolTime);
         }
 
         void ChangeSkill(T2.Skill.Skill newSkill)
@@ -120,7 +121,7 @@ namespace T2.Skill
             //스킬이 현재 사용중이라면, 새로 쓰려고 하는 스킬이 캔슬이 가능한 스킬이고 쿨타임이 false일 때만 스킬 체인지.
             if(curSkill.bUsing == true)
             {
-                if (newSkill.bSkillCancel == true && newSkill.bCoolTime == false)
+                if (newSkill.bSkillCancel == true && curSkill.bSkillCancel == true && newSkill.bCoolTime == false)
                 {
                     print("캔슬 체인지");
                     ChangeSkillState(newSkill);

@@ -140,7 +140,7 @@ namespace T2
             RaycastHit aimRayhit;
              if(Physics.Raycast(aimRay,out aimRayhit))
             {
-                if (aimRayhit.transform.CompareTag(Tags.Monster))
+                if (aimRayhit.transform.root.CompareTag(Tags.Monster))
                 {
                     bAimForMonster = true;
                 }

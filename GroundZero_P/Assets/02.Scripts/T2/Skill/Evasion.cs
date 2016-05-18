@@ -39,7 +39,7 @@ namespace T2.Skill
 
         //각 스킬의 고유 변수들
         public float blinkDist = 8.0f;
-        public GameObject oBlinkEffect;        
+        //public GameObject oBlinkEffect;        
         private float blinkSpeed;
         Vector3 moveDir = Vector3.zero;
 
@@ -75,7 +75,7 @@ namespace T2.Skill
         {
             //사용 중 캔슬 되어 버릴 수 있으니 바뀐 값을 되돌려야 한다.
             //ec)만약 무적판정이 있다면, 여기서 다시 한번 꺼주어야 한다.
-            oBlinkEffect.SetActive(false);
+            //oBlinkEffect.SetActive(false);
 
             base.Exit(skillCtrl);
         }
@@ -88,7 +88,7 @@ namespace T2.Skill
         }
         public IEnumerator ActionTimer(float time)
         {            
-            oBlinkEffect.SetActive(true);
+            //oBlinkEffect.SetActive(true);
 
             //캐릭터(모델)를 회전시킬 값을 구해서 모델링의 forward방향으로 moveDir을 설정한다.
             float targetRot = base.skillCtrl.moveCtrl.GetTargetRot();
@@ -109,7 +109,7 @@ namespace T2.Skill
                
             }
 
-            oBlinkEffect.SetActive(false);
+            //oBlinkEffect.SetActive(false);
             
 
          
