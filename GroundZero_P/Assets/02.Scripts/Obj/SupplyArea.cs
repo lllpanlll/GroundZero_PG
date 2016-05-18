@@ -6,6 +6,7 @@ public class SupplyArea : MonoBehaviour {
     const int COUNT = 10;
     int iCount;
 
+    // 리스폰 시간
     public float fRespawnTime = 1f;
     public GameObject oApCharger;
     GameObject oAp;
@@ -35,7 +36,8 @@ public class SupplyArea : MonoBehaviour {
         yield return new WaitForSeconds(fRespawnTime);
         // 생성 -> 이동 -> 활성
 
-        if (iCount < 10) {
+        //if (iCount < COUNT)
+        {
             iCount++;
             oAp = apPool.UseObject();
             int i = Random.Range(1, trSpawnpoint.Length);

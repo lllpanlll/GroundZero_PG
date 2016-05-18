@@ -66,6 +66,8 @@ namespace T2.Pref
 
         void OnDisable()
         {
+            T2.Skill.DimensionBall skil = T2.Skill.DimensionBall.GetInstance();
+            UI_Stat.instance.CoolTime(skil);
             //T2.Skill.DimensionBall.GetInstance().bCoolTime = false; // tj
             T2.Skill.DimensionBall.GetInstance().fReach = T2.Skill.DimensionBall.GetInstance().fMaxReach;
         }

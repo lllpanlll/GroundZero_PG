@@ -118,6 +118,11 @@ public class UI_Stat : MonoBehaviour
         }
     }
 
+    public void CoolTimeForDimensionball(T2.Pref.DimensionBallPref pref)
+    {
+        
+    }
+
     IEnumerator CoolDown(float _num, int _slider)
     {
         float f = _num;

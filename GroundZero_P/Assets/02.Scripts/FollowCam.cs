@@ -6,6 +6,7 @@ public class FollowCam : MonoBehaviour {
     private Transform trTarget;
     private Transform trPlayerModel;
     private T2.MoveCtrl moveCtrl;
+    Transform trPlayer;
 
     public float DIST = 3.5f;
     public float ZOOM_DIST = 1.0f;    
@@ -52,6 +53,7 @@ public class FollowCam : MonoBehaviour {
         trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
 
         moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
+        trPlayer = moveCtrl.GetComponent<Transform>();
         cam = Camera.main;
         fOrizinFOV = cam.fieldOfView;
         fOrizinDist = DIST;
@@ -73,7 +75,7 @@ public class FollowCam : MonoBehaviour {
             //Debug.DrawRay(hit.point, hit.normal, Color.magenta);
             //norm = hit.point + hit.normal;
             fMouseClamp -= Input.GetAxis("Mouse Y") * fCamDist;
-            fMouseClamp = Mathf.Clamp(fMouseClamp, -0.5f, 3.4f);
+            fMouseClamp = Mathf.Clamp(fMouseClamp, trPlayer.position.y + 0.01f, trPlayer.position.y + 3.4f);
 
             float _fDist = Vector3.Distance(trTarget.position, vCamPos);
 
@@ -83,10 +85,13 @@ public class FollowCam : MonoBehaviour {
             //transform.position = Vector3.Lerp(transform.position, (hit.point + (hit.normal * fCamDist)), Time.deltaTime * 20f);
             //print(hit.distance + " || " + fCamDist);
             //if(_fDist +)
-            vCamPos = new Vector3(hit.point.x + hit.normal.x * fCamDist,
+            vCamPos = new Vector3(
+                hit.point.x + hit.normal.x * fCamDist,
                 fMouseClamp,
-                hit.point.z + hit.normal.z * fCamDist);
+                hit.point.z + hit.normal.z * fCamDist
+                );
 
+            zoomOutDist = Vector3.Distance(vCamPos, trTarget.position);
 
             // 거리기반 - 땅에 사용 : 자주 충돌되는 부분이라 레이어로 처리하는게 좋아보임.
             //if (hit.transform.CompareTag("FLOOR"))
@@ -98,9 +103,10 @@ public class FollowCam : MonoBehaviour {
         else
         {
             //fCamDist = 0;
-            zoomOutDist = fDist;
+            //zoomOutDist = fDist;
             //transform.position = Vector3.Lerp(transform.position, trTarget.position - (trTarget.forward * fDist) + (transform.right * RIGHT), Time.deltaTime * 20);
         }
+
         //DIST = Mathf.Lerp(DIST, zoomOutDist, Time.deltaTime * fAimOutLerpSpeed); //check
         #endregion
 

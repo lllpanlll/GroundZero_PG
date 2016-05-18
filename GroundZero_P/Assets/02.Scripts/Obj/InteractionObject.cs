@@ -6,10 +6,14 @@ public class InteractionObject : MonoBehaviour {
     public enum KindOfObj { Ap, Dp}
     public KindOfObj kindObj;
 
-	// Use this for initialization
-	void Start () {
+    float fDetructTime = 1;
+
+    // Use this for initialization
+    void OnEnable () {
         StartCoroutine(FallingObject());
-	}
+        StartCoroutine(Destruction(fDetructTime));
+
+    }
 
     IEnumerator FallingObject()
     {
@@ -18,6 +22,14 @@ public class InteractionObject : MonoBehaviour {
             yield return new WaitForSeconds(0.01f);
             transform.Translate(-Vector3.up * 30 * Time.deltaTime);
         }
+    }
+
+    IEnumerator Destruction(float _time)
+    {
+        yield return new WaitForSeconds(_time);
+
+        gameObject.SetActive(false);
+
     }
 
     void OnTriggerEnter(Collider coll)
