@@ -39,7 +39,9 @@ namespace T2.Skill
             bBeforeDelay = false;
             bAction = false;
             bAfterDelay = false;
-
+            
+            Skill skil = this;
+            UI_Stat.instance.CoolTime(skil);
 
             //쿨타임 시작.
             if (CoolTimeCoroutine != null)
