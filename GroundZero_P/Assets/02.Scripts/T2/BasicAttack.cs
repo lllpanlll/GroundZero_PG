@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using RootMotion.FinalIK;
 
 namespace T2
 {
@@ -30,7 +29,7 @@ namespace T2
         private float attackTimer = 0.0f;
         private float attackTime = 0.5f;
 
-        private float fReach = 1000.0f;
+        private float fReach = 300.0f;
 
         //연사속도 타이머
         private float fRpmSpeed = 0.1f;
@@ -189,18 +188,22 @@ namespace T2
             //카메라에서 쏘는 레이가 부딪힌 위치에 플레이어의 총알이 발사되는 각도를 조정한다.
             RaycastHit aimRayHit;
             //레이어 마스크 ignore처리 (-1)에서 빼 주어야 함
-            int mask = (1 << LayerMask.NameToLayer(Layers.T_HitCollider)) | (1 << LayerMask.NameToLayer(Layers.Bullet));
+            int mask = (
+                       (1 << LayerMask.NameToLayer(Layers.T_HitCollider)) | (1 << LayerMask.NameToLayer(Layers.Bullet)) |
+                       (1 << LayerMask.NameToLayer(Layers.T_Invincibility))
+                       );
             mask = ~mask;
 
             if (Physics.Raycast(aimRay, out aimRayHit, fReach, mask))
             {
+                print(aimRayHit.collider.name);
                 //aimRayHit.point와 플레이어 포지션 위치의 거리.(사정거리 체크)
                 float fRangeCheck = Vector3.Distance(transform.position, aimRayHit.point);
 
                 //거리에 따라 명중률 조정.
                 fAccuracy = 0.1f + (fRangeCheck * 0.02f);
                 Vector3 vTarget = aimRayHit.point;
-                vTarget = new Vector3(vTarget.x,
+                vTarget = new Vector3(Random.Range(vTarget.x - fAccuracy, vTarget.x + fAccuracy),
                                       Random.Range(vTarget.y - fAccuracy, vTarget.y + fAccuracy),
                                       Random.Range(vTarget.z - fAccuracy, vTarget.z + fAccuracy));
 
@@ -218,13 +221,13 @@ namespace T2
             else
             {
                 //최대거리 명중률 조정.
-                fAccuracy = 20.0f;
-                Vector3 fTarget = aimRay.GetPoint(fReach);
-                fTarget = new Vector3(fTarget.x,
-                                      Random.Range(fTarget.y - fAccuracy, fTarget.y + fAccuracy),
-                                      Random.Range(fTarget.z - fAccuracy, fTarget.z + fAccuracy));
-                trFire[0].LookAt(fTarget);
-                trFire[1].LookAt(fTarget);
+                fAccuracy = 2.0f;
+                Vector3 vTarget = aimRay.GetPoint(fReach);
+                vTarget = new Vector3(Random.Range(vTarget.x - fAccuracy, vTarget.x + fAccuracy),
+                                      Random.Range(vTarget.y - fAccuracy, vTarget.y + fAccuracy),
+                                      Random.Range(vTarget.z - fAccuracy, vTarget.z + fAccuracy));
+                trFire[0].LookAt(vTarget);
+                trFire[1].LookAt(vTarget);
             }
 
             //투사체 오브젝트 풀 생성.    
@@ -251,6 +254,22 @@ namespace T2
 
             //머즐플래시
             this.StartCoroutine(ShowMuzzleFlash(0));
+        }
+        public void TargetFire(Vector3 _vFirePos, Vector3 _vTarget)
+        {
+            Vector3 vOrizinFirePos = trFire[0].position;
+            trFire[0].position = _vFirePos;
+            trFire[0].LookAt(_vTarget);
+
+            //투사체 오브젝트 풀 생성.    
+            oBullet = bulletPool.UseObject();
+            oBullet.transform.position = trFire[0].position;
+            oBullet.transform.rotation = trFire[0].rotation;
+
+            //머즐플래시
+            this.StartCoroutine(ShowMuzzleFlash(_vFirePos));
+
+            trFire[0].position = vOrizinFirePos;
         }
 
         public bool isFire() { return bFire; }
@@ -285,6 +304,21 @@ namespace T2
             yield return new WaitForSeconds(0.25f);
 
             muzzleFlash[i].SetActive(false);
+        }
+        IEnumerator ShowMuzzleFlash(Vector3 pos)
+        {
+            //i == 0 이면 오른손,
+            //i == 1 이면 왼손.
+
+            Vector3 vOrizinPos = muzzleFlash[0].transform.position;
+            muzzleFlash[0].transform.position = pos;
+            muzzleFlash[0].SetActive(true);
+
+            yield return new WaitForSeconds(0.25f);
+
+            muzzleFlash[0].transform.position = vOrizinPos;
+            muzzleFlash[0].SetActive(false);
+            
         }
     }
 }

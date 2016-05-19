@@ -106,12 +106,12 @@ namespace T2.Skill
 
             if (T2.Skill.SilverStream.GetInstance().bSilverStream == true)
             {
-                beforeDelayTime = beforeDelayTime_Buff;
-                afterDelayTime = afterDelayTime_Buff;
-                coolTime = coolTime_Buff;
-                iFlowMax = iFlowMax_Buff;
-                blinkTime = blinkTime_Buff;
-                blinkDist = blinkDist_Buff;
+                beforeDelayTime_Orizin = beforeDelayTime_Buff;
+                afterDelayTime_Orizin = afterDelayTime_Buff;
+                coolTime_Orizin = coolTime_Buff;
+                iFlowMax_Orizin = iFlowMax_Buff;
+                blinkTime_Orizin = blinkTime_Buff;
+                blinkDist_Orizin = blinkDist_Buff;
             }
             else
             {
@@ -279,7 +279,7 @@ namespace T2.Skill
             }
             //blinkSpeed = 10.0f;
 
-            
+            base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
             this.StartCoroutine(puseTime(fPuseTime));
         }
 
@@ -308,7 +308,8 @@ namespace T2.Skill
                         bNextFlow = false;
                         if (iFlow < iFlowMax_Orizin)
                         {
-                            base.skillCtrl.basicAttack.TargetFire(vFireTargetPos);
+                            
+                            
                             StartAction();
                         }
                         else

@@ -63,9 +63,9 @@ namespace T2.Skill
 
             if(T2.Skill.SilverStream.GetInstance().bSilverStream == true)
             {
-                beforeDelayTime = beforeDelayTime_Buff;
-                afterDelayTime = afterDelayTime_Buff;
-                coolTime = coolTime_Buff;
+                beforeDelayTime_Orizin = beforeDelayTime_Buff;
+                afterDelayTime_Orizin = afterDelayTime_Buff;
+                coolTime_Orizin = coolTime_Buff;
             }
             else
             {

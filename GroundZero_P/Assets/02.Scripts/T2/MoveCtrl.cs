@@ -87,11 +87,48 @@ namespace T2
         {
             h = Input.GetAxis("Horizontal");
             v = Input.GetAxis("Vertical");
-
-
             Vector3 moveDir = (Vector3.forward * v) + (Vector3.right * h);
 
 
+
+            //animator.SetFloat("fHorizontal", h);
+            //animator.SetFloat("fVertical", v);
+            #region<Input WASD>
+            if (Input.GetKeyUp(KeyCode.W)) { moveFlag.forward = false; h = 0.0f; animator.SetFloat("fHorizontal", 0.0f); }
+            if (Input.GetKeyUp(KeyCode.S)) { moveFlag.backward = false; h = 0.0f; animator.SetFloat("fHorizontal", 0.0f); }
+            if (Input.GetKeyUp(KeyCode.D)) { moveFlag.right = false; v = 0.0f; animator.SetFloat("fVertical", 0.0f); }
+            if (Input.GetKeyUp(KeyCode.A)) { moveFlag.left = false; v = 0.0f; animator.SetFloat("fVertical", 0.0f); }
+
+            if (Input.GetKey(KeyCode.W)) { moveFlag.forward = true; animator.SetFloat("fHorizontal", 1.0f); }
+            if (Input.GetKey(KeyCode.S)) { moveFlag.backward = true; animator.SetFloat("fHorizontal", -1.0f); }
+            if (Input.GetKey(KeyCode.D)) { moveFlag.right = true; animator.SetFloat("fVertical", 1.0f); }
+            if (Input.GetKey(KeyCode.A)) { moveFlag.left = true; animator.SetFloat("fVertical", -1.0f); }
+
+            if (mgr.GetCtrlPossible().Run == false)
+            {
+                moveFlag.forward = false;
+                moveFlag.backward = false;
+                moveFlag.right = false;
+                moveFlag.left = false;
+            }
+            //else
+            //{
+            //    moveFlag.forward = false;
+            //    moveFlag.backward = false;
+            //    moveFlag.right = false;
+            //    moveFlag.left = false;
+            //    //h = v = 0.0f;
+            //}
+            #endregion
+
+            //전력질주의 캐릭터 방향을 정하는 'targetRot'변수를 설정해주는 함수,
+            CalcTargetRot();
+
+            if (mgr.GetState() == Manager.State.be_Shot)
+            {
+                print("beShot");
+                return;
+            }
 
             #region<switch(moveState)>
             switch (moveState)
@@ -145,39 +182,6 @@ namespace T2
                 }
             }
             #endregion
-
-            //animator.SetFloat("fHorizontal", h);
-            //animator.SetFloat("fVertical", v);
-            #region<Input WASD>
-            if (Input.GetKeyUp(KeyCode.W)) { moveFlag.forward = false; h = 0.0f; animator.SetFloat("fHorizontal", 0.0f); }
-            if (Input.GetKeyUp(KeyCode.S)) { moveFlag.backward = false; h = 0.0f; animator.SetFloat("fHorizontal", 0.0f); }
-            if (Input.GetKeyUp(KeyCode.D)) { moveFlag.right = false; v = 0.0f; animator.SetFloat("fVertical", 0.0f); }
-            if (Input.GetKeyUp(KeyCode.A)) { moveFlag.left = false; v = 0.0f; animator.SetFloat("fVertical", 0.0f); }
-
-            if (Input.GetKey(KeyCode.W)) { moveFlag.forward = true; animator.SetFloat("fHorizontal", 1.0f); }
-            if (Input.GetKey(KeyCode.S)) { moveFlag.backward = true; animator.SetFloat("fHorizontal", -1.0f); }
-            if (Input.GetKey(KeyCode.D)) { moveFlag.right = true; animator.SetFloat("fVertical", 1.0f); }
-            if (Input.GetKey(KeyCode.A)) { moveFlag.left = true; animator.SetFloat("fVertical", -1.0f); }
-
-            if (mgr.GetCtrlPossible().Run == false)
-            {
-                moveFlag.forward = false;
-                moveFlag.backward = false;
-                moveFlag.right = false;
-                moveFlag.left = false;
-            }
-            //else
-            //{
-            //    moveFlag.forward = false;
-            //    moveFlag.backward = false;
-            //    moveFlag.right = false;
-            //    moveFlag.left = false;
-            //    //h = v = 0.0f;
-            //}
-            #endregion
-
-            //전력질주의 캐릭터 방향을 정하는 'targetRot'변수를 설정해주는 함수,
-            CalcTargetRot();
 
             #region<MoveState Change>
             //걷기상태가 가능상태여야 전력질주도 가능하도록 한다.
@@ -290,7 +294,8 @@ namespace T2
 
 
 
-                    fMoveSpeed = Mathf.Lerp(fMoveSpeed, fMaxMoveSpeed, Time.deltaTime * fMoveSpeedDamp);
+                    //fMoveSpeed = Mathf.Lerp(fMoveSpeed, fMaxMoveSpeed, Time.deltaTime * fMoveSpeedDamp);
+                    fMoveSpeed = fMaxMoveSpeed;
 
                     moveDir = transform.TransformDirection(moveDir);
                     controller.Move(moveDir * fMoveSpeed * Time.deltaTime);

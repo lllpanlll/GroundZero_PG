@@ -19,7 +19,7 @@ namespace T2
         private LayerState curLayerState;
 
         public enum State { idle, attack, Skill, be_Shot }
-        private State skillCtrl;
+        private State state;
 
         public enum SkillType { AP, EP, PP }
 
@@ -49,6 +49,9 @@ namespace T2
 
         private T2.MoveCtrl moveCtrl;
         private CharacterController controller;
+        private Transform trPlayerModel;
+        private Camera cam;
+        private Animator animator;
 
         #region <달리기 상태에 따른 ep증감>
         private float fDecEP = 0.4f, fIncEP = 0.6f;
@@ -61,10 +64,15 @@ namespace T2
         private LineRenderer line;
         public Transform trFire;
         public Transform trCamPivot;
+
+
+        private float fKnockDownSpeed = 30.0f;
+        private Vector3 vKnockDownDir = Vector3.zero;
         void Start()
         {
             hp = T2.Stat.MAX_HP;
-            dp = T2.Stat.INIT_DP;
+            //dp = T2.Stat.INIT_DP;
+            dp = 10000;
             pp = T2.Stat.MAX_PP;
             ap = T2.Stat.MAX_AP;
             ep = T2.Stat.MAX_EP;
@@ -73,6 +81,9 @@ namespace T2
 
             moveCtrl = GetComponent<T2.MoveCtrl>();
             controller = GetComponent<CharacterController>();
+            cam = Camera.main;
+            trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
+            animator = GetComponentInChildren<Animator>();
             line = GetComponent<LineRenderer>();
 
             //마우스 커서 숨기기
@@ -88,7 +99,7 @@ namespace T2
         }
         void OnGUI()
         {
-            GUI.Label(new Rect(20, 20, 200, 25), "State : " + skillCtrl);
+            GUI.Label(new Rect(20, 20, 200, 25), "State : " + state);
             GUI.Label(new Rect(20, 70, 200, 25), "ap : " + ap + " / " + T2.Stat.MAX_AP);
             GUI.Label(new Rect(20, 90, 200, 25), "ep : " + ep + " / " + T2.Stat.MAX_EP);
             GUI.Label(new Rect(20, 110, 200, 25), "hp : " + hp + " / " + T2.Stat.MAX_HP);
@@ -103,7 +114,7 @@ namespace T2
             }
 
                 #region<Sprint로 인한 EP증감>
-                if (skillCtrl == State.idle || skillCtrl == State.attack)
+                if (state == State.idle || state == State.attack)
             {
                 if (ep < 0.0f)
                     ctrlPossible.Sprint = false;
@@ -162,35 +173,40 @@ namespace T2
             //몬스터 공격이면 데미지만큼 hp 차감
             if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.MonsterAttkCollider))
             {
-                print("hit");
+                print("hit1");
                 int iDamage = coll.gameObject.GetComponent<M_AttackCtrl>().GetDamage();
-
-                if (iDamage != 0 && dp > 0)
+                print(iDamage);
+                if (dp <= 0)
                 {
+                    //쥬금
+                    print("쥬금");
+                    trPlayerModel.rotation = Quaternion.Euler(90.0f, cam.transform.eulerAngles.y, 0.0f);
+                    state = State.be_Shot;                    
+                }
+                else
+                {
+                    print("hit2");
                     if (dp > iDamage)
                     {
+                        print("hit3");
                         dp -= iDamage;
+                        vKnockDownDir = coll.gameObject.transform.position - transform.position;
+                        vKnockDownDir = vKnockDownDir.normalized;
+
+                        trPlayerModel.LookAt(coll.transform.position);
+                        trPlayerModel.rotation = Quaternion.Euler(-80.0f, trPlayerModel.eulerAngles.y, trPlayerModel.eulerAngles.z);
                         //피격 지속시간은 나중에 피격상태에 따라 달라지도록 구현헤야 할 듯,
-                        StartCoroutine(BeShotTimer(0.2f));
+                        StartCoroutine(BeShotTimer(1.0f));
                     }
                     else
                     {
                         dp = 0;
                     }
                 }
-                else
-                {
-                    //쥬금
-                    print("쥬금");
-                }
-            }
-            if (coll.gameObject.tag == Tags.Floor)
-            {
-                print("coll");
             }
         }
 
-        void OnCollisionStay(Collision coll)
+        void OnCollisionEnter(Collision coll)
         {
             print("coll");
         }
@@ -233,8 +249,8 @@ namespace T2
 
         public void ChangeState(State s)
         {
-            skillCtrl = s;
-            if (skillCtrl == State.idle)
+            state = s;
+            if (state == State.idle)
             {
                 ctrlPossible.Run = true;
                 ctrlPossible.Sprint = true;
@@ -242,7 +258,7 @@ namespace T2
                 ctrlPossible.MouseRot = true;
                 ctrlPossible.Skill = true;
             }
-            else if (skillCtrl == State.attack)
+            else if (state == State.attack)
             {
                 ctrlPossible.Run = true;
                 ctrlPossible.Sprint = false;
@@ -250,7 +266,7 @@ namespace T2
                 ctrlPossible.MouseRot = true;
                 ctrlPossible.Skill = true;
             }
-            else if (skillCtrl == State.Skill)
+            else if (state == State.Skill)
             {
                 ctrlPossible.Run = false;
                 ctrlPossible.Sprint = false;
@@ -258,7 +274,7 @@ namespace T2
                 ctrlPossible.MouseRot = true;
                 ctrlPossible.Skill = true;
             }
-            else if (skillCtrl == State.be_Shot)
+            else if (state == State.be_Shot)
             {
                 ctrlPossible.Run = false;
                 ctrlPossible.Sprint = false;
@@ -267,16 +283,42 @@ namespace T2
                 ctrlPossible.Skill = false;
             }
         }
-        public State GetState() { return skillCtrl; }
+        public State GetState() { return state; }
         IEnumerator BeShotTimer(float time)
         {
             print("beShot");
             ChangeState(State.be_Shot);
+            SetLayerState(LayerState.invincibility);
             //피격 애니메이션 시작.
+            animator.enabled = false;
+            
+            StartCoroutine(KnockBackFly(0.2f));
 
             yield return new WaitForSeconds(time);
+
+            print("WakeUp");
+            //일어나는 애니메이션 시작.
+            animator.enabled = true;            
+
             ChangeState(State.idle);
+            SetLayerState(LayerState.normal);
+
+            trPlayerModel.rotation = Quaternion.Euler(0.0f, trPlayerModel.eulerAngles.y, 0.0f);
         }
+        IEnumerator KnockBackFly(float time)
+        {
+            //이동중 마우스 회전 불가.
+            SetCtrlPossible(CtrlPossibleIndex.MouseRot, false);
+            float timeCount = 0.0f;
+            while (timeCount < time)
+            {
+                controller.Move((-vKnockDownDir) * Time.deltaTime * fKnockDownSpeed);
+                yield return new WaitForEndOfFrame();
+                timeCount += Time.deltaTime;
+            }
+            SetCtrlPossible(CtrlPossibleIndex.MouseRot, true);
+        }
+
 
         //전력질주시에 사용하는 ep감소, 충전, 충전가속 함수.
         void EpDecrease()
@@ -326,56 +368,7 @@ namespace T2
             }
             else
                 incAccelTimer += Time.deltaTime;
-        }
-
-        //스킬 타입별 포인트 감소
-        //public bool DecreaseSkillPoint(T2.Manager.SkillType type, int decPoint)
-        //{
-        //    if (type == T2.Manager.SkillType.AP)
-        //    {
-        //        if (ap <= 0 || ap < decPoint)
-        //        {
-        //            print("ap가 부족합니다.");
-        //            return false;
-        //        }
-        //        else
-        //        {
-        //            ap -= decPoint;
-        //            return true;
-        //        }
-        //    }
-        //    else if (type == T2.Manager.SkillType.EP)
-        //    {
-        //        if (ep <= 0 || ep < decPoint)
-        //        {
-        //            print("ep가 부족합니다.");
-        //            return false;
-        //        }
-        //        else
-        //        {
-        //            //가속으로 인해 바뀐 수치들 초기화
-        //            fIncEP = 0;
-        //            incAccelTimer = 0.0f;
-
-        //            ep -= decPoint;
-        //            return true;
-        //        }
-        //    }
-        //    else if (type == T2.Manager.SkillType.PP)
-        //    {
-        //        if (pp <= 0 || pp < decPoint)
-        //        {
-        //            print("pp가 부족합니다.");
-        //            return false;
-        //        }
-        //        else
-        //        {
-        //            pp -= decPoint;
-        //            return true;
-        //        }
-        //    }
-        //    return false;
-        //}
+        }             
 
         public bool PointCheck(T2.Manager.SkillType type, int decPoint)
         {

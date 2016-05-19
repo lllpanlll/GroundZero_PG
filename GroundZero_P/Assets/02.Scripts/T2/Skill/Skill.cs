@@ -28,7 +28,6 @@ namespace T2.Skill
             bAction = false;
             bAfterDelay = false;
             this.skillCtrl = skillCtrl;
-            skillCtrl = skillCtrl;
             bUsing = true;
 
             //this.skillCtrl.mgr.
@@ -48,7 +47,7 @@ namespace T2.Skill
             skillCtrl.mgr.ChangeState(T2.Manager.State.idle);
 
             //정상 종료 체크
-            if (bUsing == false)
+            if (!bUsing)
             {
                 /*
                 정상종료 된다면 curSkill을 IdleSkill로 바로 대입한다.

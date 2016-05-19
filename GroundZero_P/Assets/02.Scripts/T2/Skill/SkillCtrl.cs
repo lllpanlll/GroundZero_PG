@@ -95,8 +95,15 @@ namespace T2.Skill
                         ChangeSkill(T2.Skill.SeventhFlow.GetInstance());
                 }
 
+                //SeventhFlow
+                if (Input.GetKeyDown(KeyCode.Alpha3) && !Suppression.GetInstance().bUsing)
+                {
+                    if (mgr.PointCheck(Suppression.GetInstance().PointType, T2.Skill.Suppression.GetInstance().iDecPoint))
+                        ChangeSkill(T2.Skill.Suppression.GetInstance());
+                }
+
                 //SilverStream
-                if (Input.GetKeyDown(KeyCode.R))
+                if (Input.GetKeyDown(KeyCode.Alpha4))
                 {
                     if (SilverStream.GetInstance().bSilverStream == false)
                     {

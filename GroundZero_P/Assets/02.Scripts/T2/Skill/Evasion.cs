@@ -68,8 +68,6 @@ namespace T2.Skill
             {
                 Exit(skillCtrl);
             }
-
-            base.Execute(skillCtrl);          
         }
         public override void Exit(T2.Skill.SkillCtrl skillCtrl)
         {
@@ -91,8 +89,7 @@ namespace T2.Skill
             //oBlinkEffect.SetActive(true);
 
             //캐릭터(모델)를 회전시킬 값을 구해서 모델링의 forward방향으로 moveDir을 설정한다.
-            float targetRot = base.skillCtrl.moveCtrl.GetTargetRot();
-            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, targetRot, 0.0f);
+            base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trPlayerModel.eulerAngles.y, 0.0f);
             moveDir = base.skillCtrl.trPlayerModel.forward;
             base.skillCtrl.moveCtrl.SetMoveState(T2.MoveCtrl.MoveState.Stop);
 
@@ -104,16 +101,8 @@ namespace T2.Skill
             {
                 base.skillCtrl.controller.Move(moveDir.normalized * Time.deltaTime * blinkSpeed);
                 yield return new WaitForEndOfFrame();
-                timeConut += Time.deltaTime;
-
-               
+                timeConut += Time.deltaTime;               
             }
-
-            //oBlinkEffect.SetActive(false);
-            
-
-         
-
             //base.skillCtrl.trPlayerModel.rotation = Quaternion.Euler(0.0f, base.skillCtrl.trCamPivot.eulerAngles.y, 0.0f);
             StartCoroutine(AfterDelayTimer(afterDelayTime));
         }

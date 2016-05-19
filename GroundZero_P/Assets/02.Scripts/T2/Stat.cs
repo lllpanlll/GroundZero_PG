@@ -22,6 +22,6 @@ namespace T2
 
         //public const float MAX_AIM_MOVE = 5.0f;
         public const float MAX_RUN_MOVE = 10.0f;
-        public const float MAX_SPRINT_MOVE = 20.0f;
+        public const float MAX_SPRINT_MOVE = 15.0f;
     }
 }
