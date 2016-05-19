@@ -8,16 +8,16 @@ public class DestructionObj : MonoBehaviour
 
     void OnCollisionEnter(Collision coll)
     {
-        if (coll.gameObject.CompareTag("DestructionObj"))
+        if (coll.gameObject.name.Equals("Hit_me"))
         {
             Vector3 _vPoint, _vNormal;
             _vPoint = coll.contacts[0].point;
             _vNormal = coll.contacts[0].normal;
 
-            coll.transform.GetComponent<Rigidbody>().AddForceAtPosition(_vNormal * 500f, _vPoint);
-            coll.transform.root.gameObject.SetActive(false);
-            //light = coll.transform.GetComponentInChildren<Light>();
-            //light.enabled = false;
+            coll.transform.GetComponent<Rigidbody>().AddForceAtPosition(_vNormal * 1000f, _vPoint);
+            //coll.transform.root.gameObject.SetActive(false);
+            light = coll.transform.parent.GetComponentInChildren<Light>();
+            light.enabled = false;
 
             StartCoroutine(destruct(coll.gameObject));
         }
@@ -25,7 +25,7 @@ public class DestructionObj : MonoBehaviour
 
     IEnumerator destruct(GameObject coll)
     {
-        yield return new WaitForSeconds(2f);
-        coll.SetActive(false);
+        yield return new WaitForSeconds(5f);
+        coll.transform.parent.gameObject.SetActive(false);
     }
 }

@@ -1,18 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
-public class SupplyArea : MonoBehaviour {
+public class SupplyArea : MonoBehaviour
+{
+    // 풀 개수.
+    const int COUNT = 1;
 
-    const int COUNT = 10;
-    int iCount;
+    // 리스폰 시간.
+    float fRespawnTime = 2f;
 
-    // 리스폰 시간
-    public float fRespawnTime = 1f;
-    public GameObject oApCharger;
-    GameObject oAp;
+    public GameObject oCharger;
+    GameObject oObj;
     public float x1, x2, z1, z2;
-    ObjectPool apPool = new ObjectPool();
+    ObjectPool objPool = new ObjectPool();
     Transform[] trSpawnpoint = new Transform[COUNT];
+
+    [HideInInspector]
+    public List<GameObject> listObjCount;
 
     void Awake()
     {
@@ -21,28 +26,33 @@ public class SupplyArea : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start ()
+    void Start()
     {
         x1 = transform.localPosition.x - x1;
         z1 = transform.localPosition.z - z1;
         x2 = transform.localPosition.x + x2;
         z2 = transform.localPosition.z + z2;
-        apPool.CreatePool(oApCharger, COUNT);
+        objPool.CreatePool(oCharger, COUNT);
         StartCoroutine(RespawnCycle());
     }
 
     IEnumerator RespawnCycle()
     {
         yield return new WaitForSeconds(fRespawnTime);
-        // 생성 -> 이동 -> 활성
 
-        //if (iCount < COUNT)
+        if(listObjCount.Count < 1)
         {
-            iCount++;
-            oAp = apPool.UseObject();
+            oObj = objPool.UseObject();
             int i = Random.Range(1, trSpawnpoint.Length);
-            oAp.transform.position = new Vector3(trSpawnpoint[i].position.x, 50, trSpawnpoint[i].position.z);
-            oAp.transform.rotation = Quaternion.identity;
+            oObj.transform.position = new Vector3(trSpawnpoint[i].position.x, 50, trSpawnpoint[i].position.z);
+            oObj.transform.rotation = Quaternion.identity;
+
+            listObjCount.Add(oObj);
+        }
+        else
+        {
+            if(!oObj.activeSelf)
+            listObjCount.Remove(oObj);
         }
 
         // random
