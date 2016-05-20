@@ -40,8 +40,8 @@ namespace T2.Skill
             bAction = false;
             bAfterDelay = false;
             
-            //Skill skil = this;
-            //UI_Stat.instance.CoolTime(skil);
+            Skill skil = skillCtrl.curSkill;
+            UI_Stat.instance.CoolTime(skil);
 
             //쿨타임 시작.
             if (CoolTimeCoroutine != null)

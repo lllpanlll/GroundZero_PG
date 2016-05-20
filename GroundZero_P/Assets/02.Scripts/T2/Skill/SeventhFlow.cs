@@ -223,8 +223,8 @@ namespace T2.Skill
         public IEnumerator CoolTimer(float time)
         {
             print("SeventhFlow 쿨타임 시작");
-            T2.Skill.SeventhFlow skil = T2.Skill.SeventhFlow.GetInstance();
-            UI_Stat.instance.CoolTime(skil);
+            //T2.Skill.SeventhFlow skil = T2.Skill.SeventhFlow.GetInstance();
+            //UI_Stat.instance.CoolTime(skil);
             base.bCoolTime = true;
             yield return new WaitForSeconds(time);
             base.bCoolTime = false;

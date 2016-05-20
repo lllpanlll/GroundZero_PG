@@ -104,6 +104,9 @@ public class UI_Stat : MonoBehaviour
 
     public void CoolTime(T2.Skill.Skill skill)
     {
+        //T2.Skill.DimensionBall skil = T2.Skill.DimensionBall.GetInstance();
+        //UI_Stat.instance.CoolTime(skil);
+
         if (skill.Equals(T2.Skill.DimensionBall.GetInstance()))
         {
             StartCoroutine(CoolDown(T2.Skill.DimensionBall.GetInstance().coolTime, 0));
@@ -116,6 +119,9 @@ public class UI_Stat : MonoBehaviour
         {
             StartCoroutine(CoolDown(T2.Skill.SilverStream.GetInstance().coolTime, 3));
         }
+
+        LessThanPp(skill);
+
     }
 
     public void CoolTimeForDimensionball(T2.Pref.DimensionBallPref pref)
@@ -135,6 +141,13 @@ public class UI_Stat : MonoBehaviour
         yield break;
     }
 
+    void LessThanPp(T2.Skill.Skill skill)
+    {
+        //if (t_mgr.PointCheck(skill, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
+        //{
+
+        //}
+    }
 
     void Skill()
     {
@@ -142,30 +155,29 @@ public class UI_Stat : MonoBehaviour
         {
             imageSkill1[0].color = Color.blue;
         }
-        if (sliderSkill[0].value.Equals(0))
+        else if (!T2.Skill.DimensionBall.GetInstance().bCoolTime)
         {
             imageSkill1[0].color = Color.white;
         }
 
-        CompleteSkillCooltime(imageSkill1, 0);
-        CompleteSkillCooltime(imageSkill2, 1);
-        CompleteSkillCooltime(imageSkill4, 3);
-
-        
+        UiSkillEffect(imageSkill1, 0);
+        UiSkillEffect(imageSkill2, 1);
+        UiSkillEffect(imageSkill3, 2);
+        UiSkillEffect(imageSkill4, 3);
     }
 
-    // 스킬쿨타임 완료체크 (ex => CompleteSkillCooltime(imageSkill2, 1)) = 2번째 스킬인 세븐쓰플로우를 뜻함
-    // _imageSkill[n]에서 2는 테두리 하이라이트, 3은 boom이펙트
-    void CompleteSkillCooltime(Image[] _imageSkill, int _num)
+    // 스킬쿨타임 완료체크 (ex => UiSkillEffect(imageSkill2, 1)) = 2번째 스킬인 세븐쓰플로우를 뜻함 // 불편하다 바꾸고 싶다아.
+    // _imageSkill[n]에서 2는 테두리 하이라이트, 3은 boom이펙트.
+    void UiSkillEffect(Image[] _imageSkill, int _num)
     {
         if (sliderSkill[_num].value.Equals(0))
         {
             timerSkill[_num] += Time.deltaTime;
-            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f) // 1초 동안 스킬의 쿨타임이 완료 됐음을 알림
+            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f) // 1초 동안 스킬의 쿨타임이 완료 됐음을 알림.
             {
                 _imageSkill[2].color = Color.white;
             }
-            else if (timerSkill[_num] < 0.1f) // 스킬의 쿨타임이 완료 되면 잠깐동안 boom 이펙트
+            else if (timerSkill[_num] < 0.1f) // 스킬의 쿨타임이 완료 되면 잠깐동안 boom 이펙트.
             {
                 fAlphaSkill[_num] = 1;
             }
@@ -181,6 +193,7 @@ public class UI_Stat : MonoBehaviour
         }
         _imageSkill[3].color = new Color(1, 1, 1, FadeInOut(ref fAlphaSkill[_num], -10));
     }
+
 
     float SkillCooltime(ref float _time)
     {
