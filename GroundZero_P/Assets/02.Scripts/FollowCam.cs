@@ -6,6 +6,7 @@ public class FollowCam : MonoBehaviour {
     private Transform trTarget;
     private Transform trPlayerModel;
     private T2.MoveCtrl moveCtrl;
+    private T2.RotationPivotOfCam rotatePivot;
 
     public float DIST = 3.5f;
     public float ZOOM_DIST = 1.0f;    
@@ -28,7 +29,6 @@ public class FollowCam : MonoBehaviour {
     //초기화 변수
     public float fMouseRotSpeed = 200.0f;
 
-	public GameObject	oPlayerLight;
 
     private Vector3 vTarget = Vector3.zero;
     private float fTargetRotSpeed = 50.0f;
@@ -50,9 +50,10 @@ public class FollowCam : MonoBehaviour {
         fDampTrace = DAMP_TRACE;
         trTarget = GameObject.FindGameObjectWithTag(Tags.CameraTarget).GetComponent<Transform>();
         trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
+        rotatePivot = GameObject.FindGameObjectWithTag(Tags.Player).GetComponentInChildren<T2.RotationPivotOfCam>();
 
         moveCtrl = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.MoveCtrl>();
-        cam = Camera.main;
+        cam = GetComponent<Camera>();
         fOrizinFOV = cam.fieldOfView;
         fOrizinDist = DIST;
         vTarget = trTarget.position + (trTarget.forward * 30.0f);
@@ -61,6 +62,7 @@ public class FollowCam : MonoBehaviour {
     }
 
     void LateUpdate () {
+        rotatePivot.RotationPivot();
         #region<바닥충돌처리>
         // 카메라 바닥 안뚫,
         RaycastHit hit = new RaycastHit();
@@ -73,7 +75,7 @@ public class FollowCam : MonoBehaviour {
             //Debug.DrawRay(hit.point, hit.normal, Color.magenta);
             //norm = hit.point + hit.normal;
             fMouseClamp -= Input.GetAxis("Mouse Y") * fCamDist;
-            fMouseClamp = Mathf.Clamp(fMouseClamp, -0.5f, 3.4f);
+            fMouseClamp = Mathf.Clamp(fMouseClamp, 0.1f, 3.4f);
 
             float _fDist = Vector3.Distance(trTarget.position, vCamPos);
 
@@ -104,14 +106,12 @@ public class FollowCam : MonoBehaviour {
         //DIST = Mathf.Lerp(DIST, zoomOutDist, Time.deltaTime * fAimOutLerpSpeed); //check
         #endregion
 
-        oPlayerLight.transform.LookAt (trTarget);
 
         //transform.position = Vector3.Lerp(transform.position, trTarget.position - (trTarget.forward * fDist) + (trTarget.right * RIGHT),
         //    Time.deltaTime * DAMP_TRACE);
 
         //transform.position = trTarget.position - (trTarget.forward * DIST) + (trTarget.right * RIGHT) + (trTarget.up * fUp); // 기존, 계산은 바닥충돌처리에서 한꺼번에 함으로 주석처리
         //transform.position = Vector3.Lerp(transform.position, vCamPos, Time.deltaTime * 30); // 러프 버전 O
-        //print(DIST + " || " + Vector3.Distance(transform.position, trTarget.position)); // 텍텍
         transform.position = vCamPos; // 러프 버전 X
         transform.LookAt((trTarget.position + (trTarget.right * RIGHT))); //러프 버전x
         //transform.rotation = Quaternion.Slerp(transform.rotation, trTarget.rotation, Time.deltaTime * 20); //러프버전 o

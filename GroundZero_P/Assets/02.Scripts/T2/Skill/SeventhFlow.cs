@@ -34,6 +34,7 @@ namespace T2.Skill
         private bool bNextFlow = false;
         private bool bMove = false;
         private float fTargetRot;
+        public int iFlowMax = 3;
         
         //사격거리
         private float fReach = 100.0f;
@@ -41,7 +42,6 @@ namespace T2.Skill
         Vector3 moveDir = Vector3.zero;
 
         private int iFlow = 0;
-        private int iFlowMax;
         private float[] fFlowRot;
        
 
@@ -63,15 +63,15 @@ namespace T2.Skill
         //궁버프 이후 바뀔 수치
         private float beforeDelayTime_Buff = 0.0f;
         private float afterDelayTime_Buff = 0.0f;
-        private float coolTime_Buff = 0.0f;
-        private int iFlowMax_Buff = 4;
-        private float blinkTime_Buff = 0.1f;
-        private float blinkDist_Buff = 3.0f;
+        public float coolTime_Buff = 1.0f;
+        public int iFlowMax_Buff = 4;
+        public float blinkTime_Buff = 0.1f;
+        public float blinkDist_Buff = 3.0f;
         //궁버프 이전 수치
         private float beforeDelayTime_Orizin;
         private float afterDelayTime_Orizin;
         private float coolTime_Orizin;
-        private int iFlowMax_Orizin = 3;
+        private int iFlowMax_Orizin;
         private float blinkTime_Orizin;
         private float blinkDist_Orizin;
 

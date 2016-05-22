@@ -36,9 +36,32 @@ namespace T2.Skill
         private float fReach = 100.0f;
         private Vector3 vFireTargetPos = Vector3.zero;
         private Vector3 vFirePos = Vector3.zero;
-        private int iMaxCount = 30, count = 0;
-        private float fInterverTime = 0.1f;
+        public int iMaxCount = 30;
+        private int count = 0;
+        public float fIntervalTime = 0.1f;
         private float fAccuracy = 0.0f;
+
+        //궁버프 이후 바뀔 수치
+        private float beforeDelayTime_Buff = 0.0f;
+        private float afterDelayTime_Buff = 0.0f;
+        public float coolTime_Buff = 1.0f;
+        public int iMaxCount_Buff = 30;
+        public float fIntervalTime_Buff = 0.1f;
+        //궁버프 이전 수치
+        private float beforeDelayTime_Orizin;
+        private float afterDelayTime_Orizin;
+        private float coolTime_Orizin;
+        private int iMaxCount_Orizin;
+        private float fIntervalTime_Orizin;
+
+        void Awake()
+        {
+            beforeDelayTime_Orizin = beforeDelayTime;
+            afterDelayTime_Orizin = afterDelayTime;
+            coolTime_Orizin = coolTime;
+            iMaxCount_Orizin = iMaxCount;
+            fIntervalTime_Orizin = fIntervalTime;
+        }
 
         public override void Enter(SkillCtrl skillCtrl)
         {
@@ -47,6 +70,24 @@ namespace T2.Skill
             base.skillCtrl.mgr.DecreaseSkillPoint(PointType, iDecPoint);
             base.CoolTimeCoroutine = CoolTimer(coolTime);
             base.bSkillCancel = true;
+
+            if (T2.Skill.SilverStream.GetInstance().bSilverStream == true)
+            {
+                beforeDelayTime_Orizin = beforeDelayTime_Buff;
+                afterDelayTime_Orizin = afterDelayTime_Buff;
+                coolTime_Orizin = coolTime_Buff;
+                iMaxCount_Orizin = iMaxCount_Buff;
+                fIntervalTime_Orizin = fIntervalTime_Buff;
+            }
+            else
+            {
+                beforeDelayTime_Orizin = beforeDelayTime;
+                afterDelayTime_Orizin = afterDelayTime;
+                coolTime_Orizin = coolTime;
+                iMaxCount_Orizin = iMaxCount;
+                fIntervalTime_Orizin = fIntervalTime;
+            }
+
             count = 0;
 
             skillCtrl.mgr.ChangeState(T2.Manager.State.Skill);
@@ -59,6 +100,7 @@ namespace T2.Skill
             //피격시 비정상 종료.
             if (skillCtrl.mgr.GetState() == T2.Manager.State.be_Shot)
             {
+                print("beShot");
                 Exit(skillCtrl);
             }
 
@@ -68,6 +110,12 @@ namespace T2.Skill
 
         public override void Exit(SkillCtrl skillCtrl)
         {
+            if (bUsing)
+            {
+                base.skillCtrl.animator.enabled = true;
+                this.StopAllCoroutines();
+            }
+
             base.Exit(skillCtrl);
         }
 
@@ -124,7 +172,7 @@ namespace T2.Skill
             }
 
 
-            StartCoroutine(ShotIntervalTime(fInterverTime));
+            StartCoroutine(ShotIntervalTime(fIntervalTime));
         }
 
         IEnumerator ShotIntervalTime(float time)

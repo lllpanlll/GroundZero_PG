@@ -29,24 +29,24 @@ public class UI_Stat : MonoBehaviour
     bool bHighlight = false;
     // DP
     Slider sliderDP;
-    // Risk_Vignette 체력 없을 때 깜빡깜빡
-    Image imageHP;
+    Image imageHP;   // DP UI에만
+    //Image imageRisk; // 화면전체
 
     float fAlphaEp = 1f, fAlphaPp = 0f, fAlphaAp = 1f;
-    float fFadeoutSpeed = 0.5f; // 전체 페이드아웃 속력
+    float fFadeoutSpeed = 0.5f; // 전체 페이드아웃 속력인데 방향 변수에 속도 들어가서 FadeInOut 검색 요망
 
     // Skills
-    T2.Skill.DimensionBall skillDimensionBall;
-    T2.Skill.SeventhFlow skillSeventhFlow;
-    T2.Skill.SilverStream skillSilverStream;
-    float coolTimerDimensionBall, coolTimerSeventhFlow, coolTimerSilverStream;
     Slider[] sliderSkill;
     Image[] imageSkill1, imageSkill2, imageSkill3, imageSkill4;
     float[] timerSkill = new float[4];
     float[] fAlphaSkill = new float[4];
 
+    public static UI_Stat instance = null;
+
     void Awake()
     {
+        instance = this;
+
         t_mgr = oPlayer.GetComponent<T2.Manager>();
         sliderAP = oAimPanel.GetComponentInChildren<Slider>();
         imageEmptyAP = oEmptyAP.GetComponent<Image>();
@@ -60,28 +60,27 @@ public class UI_Stat : MonoBehaviour
         sliderDP = oDpPp.transform.FindChild("DP").GetComponent<Slider>();
         sliderPP = oDpPp.transform.FindChild("PP").GetComponent<Slider>();
         imageHP = oDpPp.transform.FindChild("DpDanger").GetComponent<Image>();
+        //imageRisk = transform.FindChild("Risk_Vignette").GetComponent<Image>();
         trHighlight = oDpPp.transform.FindChild("PpHighlight").GetComponent<RectTransform>();
         imageHighlight = trHighlight.GetComponent<Image>();
         trPpHandle = sliderPP.transform.FindChild("PpHandle").GetComponent<RectTransform>();
         sliderSkill = oSkill.GetComponentsInChildren<Slider>();
         imageSkill1 = sliderSkill[0].GetComponentsInChildren<Image>(); // 1번째 스킬칸
-        skillDimensionBall = oPlayer.GetComponent<T2.Skill.DimensionBall>();
         imageSkill2 = sliderSkill[1].GetComponentsInChildren<Image>(); // 2번째 스킬칸
-        skillSeventhFlow = oPlayer.GetComponent<T2.Skill.SeventhFlow>();
         imageSkill3 = sliderSkill[2].GetComponentsInChildren<Image>(); // 3번째 스킬칸
         imageSkill4 = sliderSkill[3].GetComponentsInChildren<Image>(); // 4번째 스킬칸
-        skillSilverStream = oPlayer.GetComponent<T2.Skill.SilverStream>();
     }
 
     void Start()
     {
         sliderAP.maxValue = T2.Stat.MAX_AP;
         sliderEP.maxValue = T2.Stat.MAX_EP;
-        sliderPP.maxValue = T2.Stat.MAX_PP * 2;
+        sliderPP.maxValue = T2.Stat.MAX_PP;
         sliderDP.maxValue = T2.Stat.MAX_DP;
-        sliderSkill[0].maxValue = skillDimensionBall.coolTime;
-        sliderSkill[1].maxValue = skillSeventhFlow.coolTime;
-        sliderSkill[3].maxValue = skillSilverStream.coolTime;
+        sliderSkill[0].maxValue = T2.Skill.DimensionBall.GetInstance().coolTime;
+        sliderSkill[1].maxValue = T2.Skill.SeventhFlow.GetInstance().coolTime;
+        sliderSkill[2].maxValue = T2.Skill.Suppression.GetInstance().coolTime;
+        sliderSkill[3].maxValue = T2.Skill.SilverStream.GetInstance().coolTime;
         iPrePp = (int)sliderPP.maxValue;
         for (int i = 0; i < 4; i++)
         {
@@ -89,8 +88,6 @@ public class UI_Stat : MonoBehaviour
             fAlphaSkill[i] = 0f;
         }
     }
-
-
 
     // Update is called once per frame
     void Update()
@@ -106,18 +103,51 @@ public class UI_Stat : MonoBehaviour
         Skill();
     }
 
-    //void CoolTime(T2.Skill.Skill skill)
-    //{
-    //    if(skill == T2.Skill.DimensionBall.GetInstance())
-    //    {
-    //        sliderSkill[0].value = SkillCooltime(ref T2.Skill.DimensionBall.GetInstance().coolTime);
-    //    }
-    //}
+    public void CoolTime(T2.Skill.Skill skill)
+    {
+        //T2.Skill.DimensionBall skil = T2.Skill.DimensionBall.GetInstance();
+        //UI_Stat.instance.CoolTime(skil);
+
+        if (skill.Equals(T2.Skill.DimensionBall.GetInstance()))
+        {
+            StartCoroutine(CoolDown(T2.Skill.DimensionBall.GetInstance().coolTime, 0));
+        }
+        else if (skill.Equals(T2.Skill.SeventhFlow.GetInstance()))
+        {
+            StartCoroutine(CoolDown(T2.Skill.SeventhFlow.GetInstance().coolTime, 1));
+        }
+        else if (skill.Equals(T2.Skill.Suppression.GetInstance()))
+        {
+            StartCoroutine(CoolDown(T2.Skill.Suppression.GetInstance().coolTime, 2));
+        }
+        else if (skill.Equals(T2.Skill.SilverStream.GetInstance()))
+        {
+            StartCoroutine(CoolDown(T2.Skill.SilverStream.GetInstance().coolTime, 3));
+        }
+    }
+
+    public void CoolTimeForDimensionball(T2.Pref.DimensionBallPref pref)
+    {
+        
+    }
+
+    IEnumerator CoolDown(float _num, int _slider)
+    {
+        float f = _num;
+        while (f >= 0)
+        {
+            f -= Time.deltaTime;
+            sliderSkill[_slider].value = f;
+            yield return new WaitForSeconds(0.01f);
+        }
+        yield break;
+    }
+
+
     void Skill()
     {
-        if (skillDimensionBall.bCoolTime)
+        if (T2.Skill.DimensionBall.GetInstance().bCoolTime)
         {
-            coolTimerDimensionBall = skillDimensionBall.coolTime;
             imageSkill1[0].color = Color.blue;
         }
         if (sliderSkill[0].value.Equals(0))
@@ -125,24 +155,12 @@ public class UI_Stat : MonoBehaviour
             imageSkill1[0].color = Color.white;
         }
 
-        if (skillSeventhFlow.bCoolTime)
-        {
-            coolTimerSeventhFlow = skillSeventhFlow.coolTime;
-        }
-
-        if (skillSilverStream.bCoolTime)
-        {
-            coolTimerSilverStream = skillSilverStream.coolTime;
-        }
-
         CompleteSkillCooltime(imageSkill1, 0);
         CompleteSkillCooltime(imageSkill2, 1);
+        CompleteSkillCooltime(imageSkill3, 2);
         CompleteSkillCooltime(imageSkill4, 3);
-        sliderSkill[0].value = SkillCooltime(ref coolTimerDimensionBall);
-        sliderSkill[1].value = SkillCooltime(ref coolTimerSeventhFlow);
-        sliderSkill[3].value = SkillCooltime(ref coolTimerSilverStream);
-        //sliderSkill[0].value = skillDimensionBall.coolTime -= Time.deltaTime;
-        //sliderSkill[1].value = skillSeventhFlow.coolTime -= Time.deltaTime;
+
+        
     }
 
     // 스킬쿨타임 완료체크 (ex => CompleteSkillCooltime(imageSkill2, 1)) = 2번째 스킬인 세븐쓰플로우를 뜻함
@@ -152,11 +170,11 @@ public class UI_Stat : MonoBehaviour
         if (sliderSkill[_num].value.Equals(0))
         {
             timerSkill[_num] += Time.deltaTime;
-            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f) // 1초 동안 스킬의 쿨타임이 완료 됐음을 알림 // 나중에 애니메이션으로 바꿔버려야지
+            if (timerSkill[_num] <= 1 && timerSkill[_num] >= 0.1f) // 1초 동안 스킬의 쿨타임이 완료 됐음을 알림
             {
                 _imageSkill[2].color = Color.white;
             }
-            else if (timerSkill[_num] < 0.1f) // 스킬의 쿨타임이 완료 되면 잠깐동안 boom 이펙트 // 나중에 애니메이션으로 바꿔버려야지
+            else if (timerSkill[_num] < 0.1f) // 스킬의 쿨타임이 완료 되면 잠깐동안 boom 이펙트
             {
                 fAlphaSkill[_num] = 1;
             }
@@ -165,7 +183,7 @@ public class UI_Stat : MonoBehaviour
                 _imageSkill[2].color = Color.clear;
             }
         }
-        else// if(sliderSkill[_num].value > sliderSkill[_num].maxValue - 1)
+        else
         {
             timerSkill[_num] = 0;
             _imageSkill[2].color = Color.clear;
@@ -212,19 +230,6 @@ public class UI_Stat : MonoBehaviour
         {
             oEmptyAP.SetActive(false);
         }
-
-        // 페이드 처리
-        //timerAp += Time.deltaTime;
-        //if(timerAp > 1.5f)
-        //{
-        //    timerAp = 0;
-        //    fAlphaAp = 1;
-        //}
-        //else if(timerAp > 0.5f)
-        //{
-        //    imageEmptyAP.color = new Color(1, 1, 1, FadeInOut(ref fAlphaAp, -3));
-        //}
-
     }
 
     void Ep()
@@ -274,30 +279,17 @@ public class UI_Stat : MonoBehaviour
         return _fKindOfStat;
     }
 
-    //IEnumerator InvisibleEPBar()
-    //{
-    //    yield return new WaitForSeconds(1f);
-    //    if (sliderEP.value.Equals(sliderEP.maxValue))
-    //        for (int i = 0; i < imageEP.Length; i++)
-    //        {
-    //            for (float f = 1f; f >= 0.1f; f -= 0.5f)
-    //            {
-    //                imageEP[i].color = new Color(1, 1, 1, f);
-    //                yield return new WaitForSeconds(0.05f);
-    //            }
-    //            imageEP[i].color = Color.clear;
-    //        }
-    //}
-
     void Hp()
     {
         if (sliderDP.value.Equals(0))
         {
             imageHP.enabled = true;
+            //imageRisk.enabled = true;
         }
         else
         {
             imageHP.enabled = false;
+            //imageRisk.enabled = false;
         }
 
     }
@@ -340,15 +332,10 @@ public class UI_Stat : MonoBehaviour
         iPrePp = (int)sliderPP.value;
 
         float _fPi = 180f - (1.8f * sliderPP.value);
-        //trPpHandle.transform.rotation = Quaternion.Euler(
-        //        oDpPp.transform.eulerAngles.x,
-        //        oDpPp.transform.eulerAngles.y,
-        //        (360 - oDpPp.transform.eulerAngles.z) + fPi);
 
         trPpHandle.transform.localRotation = Quaternion.Euler(
-                0, 
-                0, 
+                0,
+                0,
                 _fPi);
-        
     }
 }

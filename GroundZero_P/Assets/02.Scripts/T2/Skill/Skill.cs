@@ -40,15 +40,24 @@ namespace T2.Skill
             bAfterDelay = false;
 
 
+            //T2.Skill.Skill skil = this;
+            //UI_Stat.instance.CoolTime(skil);
+
             //쿨타임 시작.
             if (CoolTimeCoroutine != null)
                 StartCoroutine(CoolTimeCoroutine);
 
-            skillCtrl.mgr.ChangeState(T2.Manager.State.idle);
+
+            if (skillCtrl.mgr.GetState() == Manager.State.be_Shot)
+            {
+                print("스킬 캔슬 피격");
+                StartCoroutine(skillCtrl.mgr.BeShotTimer(skillCtrl.mgr.kNockDownTime));
+            }
 
             //정상 종료 체크
             if (!bUsing)
             {
+                skillCtrl.mgr.ChangeState(T2.Manager.State.idle);
                 /*
                 정상종료 된다면 curSkill을 IdleSkill로 바로 대입한다.
                 (changeSkillState()함수로 바꾸면 무한 뺑뺑이가 돌아버림...)
@@ -60,10 +69,20 @@ namespace T2.Skill
             }
             else
             {
+                print("스킬 비정상 종료");
+                if (skillCtrl.curSkill != T2.Skill.IdleSkill.GetInstance())
+                    skillCtrl.curSkill = T2.Skill.IdleSkill.GetInstance();
                 bUsing = false;
             }
+
+
+            
         }
     }
+
+
+
+
 
     //스킬 타이머 인터페이스
     public interface ISkillTimer

@@ -104,6 +104,19 @@ namespace T2
             if (Input.GetKey(KeyCode.D)) { moveFlag.right = true; animator.SetFloat("fVertical", 1.0f); }
             if (Input.GetKey(KeyCode.A)) { moveFlag.left = true; animator.SetFloat("fVertical", -1.0f); }
 
+            if(moveFlag.right && moveFlag.left ||
+               moveFlag.forward && moveFlag.backward)
+            {
+                moveFlag.forward = false;
+                moveFlag.backward = false;
+                moveFlag.right = false;
+                moveFlag.left = false;
+                fTargetRot = 0.0f + cam.transform.eulerAngles.y;
+
+                animator.SetFloat("fHorizontal", 0.0f);
+                animator.SetFloat("fVertical", 0.0f);
+            }
+
             if (mgr.GetCtrlPossible().Run == false)
             {
                 moveFlag.forward = false;
@@ -124,9 +137,9 @@ namespace T2
             //전력질주의 캐릭터 방향을 정하는 'targetRot'변수를 설정해주는 함수,
             CalcTargetRot();
 
-            if (mgr.GetState() == Manager.State.be_Shot)
+            if (mgr.GetState() == Manager.State.be_Shot ||
+                mgr.GetState() == Manager.State.Skill)
             {
-                print("beShot");
                 return;
             }
 

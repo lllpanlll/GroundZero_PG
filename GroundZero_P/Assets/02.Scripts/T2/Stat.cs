@@ -15,7 +15,7 @@ namespace T2
 
         //public const int AP = 100;
         public const int MAX_AP = 1000;
-        public const int MAX_MAGAZINE = 60;
+        public const int MAX_MAGAZINE = 150;
 
         public const float MAX_EP = 100;
         public const int MAX_PP = 100;

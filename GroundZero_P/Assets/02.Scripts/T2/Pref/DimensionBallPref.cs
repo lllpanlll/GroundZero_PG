@@ -61,8 +61,9 @@ namespace T2.Pref
             oExplosion.SetActive(false);
 
             //lifeTime에 -0.2f는 폭발하는 시간이다.
-            lifeTime = T2.Skill.DimensionBall.GetInstance().coolTime - 0.2f;
+            lifeTime = T2.Skill.DimensionBall.GetInstance().coolTime;
             //디멘션볼 스킬의 쿨타임을 재설정한다.
+            T2.Skill.DimensionBall.GetInstance().bCoolTime = false;
             T2.Skill.DimensionBall.GetInstance().StopCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
             //T2.Skill.DimensionBall.GetInstance().bCoolTime = true;
             StartCoroutine(LifeTimer(this.gameObject, lifeTime));
@@ -88,6 +89,9 @@ namespace T2.Pref
                     col.gameObject.GetComponent<M_HitCtrl>().OnHitMonster(iDamage, true);
                     //쿨타임 시작
                     T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
+
+                    T2.Skill.DimensionBall skil = T2.Skill.DimensionBall.GetInstance();
+                    UI_Stat.instance.CoolTime(skil);
                     gameObject.SetActive(false);
                 }
             }
@@ -178,7 +182,7 @@ namespace T2.Pref
                     if (Physics.Raycast(playerRay[i], out hit, fDist, mask))
                     {
                         //최상위 오브젝트의 태그가 몬스터인지 체크한다.
-                        if (hit.collider.transform.root.tag != Tags.Floor)
+                        if (hit.collider.gameObject == this.gameObject)
                         {
                             print(hit.collider.tag);
                             bPlayerMove = false;
@@ -186,6 +190,8 @@ namespace T2.Pref
                             mgr.SetLayerState(Manager.LayerState.normal);
                             //쿨타임 시작
                             T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
+                            T2.Skill.DimensionBall skil = T2.Skill.DimensionBall.GetInstance();
+                            UI_Stat.instance.CoolTime(skil);
                             gameObject.SetActive(false);
                         }
                         break;
@@ -200,6 +206,8 @@ namespace T2.Pref
                     mgr.SetLayerState(Manager.LayerState.normal);
                     //쿨타임 시작
                     T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
+                    T2.Skill.DimensionBall skil = T2.Skill.DimensionBall.GetInstance();
+                    UI_Stat.instance.CoolTime(skil);
                     gameObject.SetActive(false);
                 }
                 else
@@ -238,6 +246,8 @@ namespace T2.Pref
             yield return new WaitForSeconds(0.1f);
             //쿨타임 시작
             T2.Skill.DimensionBall.GetInstance().StartCoroutine(T2.Skill.DimensionBall.GetInstance().CoolTimer(lifeTime));
+            T2.Skill.DimensionBall skil = T2.Skill.DimensionBall.GetInstance();
+            UI_Stat.instance.CoolTime(skil);
             gameObject.SetActive(false);
         }
 

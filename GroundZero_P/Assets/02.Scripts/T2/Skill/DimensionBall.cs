@@ -26,7 +26,7 @@ namespace T2.Skill
         public float beforeDelayTime = 0.0f;
         public float actionTime = 0.0f;
         public float afterDelayTime = 0.0f;
-        public float coolTime = 0.0f;
+        public float coolTime = 5.0f;
 
         //각 스킬의 고유 변수들
         public int iDamage = 10;
@@ -39,7 +39,7 @@ namespace T2.Skill
         //궁버프 이후 바뀔 수치
         private float beforeDelayTime_Buff = 0.0f;
         private float afterDelayTime_Buff = 0.0f;
-        private float coolTime_Buff = 1.0f;
+        public float coolTime_Buff = 1.0f;
         //궁버프 이전 수치
         private float beforeDelayTime_Orizin;
         private float afterDelayTime_Orizin;

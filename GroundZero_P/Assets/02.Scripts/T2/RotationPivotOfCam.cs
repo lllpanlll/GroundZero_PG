@@ -38,7 +38,7 @@ namespace T2
             fStartY = fAngleY;
         }
 
-        void LateUpdate()
+        public void RotationPivot()
         {            
 
             if (mgr.GetCtrlPossible().MouseRot == true)

@@ -196,7 +196,6 @@ namespace T2
 
             if (Physics.Raycast(aimRay, out aimRayHit, fReach, mask))
             {
-                print(aimRayHit.collider.name);
                 //aimRayHit.point와 플레이어 포지션 위치의 거리.(사정거리 체크)
                 float fRangeCheck = Vector3.Distance(transform.position, aimRayHit.point);
 
@@ -265,9 +264,6 @@ namespace T2
             oBullet = bulletPool.UseObject();
             oBullet.transform.position = trFire[0].position;
             oBullet.transform.rotation = trFire[0].rotation;
-
-            //머즐플래시
-            this.StartCoroutine(ShowMuzzleFlash(_vFirePos));
 
             trFire[0].position = vOrizinFirePos;
         }

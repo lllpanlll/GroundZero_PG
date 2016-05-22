@@ -52,6 +52,7 @@ namespace T2
         private Transform trPlayerModel;
         private Camera cam;
         private Animator animator;
+        private T2.Skill.SkillCtrl skillCtrl;
 
         #region <달리기 상태에 따른 ep증감>
         private float fDecEP = 0.4f, fIncEP = 0.6f;
@@ -67,12 +68,15 @@ namespace T2
 
 
         private float fKnockDownSpeed = 30.0f;
+        public float fKnockDownDist = 1.5f;
+        public float kNockDownTime = 1.0f;
+        public float riseInvincTime = 0.1f;
+        public float kNockDownFlyTime = 0.2f;
         private Vector3 vKnockDownDir = Vector3.zero;
         void Start()
         {
             hp = T2.Stat.MAX_HP;
-            //dp = T2.Stat.INIT_DP;
-            dp = 10000;
+            dp = T2.Stat.INIT_DP;
             pp = T2.Stat.MAX_PP;
             ap = T2.Stat.MAX_AP;
             ep = T2.Stat.MAX_EP;
@@ -85,6 +89,7 @@ namespace T2
             trPlayerModel = GameObject.FindGameObjectWithTag(Tags.PlayerModel).transform;
             animator = GetComponentInChildren<Animator>();
             line = GetComponent<LineRenderer>();
+            skillCtrl = GetComponent<T2.Skill.SkillCtrl>();
 
             //마우스 커서 숨기기
             //Cursor.visible = false;
@@ -173,7 +178,6 @@ namespace T2
             //몬스터 공격이면 데미지만큼 hp 차감
             if (coll.gameObject.layer == LayerMask.NameToLayer(Layers.MonsterAttkCollider))
             {
-                print("hit1");
                 int iDamage = coll.gameObject.GetComponent<M_AttackCtrl>().GetDamage();
                 print(iDamage);
                 if (dp <= 0)
@@ -185,18 +189,18 @@ namespace T2
                 }
                 else
                 {
-                    print("hit2");
                     if (dp > iDamage)
                     {
-                        print("hit3");
                         dp -= iDamage;
                         vKnockDownDir = coll.gameObject.transform.position - transform.position;
                         vKnockDownDir = vKnockDownDir.normalized;
-
                         trPlayerModel.LookAt(coll.transform.position);
-                        trPlayerModel.rotation = Quaternion.Euler(-80.0f, trPlayerModel.eulerAngles.y, trPlayerModel.eulerAngles.z);
+                        
                         //피격 지속시간은 나중에 피격상태에 따라 달라지도록 구현헤야 할 듯,
-                        StartCoroutine(BeShotTimer(1.0f));
+                        if(state != State.Skill)
+                            StartCoroutine(BeShotTimer(kNockDownTime));
+
+                        ChangeState(State.be_Shot);
                     }
                     else
                     {
@@ -284,15 +288,18 @@ namespace T2
             }
         }
         public State GetState() { return state; }
-        IEnumerator BeShotTimer(float time)
+        public IEnumerator BeShotTimer(float time)
         {
             print("beShot");
-            ChangeState(State.be_Shot);
+            
+            
             SetLayerState(LayerState.invincibility);
             //피격 애니메이션 시작.
             animator.enabled = false;
             
-            StartCoroutine(KnockBackFly(0.2f));
+            StartCoroutine(KnockBackFly(kNockDownFlyTime));
+
+           
 
             yield return new WaitForSeconds(time);
 
@@ -301,17 +308,25 @@ namespace T2
             animator.enabled = true;            
 
             ChangeState(State.idle);
-            SetLayerState(LayerState.normal);
-
             trPlayerModel.rotation = Quaternion.Euler(0.0f, trPlayerModel.eulerAngles.y, 0.0f);
+            StartCoroutine(RiseInvincibilityTime(riseInvincTime));           
+        }
+        IEnumerator RiseInvincibilityTime(float time)
+        {
+            yield return new WaitForSeconds(time);
+            SetLayerState(LayerState.normal);
         }
         IEnumerator KnockBackFly(float time)
         {
             //이동중 마우스 회전 불가.
             SetCtrlPossible(CtrlPossibleIndex.MouseRot, false);
+
+            fKnockDownSpeed = fKnockDownDist / kNockDownFlyTime;
             float timeCount = 0.0f;
             while (timeCount < time)
             {
+                //모델링을 매프레임마다 눕히는 이유는 3번스킬 사용중 캔슬되었을 때, 타이밍이 맞지 않아 눕지 않는 경우가 있기때문에 임시로 이곳에 정한다.
+                trPlayerModel.rotation = Quaternion.Euler(-80.0f, trPlayerModel.eulerAngles.y, trPlayerModel.eulerAngles.z);
                 controller.Move((-vKnockDownDir) * Time.deltaTime * fKnockDownSpeed);
                 yield return new WaitForEndOfFrame();
                 timeCount += Time.deltaTime;

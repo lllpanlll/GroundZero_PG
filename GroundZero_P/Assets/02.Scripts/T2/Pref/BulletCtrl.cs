@@ -15,11 +15,13 @@ namespace T2.Pref
         private T2.BasicAttack basicAttack;
         private T2.Manager mgr;
         private CapsuleCollider capsuleCollider;
+        private TrailRenderer trail;
 
         private bool bMove = true;
 
         void Awake()
         {
+            trail = GetComponentInChildren<TrailRenderer>();
             basicAttack = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.BasicAttack>();
             mgr = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<T2.Manager>();
             capsuleCollider = GetComponent<CapsuleCollider>();
@@ -30,14 +32,20 @@ namespace T2.Pref
             bMove = true;
             fReach = basicAttack.GetReach();
             vStartPos = transform.position;
-            StartCoroutine(base.LifeTimer(this.gameObject, lifeTime));
+            StartCoroutine(base.LifeTimer(this.gameObject, lifeTime));            
+            StartCoroutine(TrailDlay(0.05f));
+        }
+
+        void OnDisable()
+        {
+            transform.position = vStartPos;
         }
 
         void OnCollisionEnter(Collision col)
         {
             if (col.collider.gameObject.layer == LayerMask.NameToLayer(Layers.MonsterHitCollider))
             {
-                col.collider.gameObject.GetComponent<M_HitCtrl> ().OnHitMonster(10, false);
+                col.collider.gameObject.GetComponent<M_HitCtrl> ().OnHitMonster(1, false);
                 if(mgr.GetPP() < Stat.MAX_PP)
                     mgr.SetPP(mgr.GetPP() + 1);
             }
@@ -100,6 +108,14 @@ namespace T2.Pref
         {
             yield return new WaitForEndOfFrame();
             transform.position = pos - (transform.forward * capsuleCollider.radius * 1.5f);
+        }
+
+
+        IEnumerator TrailDlay(float time)
+        {
+            trail.enabled = false;
+            yield return new WaitForSeconds(time);
+            trail.enabled = true;
         }
     }
 }
