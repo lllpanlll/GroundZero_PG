@@ -120,7 +120,6 @@ public class UI_Stat : MonoBehaviour
             StartCoroutine(CoolDown(T2.Skill.SilverStream.GetInstance().coolTime, 3));
         }
 
-        LessThanPp(skill);
 
     }
 
@@ -139,14 +138,6 @@ public class UI_Stat : MonoBehaviour
             yield return new WaitForSeconds(0.01f);
         }
         yield break;
-    }
-
-    void LessThanPp(T2.Skill.Skill skill)
-    {
-        //if (t_mgr.PointCheck(skill, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
-        //{
-
-        //}
     }
 
     void Skill()

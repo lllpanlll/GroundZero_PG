@@ -3,57 +3,121 @@ using System.Collections;
 
 public class InteractionObject : MonoBehaviour {
 
+    T2.Manager mgr;
     public enum KindOfObj { Ap, Dp}
     public KindOfObj kindObj;
-    public int iApValue = 100;
+    float fSpeed = 30f;
 
-    float fDetructTime = 2f;
+    public int iMaxApCapacity = 1000;
+    public int iMaxDpCapacity = 100;
+    int iApCapacity;
+    int iDpCapacity;
+    public int iIncreaseDp = 1;
+    bool bOutDp = false;
 
-    void OnEnable () {
-        StartCoroutine(FallingObject());
-        StartCoroutine(Destruction(fDetructTime));
+	// Use this for initialization
+	void Start () {
+        iApCapacity = iMaxApCapacity;
+        iDpCapacity = iMaxDpCapacity;
+	}
+
+    void OnEnable()
+    {
+        StartCoroutine(FallObject());
     }
 
-    IEnumerator FallingObject()
+    void OnDisable()
     {
-        while (true)
+        iApCapacity = iMaxApCapacity;
+        iDpCapacity = iMaxDpCapacity;
+    }
+
+    IEnumerator FallObject()
+    {
+        bool _bChk = true;
+        while(_bChk)// (transform.position.y >= 1)
         {
-            if (transform.position.y >= 1)
-            {
-                transform.Translate(-Vector3.up * 30 * Time.deltaTime);
-            }
+            Ray _ray = new Ray(transform.position, -Vector3.up);
+            RaycastHit _hit = new RaycastHit();
+            float _fDist = fSpeed * Time.deltaTime;
+
             yield return new WaitForSeconds(0.01f);
+            transform.Translate(-Vector3.up * fSpeed * Time.deltaTime);
+
+            if(Physics.Raycast(_ray, out _hit, _fDist, 1 << 14))
+            {
+                transform.position = _hit.point + Vector3.up;
+                _bChk = false;
+            }
         }
     }
-
-    IEnumerator Destruction(float _time)
-    {
-        yield return new WaitForSeconds(_time);
-
-        gameObject.SetActive(false);
-    }
-
     void OnTriggerEnter(Collider coll)
     {
         if (coll.gameObject.CompareTag(Tags.Player))
         {
-            T2.Manager mgr = coll.GetComponent<T2.Manager>();
+            mgr = coll.GetComponent<T2.Manager>();
+            switch (kindObj)
+            {
+                case KindOfObj.Dp:
 
-            if (mgr.GetAP() < T2.Stat.MAX_AP || mgr.GetDP() < T2.Stat.MAX_DP)
-                switch (kindObj)
-                {
-                    case KindOfObj.Ap:
-                        if ((mgr.GetAP() + iApValue) > T2.Stat.MAX_AP)
-                            mgr.SetAP(1000);
-                        else
-                            mgr.SetAP(mgr.GetAP() + iApValue);
-                        // 사용 하고 나면 뭔가 변화가 일어나고 기능도 없어져야함
-                        break;
-                    case KindOfObj.Dp:
-                        mgr.SetDP(100); // dp는 기획서 다시 봐야겠다.
-                        // 사용 하고 나면 뭔가 변화가 일어나고 기능도 없어져야함
-                        break;
-                }
+                    bOutDp = true;
+                    StartCoroutine(ChagingDp(mgr));
+
+                    break;
+            }
+        }
+    }
+
+    void OnTriggerStay(Collider coll)
+    {
+        if (coll.gameObject.CompareTag(Tags.Player))
+        {
+            switch (kindObj)
+            {
+                case KindOfObj.Ap:
+
+                    int iNeedAp = Mathf.Clamp((T2.Stat.MAX_AP - mgr.GetAP()), 0, iApCapacity);
+                    mgr.SetAP(mgr.GetAP() + iNeedAp);
+
+                    iApCapacity -= iNeedAp;
+
+                    if (iApCapacity.Equals(0))
+                        gameObject.SetActive(false);
+                    break;
+            }
+        }
+    }
+
+    void OnTriggerExit(Collider coll)
+    {
+        if (coll.gameObject.CompareTag(Tags.Player))
+        {
+            switch (kindObj)
+            {
+                case KindOfObj.Dp:
+
+                    bOutDp = false;
+
+                    break;
+            }
+        }
+    }
+
+    IEnumerator ChagingDp(T2.Manager _mgr)
+    {
+        while (bOutDp)
+        {
+
+            if (T2.Stat.MAX_DP > _mgr.GetDP() && iDpCapacity > 0)
+            {
+                _mgr.SetDP(_mgr.GetDP() + iIncreaseDp);
+                iDpCapacity -= iIncreaseDp;
+            }
+
+            if (iDpCapacity.Equals(0))
+                gameObject.SetActive(false);
+
+            yield return new WaitForSeconds(0.1f);
         }
     }
 }
