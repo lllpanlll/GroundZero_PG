@@ -119,8 +119,6 @@ public class UI_Stat : MonoBehaviour
         {
             StartCoroutine(CoolDown(T2.Skill.SilverStream.GetInstance().coolTime, 3));
         }
-
-
     }
 
     public void CoolTimeForDimensionball(T2.Pref.DimensionBallPref pref)
@@ -149,6 +147,15 @@ public class UI_Stat : MonoBehaviour
         else if (!T2.Skill.DimensionBall.GetInstance().bCoolTime)
         {
             imageSkill1[0].color = Color.white;
+        }
+
+        if (T2.Skill.SilverStream.GetInstance().bSilverStream)
+        {
+            imageSkill4[0].color = Color.blue;
+        }
+        else
+        {
+            imageSkill4[0].color = Color.white;
         }
 
         UiSkillEffect(imageSkill1, 0);

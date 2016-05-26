@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class InteractionObject : MonoBehaviour {
 
     T2.Manager mgr;
     public enum KindOfObj { Ap, Dp}
     public KindOfObj kindObj;
-    float fSpeed = 30f;
+    float fSpeed = 20f;
 
     public int iMaxApCapacity = 1000;
     public int iMaxDpCapacity = 100;
@@ -15,11 +16,48 @@ public class InteractionObject : MonoBehaviour {
     public int iIncreaseDp = 1;
     bool bOutDp = false;
 
-	// Use this for initialization
-	void Start () {
-        iApCapacity = iMaxApCapacity;
-        iDpCapacity = iMaxDpCapacity;
-	}
+    // ui
+    //public GameObject oUi;
+    //Vector3 WorldToScreen;
+
+    //Transform trPlayer;
+    //Text textUi;
+
+    //GameObject oInstant;
+    //public Transform trScreenCanvas;
+
+ //   void Awake()
+ //   {
+ //       //ui
+ //       trPlayer = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<Transform>();
+ //   }
+
+	//// Use this for initialization
+	//void Start () {
+ //       // ui
+ //       //trScreenCanvas = transform.Find("Screen_Canvas").GetComponent<Transform>();
+ //       oInstant = Instantiate(oUi) as GameObject;
+ //       textUi = oInstant.GetComponentInChildren<Text>();
+ //       oInstant.transform.SetParent(trScreenCanvas);
+ //   }
+
+ //   void Update()
+ //   {
+ //       // ui
+ //       WorldToScreen = Camera.main.WorldToScreenPoint(transform.position);
+ //       if (WorldToScreen.z > 0)
+ //       {
+ //           oInstant.SetActive(true);
+ //       }
+ //       else
+ //           oInstant.SetActive(false);
+ //       oInstant.transform.position = new Vector3(WorldToScreen.x, WorldToScreen.y, oInstant.transform.position.z);
+
+ //       float fDist = Vector3.Distance(trPlayer.position, transform.position);
+
+ //       textUi.text = ((int)fDist).ToString() + "m";
+ //   }
+
 
     void OnEnable()
     {
@@ -35,13 +73,12 @@ public class InteractionObject : MonoBehaviour {
     IEnumerator FallObject()
     {
         bool _bChk = true;
-        while(_bChk)// (transform.position.y >= 1)
+        while(_bChk)
         {
             Ray _ray = new Ray(transform.position, -Vector3.up);
             RaycastHit _hit = new RaycastHit();
             float _fDist = fSpeed * Time.deltaTime;
 
-            yield return new WaitForSeconds(0.01f);
             transform.Translate(-Vector3.up * fSpeed * Time.deltaTime);
 
             if(Physics.Raycast(_ray, out _hit, _fDist, 1 << 14))
@@ -49,6 +86,7 @@ public class InteractionObject : MonoBehaviour {
                 transform.position = _hit.point + Vector3.up;
                 _bChk = false;
             }
+            yield return new WaitForSeconds(0.01f);
         }
     }
     void OnTriggerEnter(Collider coll)

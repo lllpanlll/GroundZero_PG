@@ -22,6 +22,14 @@ public class ObjectPool : MonoBehaviour{
         }
     }
 
+    public void BeChilldren (GameObject _parent)
+    {
+        for( int i = 0; i < objectPool.Length; i++)
+        {
+            objectPool[i].transform.SetParent(_parent.transform);
+        }
+    }
+
     void OnDestory()
     {
         Dispose();

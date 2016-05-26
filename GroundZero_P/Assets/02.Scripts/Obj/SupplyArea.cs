@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class SupplyArea : MonoBehaviour
 {
@@ -15,9 +16,13 @@ public class SupplyArea : MonoBehaviour
     public float x1, x2, z1, z2;
     ObjectPool objPool = new ObjectPool();
     Transform[] trSpawnpoint = new Transform[COUNT];
-
     [HideInInspector]
     public List<GameObject> listObjCount;
+
+    public Image imageUi;
+    GameObject oUi;
+    public Transform trScreenUi;
+    ScreenUI_DisanceObject distUi;
 
     void Awake()
     {
@@ -33,6 +38,10 @@ public class SupplyArea : MonoBehaviour
         x2 = transform.localPosition.x + x2;
         z2 = transform.localPosition.z + z2;
         objPool.CreatePool(oCharger, COUNT);
+        oUi = Instantiate(imageUi.gameObject) as GameObject;
+        oUi.transform.SetParent(trScreenUi);
+        distUi = oUi.GetComponent<ScreenUI_DisanceObject>();
+        oUi.SetActive(false);
         StartCoroutine(RespawnCycle());
     }
 
@@ -47,7 +56,11 @@ public class SupplyArea : MonoBehaviour
             oObj.transform.position = new Vector3(trSpawnpoint[i].position.x, 50, trSpawnpoint[i].position.z);
             oObj.transform.rotation = Quaternion.identity;
 
+            oUi.SetActive(true);
+            distUi.SetTaget(oObj);
+
             listObjCount.Add(oObj);
+
         }
         else
         {

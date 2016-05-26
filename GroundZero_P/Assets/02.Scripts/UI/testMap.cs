@@ -17,7 +17,7 @@ public class testMap : MonoBehaviour
     public int sceneWidth = 500;
     public int sceneHeight = 500;
     public int iconSize = 10;
-    private int iconHalfSize;
+    int iconHalfSize;
 
     void Update()
     {
