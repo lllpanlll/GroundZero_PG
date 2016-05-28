@@ -100,6 +100,7 @@ public class UI_Stat : MonoBehaviour
         Hp();
         Pp();
         Skill();
+        //ShortPoint();
     }
 
     public void CoolTime(T2.Skill.Skill skill)
@@ -137,6 +138,31 @@ public class UI_Stat : MonoBehaviour
         }
         yield break;
     }
+
+    // 쿨타임때 회색으로
+    //void ShortPoint()
+    //{
+    //    if (!t_mgr.PointCheck(T2.Skill.DimensionBall.GetInstance().PointType, T2.Skill.DimensionBall.GetInstance().iDecPoint))
+    //    {
+    //        imageSkill1[0].color = new Color(0.1f, 0.1f, 0.1f);
+    //    }
+    //    else
+    //        imageSkill1[0].color = Color.white;
+
+    //    if (!t_mgr.PointCheck(T2.Skill.SeventhFlow.GetInstance().PointType, T2.Skill.SeventhFlow.GetInstance().iDecPoint))
+    //    {
+    //        imageSkill2[0].color = new Color(0.1f, 0.1f, 0.1f);
+    //    }
+    //    else
+    //        imageSkill2[0].color = Color.white;
+
+    //    if (!t_mgr.PointCheck(T2.Skill.SilverStream.GetInstance().PointType, T2.Skill.SilverStream.GetInstance().iDecPoint))
+    //    {
+    //        imageSkill4[0].color = new Color(0.1f, 0.1f, 0.1f);
+    //    }
+    //    else
+    //        imageSkill4[0].color = Color.white;
+    //}
 
     void Skill()
     {
