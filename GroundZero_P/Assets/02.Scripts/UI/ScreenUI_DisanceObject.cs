@@ -40,6 +40,11 @@ public class ScreenUI_DisanceObject : MonoBehaviour {
 
         float fDist = Vector3.Distance(trPlayer.position, oTarget.transform.position);
 
+        if (!oTarget.activeSelf)
+        {
+            gameObject.SetActive(false);
+        }
+
         textUi.text = ((int)fDist).ToString() + "m";
     }
 }

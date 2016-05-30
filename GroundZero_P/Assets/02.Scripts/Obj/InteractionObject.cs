@@ -16,49 +16,6 @@ public class InteractionObject : MonoBehaviour {
     public int iIncreaseDp = 1;
     bool bOutDp = false;
 
-    // ui
-    //public GameObject oUi;
-    //Vector3 WorldToScreen;
-
-    //Transform trPlayer;
-    //Text textUi;
-
-    //GameObject oInstant;
-    //public Transform trScreenCanvas;
-
- //   void Awake()
- //   {
- //       //ui
- //       trPlayer = GameObject.FindGameObjectWithTag(Tags.Player).GetComponent<Transform>();
- //   }
-
-	//// Use this for initialization
-	//void Start () {
- //       // ui
- //       //trScreenCanvas = transform.Find("Screen_Canvas").GetComponent<Transform>();
- //       oInstant = Instantiate(oUi) as GameObject;
- //       textUi = oInstant.GetComponentInChildren<Text>();
- //       oInstant.transform.SetParent(trScreenCanvas);
- //   }
-
- //   void Update()
- //   {
- //       // ui
- //       WorldToScreen = Camera.main.WorldToScreenPoint(transform.position);
- //       if (WorldToScreen.z > 0)
- //       {
- //           oInstant.SetActive(true);
- //       }
- //       else
- //           oInstant.SetActive(false);
- //       oInstant.transform.position = new Vector3(WorldToScreen.x, WorldToScreen.y, oInstant.transform.position.z);
-
- //       float fDist = Vector3.Distance(trPlayer.position, transform.position);
-
- //       textUi.text = ((int)fDist).ToString() + "m";
- //   }
-
-
     void OnEnable()
     {
         StartCoroutine(FallObject());
