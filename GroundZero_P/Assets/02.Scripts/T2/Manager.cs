@@ -45,7 +45,7 @@ namespace T2
             public bool Skill;
         }
         public enum CtrlPossibleIndex { Run, Sprint, Attack, MouseRot, Skill };
-        CtrlPossible ctrlPossible;
+        public CtrlPossible ctrlPossible;
 
         private T2.MoveCtrl moveCtrl;
         private CharacterController controller;
@@ -78,13 +78,13 @@ namespace T2
             //마우스 커서 숨기기
             //Cursor.visible = false;
 
-            ctrlPossible.Run = true;
-            ctrlPossible.Sprint = true;
-            ctrlPossible.Attack = true;
-            ctrlPossible.MouseRot = true;
-            ctrlPossible.Skill = true;
+            //ctrlPossible.Run = true;
+            //ctrlPossible.Sprint = true;
+            //ctrlPossible.Attack = true;
+            //ctrlPossible.MouseRot = true;
+            //ctrlPossible.Skill = true;
 
-            ChangeState(State.idle);
+            //ChangeState(State.idle);
         }
         void OnGUI()
         {
